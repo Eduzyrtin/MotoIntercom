@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="section_connection">Connexion</string>
+    <string name="field_name">Ton nom</string>
+    <string name="field_group">Groupe</string>
+    <string name="action_start">Connecter</string>
+    <string name="action_stop">Déconnecter</string>
+    <string name="status_stopped">Arrêté</string>
+    <string name="status_advertising">Annonce en cours</string>
+    <string name="status_advertising_coded">Annonce en cours (+ longue portée)</string>
+    <string name="status_not_advertising">Pas d\'annonce</string>
+    <string name="status_scanning">Recherche</string>
+    <string name="status_psm">PSM %1$d</string>
+    <plurals name="status_seen">
+        <item quantity="one">%1$d du groupe à portée</item>
+        <item quantity="many">%1$d du groupe à portée</item>
+        <item quantity="other">%1$d du groupe à portée</item>
+    </plurals>
+    <string name="permissions_denied">Les autorisations Bluetooth et micro sont nécessaires pour se connecter</string>
+    <string name="error_bluetooth_off">Le Bluetooth est désactivé</string>
+    <string name="error_channel">Impossible d\'ouvrir le canal L2CAP : %1$s</string>
+    <string name="error_audio">Erreur audio : %1$s</string>
+    <string name="problem_no_advertiser">Ce téléphone ne peut pas s\'annoncer en BLE</string>
+    <string name="problem_advertise">Annonce impossible (code %1$d)</string>
+    <string name="problem_coded">Annonce longue portée impossible (code %1$d)</string>
+    <string name="problem_scan">Recherche impossible (code %1$d)</string>
+
+    <string name="section_audio">Audio</string>
+    <string name="mode_helmet">Casque (HFP)</string>
+    <string name="mode_mix">Mixage (A2DP)</string>
+    <string name="mode_helmet_hint">Micro et voix par le casque comme un appel mains libres. Marche avec tout casque ; qualité appel, et la musique passe en qualité appel tant qu\'il est actif.</string>
+    <string name="mode_mix_hint">Voix mélangées à ta musique dans le casque. Tu parles avec le micro du téléphone ou un micro filaire.</string>
+    <string name="talk_auto">Auto</string>
+    <string name="talk_ptt">PTT</string>
+    <string name="talk_open">Ouvert</string>
+    <string name="talk_mute">Muet</string>
+    <string name="ptt_hold">Maintiens pour parler</string>
+    <string name="mic_sending">Envoi</string>
+    <string name="mic_idle">Micro fermé</string>
+    <string name="mic_level">Micro : %1$d dBFS</string>
+    <string name="vad_sensitivity">Sensibilité de la voix : %1$d %%</string>
+    <string name="route_input">Entrée : %1$s</string>
+    <string name="route_output">Sortie : %1$s</string>
+
+    <string name="section_group">Groupe</string>
+    <string name="group_empty">Personne d\'autre du groupe en vue</string>
+    <string name="hops_direct">direct</string>
+    <plurals name="hops_many">
+        <item quantity="one">%1$d saut</item>
+        <item quantity="many">%1$d sauts</item>
+        <item quantity="other">%1$d sauts</item>
+    </plurals>
+    <string name="hops_none">pas de chemin</string>
+    <string name="node_speaking">parle</string>
+    <string name="node_stats">tampon %1$d/%2$d ms · perdues %3$d · en retard %4$d</string>
+
+    <string name="section_links">Liens</string>
+    <string name="links_empty">Aucun lien</string>
+    <string name="link_out">sortant</string>
+    <string name="link_in">entrant</string>
+    <string name="unknown">—</string>
+    <string name="link_rssi">%1$d dBm</string>
+    <string name="link_rtt_ms">%1$d ms</string>
+    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s</string>
+    <string name="link_line2">↑%1$.1f ↓%2$.1f kbps · file %3$d · rejetées %4$d</string>
+    <string name="phy_label">PHY des liens</string>
+    <string name="phy_auto">Auto</string>
+    <string name="long_range">Annonce longue portée (Coded PHY)</string>
+    <string name="bitrate_label">Qualité de la voix : %1$d kbps</string>
+    <string name="max_links">Liens maximum : %1$d</string>
+    <string name="mic_source_label">Micro en mode mixage</string>
+    <string name="mic_voice">Traité</string>
+    <string name="mic_raw">Brut</string>
+    <string name="voice_output_label">Voix en mode mixage comme</string>
+    <string name="voice_output_media">Multimédia</string>
+    <string name="voice_output_call">Appel</string>
+    <string name="caps">Ce téléphone : Coded PHY %1$s · 2M %2$s · annonce étendue %3$s</string>
+    <string name="yes">oui</string>
+    <string name="no">non</string>
+    <string name="node_id">Id de nœud : %1$s</string>
+    <string name="radio_restart_hint">Le nom, le groupe et la longue portée s\'appliquent à la prochaine connexion.</string>
+
+    <string name="dev_none">—</string>
+    <string name="dev_builtin_mic">micro du téléphone</string>
+    <string name="dev_sco">casque (HFP)</string>
+    <string name="dev_a2dp">casque (A2DP)</string>
+    <string name="dev_ble_headset">casque (LE Audio)</string>
+    <string name="dev_wired">filaire</string>
+    <string name="dev_usb">USB</string>
+    <string name="dev_speaker">haut-parleur</string>
+    <string name="dev_earpiece">écouteur du téléphone</string>
+    <string name="dev_other">type %1$d</string>
+
+    <string name="action_settings">Réglages</string>
+    <string name="action_back">Retour</string>
+    <string name="settings_title">Réglages</string>
+    <string name="identity_line">%1$s · groupe %2$s</string>
+    <string name="section_talk">Parler</string>
+    <string name="section_volume">Volume</string>
+    <string name="section_identity">Identité</string>
+    <string name="section_radio">Radio</string>
+    <string name="section_info">Informations</string>
+    <string name="section_diagnostics">Diagnostic</string>
+    <string name="volume_master">Principal : %1$d %%</string>
+    <string name="volume_voices">Voix : %1$d %%</string>
+    <string name="volume_music">Multimédia : %1$d %%</string>
+    <string name="volume_hint">Les boutons de volume du téléphone et du casque règlent le volume principal : voix et multimédia montent et descendent ensemble en gardant leur écart.</string>
+    <string name="mix_voice_limit">En mode mixage, les voix partagent le canal multimédia avec la musique : elles peuvent être au plus 12 dB au-dessus.</string>
+    <string name="media_previous">Précédent</string>
+    <string name="media_play_pause">Lecture ou pause</string>
+    <string name="media_next">Suivant</string>
+</resources>

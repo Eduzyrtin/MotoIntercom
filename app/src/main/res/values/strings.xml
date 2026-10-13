@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">MotoIntercom</string>
+
+    <string name="section_connection">Connection</string>
+    <string name="field_name">Your name</string>
+    <string name="field_group">Group</string>
+    <string name="action_start">Connect</string>
+    <string name="action_stop">Disconnect</string>
+    <string name="status_stopped">Stopped</string>
+    <string name="status_advertising">Advertising</string>
+    <string name="status_advertising_coded">Advertising (+ long range)</string>
+    <string name="status_not_advertising">Not advertising</string>
+    <string name="status_scanning">Scanning</string>
+    <string name="status_psm">PSM %1$d</string>
+    <plurals name="status_seen">
+        <item quantity="one">%1$d from the group in range</item>
+        <item quantity="other">%1$d from the group in range</item>
+    </plurals>
+    <string name="permissions_denied">Bluetooth and microphone permissions are needed to connect</string>
+    <string name="error_bluetooth_off">Bluetooth is off</string>
+    <string name="error_channel">Could not open the L2CAP channel: %1$s</string>
+    <string name="error_audio">Audio error: %1$s</string>
+    <string name="problem_no_advertiser">This phone cannot advertise over BLE</string>
+    <string name="problem_advertise">Could not advertise (code %1$d)</string>
+    <string name="problem_coded">Could not advertise in long range (code %1$d)</string>
+    <string name="problem_scan">Could not scan (code %1$d)</string>
+
+    <string name="section_audio">Audio</string>
+    <string name="mode_helmet">Helmet (HFP)</string>
+    <string name="mode_mix">Mix (A2DP)</string>
+    <string name="mode_helmet_hint">Mic and voices through the helmet as a hands-free call. Works with any helmet; call quality, and music drops to call quality while it is on.</string>
+    <string name="mode_mix_hint">Voices mixed with your music through the helmet. You talk through the phone mic or a wired one.</string>
+    <string name="talk_auto">Auto</string>
+    <string name="talk_ptt">PTT</string>
+    <string name="talk_open">Open</string>
+    <string name="talk_mute">Mute</string>
+    <string name="ptt_hold">Hold to talk</string>
+    <string name="mic_sending">Sending</string>
+    <string name="mic_idle">Mic closed</string>
+    <string name="mic_level">Mic: %1$d dBFS</string>
+    <string name="vad_sensitivity">Voice sensitivity: %1$d %%</string>
+    <string name="route_input">Input: %1$s</string>
+    <string name="route_output">Output: %1$s</string>
+
+    <string name="section_group">Group</string>
+    <string name="group_empty">Nobody else from the group in sight</string>
+    <string name="hops_direct">direct</string>
+    <plurals name="hops_many">
+        <item quantity="one">%1$d hop</item>
+        <item quantity="other">%1$d hops</item>
+    </plurals>
+    <string name="hops_none">no route</string>
+    <string name="node_speaking">talking</string>
+    <string name="node_stats">buffer %1$d/%2$d ms · lost %3$d · late %4$d</string>
+
+    <string name="section_links">Links</string>
+    <string name="links_empty">No links</string>
+    <string name="link_out">outgoing</string>
+    <string name="link_in">incoming</string>
+    <string name="unknown">—</string>
+    <string name="link_rssi">%1$d dBm</string>
+    <string name="link_rtt_ms">%1$d ms</string>
+    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s</string>
+    <string name="link_line2">↑%1$.1f ↓%2$.1f kbps · queue %3$d · dropped %4$d</string>
+    <string name="phy_label">Link PHY</string>
+    <string name="phy_auto">Auto</string>
+    <string name="long_range">Long-range advertising (Coded PHY)</string>
+    <string name="bitrate_label">Voice quality: %1$d kbps</string>
+    <string name="max_links">Maximum links: %1$d</string>
+    <string name="mic_source_label">Mic in mix mode</string>
+    <string name="mic_voice">Processed</string>
+    <string name="mic_raw">Raw</string>
+    <string name="voice_output_label">Voices in mix mode as</string>
+    <string name="voice_output_media">Media</string>
+    <string name="voice_output_call">Call</string>
+    <string name="caps">This phone: Coded PHY %1$s · 2M %2$s · extended advertising %3$s</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="node_id">Node id: %1$s</string>
+    <string name="radio_restart_hint">Name, group and long range apply on the next connection.</string>
+
+    <string name="dev_none">—</string>
+    <string name="dev_builtin_mic">phone mic</string>
+    <string name="dev_sco">helmet (HFP)</string>
+    <string name="dev_a2dp">helmet (A2DP)</string>
+    <string name="dev_ble_headset">helmet (LE Audio)</string>
+    <string name="dev_wired">wired</string>
+    <string name="dev_usb">USB</string>
+    <string name="dev_speaker">speaker</string>
+    <string name="dev_earpiece">earpiece</string>
+    <string name="dev_other">type %1$d</string>
+
+    <string name="action_settings">Settings</string>
+    <string name="action_back">Back</string>
+    <string name="settings_title">Settings</string>
+    <string name="identity_line">%1$s · group %2$s</string>
+    <string name="section_talk">Talk</string>
+    <string name="section_volume">Volume</string>
+    <string name="section_identity">Identity</string>
+    <string name="section_radio">Radio</string>
+    <string name="section_info">Information</string>
+    <string name="section_diagnostics">Diagnostics</string>
+    <string name="volume_master">Master: %1$d %%</string>
+    <string name="volume_voices">Voice: %1$d %%</string>
+    <string name="volume_music">Media: %1$d %%</string>
+    <string name="volume_hint">The phone and helmet volume buttons move the master: voice and media go up and down together, keeping their difference.</string>
+    <string name="mix_voice_limit">In mix mode voices share the media channel with the music: they can be at most 12 dB louder than it.</string>
+    <string name="media_previous">Previous</string>
+    <string name="media_play_pause">Play or pause</string>
+    <string name="media_next">Next</string>
+</resources>
