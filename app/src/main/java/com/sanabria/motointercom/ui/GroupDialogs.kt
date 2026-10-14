@@ -22,7 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import com.sanabria.motointercom.IntercomViewModel
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.EncodeHintType
 import com.google.zxing.qrcode.QRCodeWriter
@@ -87,6 +91,42 @@ fun NewGroupDialog(onCreate: (String) -> Unit, onDismiss: () -> Unit) {
         confirmButton = {
             TextButton(onClick = { onCreate(name.trim()) }, enabled = name.isNotBlank()) { Text(stringResource(R.string.action_create)) }
         },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+/** Elegir el casco de la autoconexión entre los dispositivos emparejados (los de audio primero). */
+@Composable
+fun HelmetPickerDialog(devices: List<IntercomViewModel.Bonded>, onPick: (IntercomViewModel.Bonded) -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.helmet_pick_title)) },
+        text = {
+            Column(Modifier.verticalScroll(rememberScrollState())) {
+                if (devices.isEmpty()) Text(stringResource(R.string.no_bonded), style = MaterialTheme.typography.bodyMedium)
+                for (d in devices) {
+                    TextButton(onClick = { onPick(d) }, modifier = Modifier.fillMaxWidth()) {
+                        Text(
+                            d.name,
+                            modifier = Modifier.fillMaxWidth(),
+                            fontWeight = if (d.audio) FontWeight.Bold else FontWeight.Normal,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
+    )
+}
+
+@Composable
+fun DeleteGroupDialog(name: String, onDelete: () -> Unit, onDismiss: () -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.group_delete_title, name)) },
+        text = { Text(stringResource(R.string.group_delete_text)) },
+        confirmButton = { TextButton(onClick = onDelete) { Text(stringResource(R.string.action_delete)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) } },
     )
 }

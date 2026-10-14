@@ -25,15 +25,13 @@
     <string name="problem_scan">Suche fehlgeschlagen (Code %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Helm (HFP)</string>
-    <string name="mode_mix">Mix (A2DP)</string>
-    <string name="mode_helmet_hint">Mikro und Stimmen über den Helm wie ein Freisprechanruf. Geht mit jedem Helm; Anrufqualität, und Musik fällt währenddessen auf Anrufqualität.</string>
-    <string name="mode_mix_hint">Stimmen werden im Helm mit deiner Musik gemischt. Du sprichst über das Handymikro oder ein Kabelmikro.</string>
-    <string name="talk_auto">Auto</string>
-    <string name="talk_ptt">PTT</string>
+    <string name="mode_helmet">Freisprechen (HFP)</string>
+    <string name="mode_mix">Musik zuerst (A2DP)</string>
+    <string name="mode_helmet_hint">Kompatibilität: Mikro und Stimmen über den Helm wie ein Freisprechanruf. Sprechen geht mit jedem Helm, aber alles, auch die Musik, fällt auf Anrufqualität.</string>
+    <string name="mode_mix_hint">Die Musik verliert nie an Qualität: Stimmen kommen als Medien im Helm an, gemischt mit deiner Musik. Zum Sprechen braucht der Helm LE Audio; mit einem klassischen Bluetooth-Helm hörst du nur zu.</string>
+    <string name="talk_auto">Stimme</string>
     <string name="talk_open">Offen</string>
-    <string name="talk_mute">Stumm</string>
-    <string name="ptt_hold">Zum Sprechen gedrückt halten</string>
+    <string name="talk_mute">Nur zuhören</string>
     <string name="mic_sending">Sendet</string>
     <string name="mic_idle">Mikro zu</string>
     <string name="mic_level">Mikro: %1$d dBFS</string>
@@ -66,9 +64,6 @@
     <string name="long_range">Advertising mit großer Reichweite (Coded PHY)</string>
     <string name="bitrate_label">Maximale Sprachqualität: %1$d kbps</string>
     <string name="max_links">Maximale Verbindungen: %1$d</string>
-    <string name="mic_source_label">Mikro im Mix-Modus</string>
-    <string name="mic_voice">Bearbeitet</string>
-    <string name="mic_raw">Roh</string>
     <string name="voice_output_label">Stimmen im Mix-Modus als</string>
     <string name="voice_output_media">Medien</string>
     <string name="voice_output_call">Anruf</string>
@@ -103,7 +98,7 @@
     <string name="volume_voices">Stimme: %1$d %%</string>
     <string name="volume_music">Medien: %1$d %%</string>
     <string name="volume_hint">Die Lautstärketasten von Handy und Helm regeln die Gesamtlautstärke: Stimme und Medien gehen gemeinsam hoch und runter und behalten ihren Abstand.</string>
-    <string name="mix_voice_limit">Im Mix-Modus teilen sich Stimmen und Musik den Medienkanal: Stimmen können höchstens 12 dB lauter als die Musik sein.</string>
+    <string name="mix_voice_limit">In Musik zuerst teilen sich Stimmen und Musik den Medienkanal: Stimmen können höchstens 12 dB lauter sein.</string>
     <string name="media_previous">Vorheriger Titel</string>
     <string name="media_play_pause">Wiedergabe oder Pause</string>
     <string name="media_next">Nächster Titel</string>
@@ -113,11 +108,8 @@
     <string name="scan_mode_fast">Schnelle Suche</string>
     <string name="scan_mode_saving">Stromsparende Suche</string>
     <string name="mic_muted">Mikro stumm (Helm oder Benachrichtigung)</string>
-    <string name="ptt_latched">Du sprichst (Helmtaste)</string>
     <string name="action_unmute">Mikro an</string>
     <string name="action_mute">Stumm</string>
-    <string name="action_talk">Sprechen</string>
-    <string name="action_stop_talking">Nicht mehr sprechen</string>
 
     <string name="notif_channel">Gegensprechanlage</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -129,8 +121,6 @@
     <string name="notif_mic_open">Mikro offen</string>
     <string name="notif_mic_muted">Mikro stumm</string>
     <string name="notif_mic_off">Mikro aus</string>
-    <string name="notif_ptt">Drücken zum Sprechen</string>
-    <string name="notif_talking">du sprichst</string>
 
     <string name="group_current">%1$s · Code %2$s</string>
     <string name="group_code">Code %1$s</string>
@@ -154,8 +144,8 @@
     <string name="action_join">Beitreten</string>
 
     <string name="section_helmet">Helm</string>
-    <string name="helmet_button">Die Helmtaste schaltet das Mikro ein und aus</string>
-    <string name="helmet_button_hint">Nutzt die Wiedergabe/Pause-Taste. Solange das aktiv ist, steuert diese Taste nicht mehr die Musik (nutze die Tasten der App). Geht am besten im Mix-Modus: im Helm-Modus nutzen manche Helme sie für Anrufe oder den Sprachassistenten.</string>
+    <string name="helmet_button">Helmtaste schaltet das Mikro stumm</string>
+    <string name="helmet_button_hint">Nutzt die Wiedergabe/Pause-Taste: einmal drücken schaltet das Mikro stumm, nochmal wieder an. Solange das an ist, steuert die Taste nicht mehr die Musik (nutze die Tasten der App).</string>
     <string name="earcons_label">Tonsignale</string>
     <string name="earcons_hint">Ein Piepton, wenn das Mikro auf- oder zugeht und wenn jemand der Gruppe beitritt oder sie verlässt.</string>
     <string name="helmet_test_open">Helm testen</string>
@@ -172,7 +162,7 @@
     <string name="battery_open">Akku-Einstellungen öffnen</string>
 
     <string name="test_title">Helm testen</string>
-    <string name="test_intro">Koppel den Helm wie immer mit dem Handy und schalte ihn ein. Jeder Test nimmt 3 Sekunden über das Mikro auf und spielt sie dir vor.</string>
+    <string name="test_intro">Koppel den Helm wie immer mit dem Handy und schalte ihn ein. Jeder Test nimmt 3 Sekunden über das Helmmikro auf und spielt sie dir vor.</string>
     <string name="test_devices">Verbunden: %1$s</string>
     <string name="test_no_devices">Kein Bluetooth-Helm verbunden.</string>
     <string name="test_run">Testen</string>
@@ -188,10 +178,10 @@
     <string name="test_result_ok">Funktioniert</string>
     <string name="test_result_bad">Funktioniert nicht</string>
     <string name="test_recommendation">Empfehlung</string>
-    <string name="test_recommend_helmet">Empfohlen: Helm (HFP).</string>
-    <string name="test_recommend_mix">Empfohlen: Mix (A2DP).</string>
-    <string name="test_recommend_none">Kein Modus hat funktioniert: Prüfe die Kopplung oder nutze Kabelkopfhörer.</string>
-    <string name="test_both_hint">Beide funktionieren: Helm nutzt das Helmmikro; Mix behält die Musik in guter Qualität.</string>
+    <string name="test_recommend_helmet">Empfohlen: Freisprechen (HFP).</string>
+    <string name="test_recommend_mix">Empfohlen: Musik zuerst (A2DP).</string>
+    <string name="test_recommend_none">Kein Modus hat funktioniert: Prüfe, ob der Helm gekoppelt und verbunden ist.</string>
+    <string name="test_both_hint">Beide funktionieren. Musik zuerst lässt die Musik unangetastet; Freisprechen lässt dich mit einem klassischen Helm sprechen, auf Kosten der Musik.</string>
     <string name="test_use_mode">Diesen Modus verwenden</string>
 
     <!-- Bloque 3 -->
@@ -208,4 +198,28 @@
     <string name="hint_list">laut Helmliste</string>
     <string name="helmets_share">Ergebnisse teilen</string>
     <string name="helmets_share_hint">Schick sie, damit sie in die Helmliste der App kommen.</string>
+
+    <!-- Uso diario -->
+    <string name="no_helmet_mic">Kein Helmmikro: Verbinde den Helm per Bluetooth (das Handymikro wird nie benutzt).</string>
+    <string name="group_active">in Benutzung</string>
+    <string name="group_default">Standard</string>
+    <string name="action_use">Benutzen</string>
+    <string name="action_make_default">Als Standard</string>
+    <string name="action_delete">Löschen</string>
+    <string name="group_delete_title">„%1$s“ löschen?</string>
+    <string name="group_delete_text">Um wieder beizutreten, brauchst du eine neue Einladung.</string>
+    <string name="helmet_none">Kein Helm gewählt</string>
+    <string name="helmet_selected">Helm: %1$s</string>
+    <string name="helmet_choose">Helm wählen</string>
+    <string name="auto_connect">Verbinden, wenn der Helm angeht</string>
+    <string name="auto_connect_hint">Wenn sich dieser Helm mit dem Handy verbindet, öffnet sich die App und verbindet sich mit der Standardgruppe. Geht der Helm aus, trennt sie nach 2 Minuten.</string>
+    <string name="helmet_pick_title">Wähle deinen Helm</string>
+    <string name="no_bonded">Keine gekoppelten Bluetooth-Geräte</string>
+    <string name="cdm_failed">Android hat die Verknüpfung mit dem Helm nicht erlaubt: Wenn er sich verbindet, bekommst du eine Benachrichtigung zum Verbinden.</string>
+    <string name="notif_helmet_channel">Helm</string>
+    <string name="notif_helmet_title">Helm verbunden</string>
+    <string name="notif_helmet_text">Tippen, um dich mit %1$s zu verbinden</string>
+    <string name="no_mic_classic">Dein Helm hat kein LE Audio: Du hörst die anderen bei unveränderter Musik, aber sein Mikro geht nur bei Freisprechen (Einstellungen → Audio), das die Musik auf Anrufqualität senkt.</string>
+    <string name="le_audio_on">LE Audio: Helmmikro und Musik in guter Qualität gleichzeitig.</string>
+    <string name="notif_listen_only">nur zuhören</string>
 </resources>

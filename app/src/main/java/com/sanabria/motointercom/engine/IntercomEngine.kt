@@ -70,11 +70,13 @@ data class EngineState(
     val links: List<LinkUi> = emptyList(),
     val nodes: List<NodeUi> = emptyList(),
     val micLevelDb: Float = Vad.SILENCE_DB,
+    /** El micro del casco está captando (sin él no se usa el del móvil: solo se escucha). */
+    val helmetMic: Boolean = false,
+    /** El casco tiene LE Audio: en música primero se puede hablar sin bajar la calidad de la música. */
+    val leAudio: Boolean = false,
     val sending: Boolean = false,
-    /** Micro silenciado con el botón del casco o desde la notificación (modos Auto y Abierto). */
+    /** Micro silenciado con el botón del casco o desde la notificación (modos Abierto y Auto). */
     val micMuted: Boolean = false,
-    /** En modo PTT, micro abierto con el botón del casco hasta volver a pulsarlo. */
-    val pttLatched: Boolean = false,
     val route: AudioIo.Route? = null,
     val volumes: Volumes = Volumes(),
     /** Latencia medida del micro (hasta la app) y de la salida (de la app al oído), si el sistema la da. */
@@ -115,7 +117,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
     private val linkCosts = HashMap<Int, Int>()
     private val linkQuality = LinkQuality()
     private var keys: GroupKeys? = null
-    private var bitrateControl = BitrateController(16_000)
+    private var bitrateControl = BitrateController(BitrateController.DEFAULT)
     private var lastAudioTotals = 0L to 0L
 
     private val audio = AudioIo(context, this)
@@ -137,11 +139,9 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
     @Volatile private var earconsOn = true
 
     @Volatile private var running = false
-    @Volatile private var talkMode = TalkMode.AUTO
+    @Volatile private var talkMode = TalkMode.OPEN
     @Volatile private var voiceGain = 1f
-    @Volatile var pttPressed = false
     @Volatile private var micMuted = false
-    @Volatile private var pttLatched = false
     private var settings: IntercomSettings? = null
     private var ticker: ScheduledExecutorService? = null
     private var lastAnnounce = 0L
@@ -189,7 +189,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         lastAudioTotals = 0L to 0L
         reachable = emptySet()
         micMuted = false
-        pttLatched = false
+        audio.setMicEnabled(micWanted())
         vad.reset()
         // Sesión nueva en cada conexión: los demás reinician su cola de reproducción y el control de duplicados
         session = Random.nextInt()
@@ -204,7 +204,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
             return
         }
         try {
-            audio.start(s.audioMode, s.micSource, s.voiceOutput)
+            audio.start(s.audioMode, s.voiceOutput)
         } catch (e: Exception) {
             stop()
             fail(EngineError.AUDIO, e)
@@ -254,7 +254,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         talkMode = s.talkMode
         vad.sensitivity = s.vadSensitivity
         earconsOn = s.earcons
-        if (s.talkMode != TalkMode.PTT) pttLatched = false
+        audio.setMicEnabled(micWanted())
         if (!running || old == null) return
         if (s.bitrate != old.bitrate) {
             bitrateControl.setMax(s.bitrate)
@@ -264,9 +264,9 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         if (s.phy != old.phy) mesh?.setPhy(s.phy)
         if (s.maxLinks != old.maxLinks) mesh?.setMaxLinks(s.maxLinks)
         if (s.learnedLinkLimit == 0 && old.learnedLinkLimit != 0) mesh?.resetLearnedLimit()
-        if (s.audioMode != old.audioMode || s.micSource != old.micSource || s.voiceOutput != old.voiceOutput) {
+        if (s.audioMode != old.audioMode || s.voiceOutput != old.voiceOutput) {
             try {
-                audio.start(s.audioMode, s.micSource, s.voiceOutput)
+                audio.start(s.audioMode, s.voiceOutput)
             } catch (e: Exception) {
                 stop()
                 fail(EngineError.AUDIO, e)
@@ -374,21 +374,18 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
     // --- Micro: botón del casco y notificación ---
 
     /**
-     * Botón del casco o acción de la notificación. En PTT abre el micro hasta la siguiente pulsación; en Auto y Abierto
-     * lo silencia o lo devuelve. Suena un pitido para saber cómo queda sin mirar.
+     * Botón del casco o acción de la notificación: silencia el micro o lo devuelve. Suena un pitido para saber cómo queda
+     * sin mirar.
      */
     fun toggleMic() {
-        val open: Boolean
-        if (talkMode == TalkMode.PTT) {
-            pttLatched = !pttLatched
-            open = pttLatched
-        } else {
-            micMuted = !micMuted
-            open = !micMuted
-        }
-        if (earconsOn) synchronized(earcons) { earcons.play(if (open) Earcons.Kind.MIC_ON else Earcons.Kind.MIC_OFF) }
-        _state.update { it.copy(micMuted = micMuted, pttLatched = pttLatched) }
+        micMuted = !micMuted
+        if (earconsOn) synchronized(earcons) { earcons.play(if (micMuted) Earcons.Kind.MIC_OFF else Earcons.Kind.MIC_ON) }
+        audio.setMicEnabled(micWanted())
+        _state.update { it.copy(micMuted = micMuted) }
     }
+
+    /** Sin hablar (Silencio o micro silenciado), el micro del casco se suelta y en música primero queda solo la música. */
+    private fun micWanted() = talkMode != TalkMode.MUTE && !micMuted
 
     // --- Audio ---
 
@@ -404,7 +401,6 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         val voice = vad.process(pcm)
         val open = when (talkMode) {
             TalkMode.AUTO -> voice && !micMuted
-            TalkMode.PTT -> pttPressed || pttLatched
             TalkMode.OPEN -> !micMuted
             TalkMode.MUTE -> false
         }
@@ -607,10 +603,11 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
                 mesh = snap,
                 links = links,
                 nodes = nodeUi,
-                micLevelDb = vad.levelDb,
+                micLevelDb = if (audio.micOpen) vad.levelDb else Vad.SILENCE_DB,
+                helmetMic = audio.micOpen,
+                leAudio = audio.leAudio,
                 sending = sender?.talking == true,
                 micMuted = micMuted,
-                pttLatched = pttLatched,
                 route = route,
                 inputLatencyMs = inLatency,
                 outputLatencyMs = outLatency,

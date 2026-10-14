@@ -4,7 +4,6 @@ import android.view.KeyEvent
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,14 +30,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -118,6 +111,13 @@ private fun HelmetHintCard(hint: IntercomViewModel.HelmetHint, actions: ScreenAc
 private fun ConnectionSection(state: EngineState, settings: IntercomSettings, permissionsDenied: Boolean, actions: ScreenActions) {
     Section(stringResource(R.string.section_connection)) {
         Text(stringResource(R.string.identity_line, settings.name, settings.groupName), style = MaterialTheme.typography.bodyMedium)
+        // Con varios grupos guardados, se elige aquí con cuál conectar (la autoconexión usa siempre el de por defecto)
+        if (settings.groups.size > 1 && !state.running) {
+            Choice(settings.groups.map { it.keyText }, settings.activeGroup, { key ->
+                val g = settings.groups.first { it.keyText == key }
+                if (key == settings.defaultGroup) "★ " + g.name else g.name
+            }) { actions.activateGroup(it) }
+        }
         Button(
             onClick = if (state.running) actions.stop else actions.start,
             modifier = Modifier
@@ -180,26 +180,32 @@ private fun problemText(state: EngineState): String? {
 
 @Composable
 private fun TalkSection(state: EngineState, settings: IntercomSettings, actions: ScreenActions) {
+    val talk = settings.talkMode
     Section(stringResource(R.string.section_talk)) {
-        Choice(TalkMode.entries, settings.talkMode, { stringResource(talkModeLabel(it)) }) { t ->
+        Choice(TalkMode.entries, talk, { stringResource(talkModeLabel(it)) }) { t ->
             actions.update { it.copy(talkMode = t) }
         }
-        if (settings.talkMode == TalkMode.PTT) PttButton(state.running, actions.ptt)
-        // Micro silenciado o abierto con el botón del casco o la notificación
-        val latch = when {
-            settings.talkMode == TalkMode.PTT && state.pttLatched -> R.string.ptt_latched to R.string.action_stop_talking
-            settings.talkMode in setOf(TalkMode.AUTO, TalkMode.OPEN) && state.micMuted -> R.string.mic_muted to R.string.action_unmute
-            else -> null
+        // Sin micro del casco solo se escucha: es lo que pasa con un casco clásico en música primero
+        if (state.running && talk != TalkMode.MUTE && !state.micMuted && !state.helmetMic) {
+            Text(
+                stringResource(if (settings.audioMode == AudioMode.MIX) R.string.no_mic_classic else R.string.no_helmet_mic),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+            )
         }
-        if (latch != null) {
+        if (state.running && settings.audioMode == AudioMode.MIX && state.leAudio) {
+            Text(stringResource(R.string.le_audio_on), color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.bodySmall)
+        }
+        // Micro silenciado con el botón del casco o la notificación
+        if (talk != TalkMode.MUTE && state.micMuted) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    stringResource(latch.first),
+                    stringResource(R.string.mic_muted),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium,
                     modifier = Modifier.weight(1f),
                 )
-                OutlinedButton(onClick = actions.toggleMic) { Text(stringResource(latch.second)) }
+                OutlinedButton(onClick = actions.toggleMic) { Text(stringResource(R.string.action_unmute)) }
             }
         }
         MicMeter(state)
@@ -208,44 +214,9 @@ private fun TalkSection(state: EngineState, settings: IntercomSettings, actions:
 
 @StringRes
 private fun talkModeLabel(t: TalkMode) = when (t) {
-    TalkMode.AUTO -> R.string.talk_auto
-    TalkMode.PTT -> R.string.talk_ptt
     TalkMode.OPEN -> R.string.talk_open
+    TalkMode.AUTO -> R.string.talk_auto
     TalkMode.MUTE -> R.string.talk_mute
-}
-
-@Composable
-private fun PttButton(enabled: Boolean, onPtt: (Boolean) -> Unit) {
-    var pressed by remember { mutableStateOf(false) }
-    Box(
-        Modifier
-            .fillMaxWidth()
-            .height(96.dp)
-            .clip(RoundedCornerShape(16.dp))
-            .background(if (pressed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer)
-            .pointerInput(enabled) {
-                if (!enabled) return@pointerInput
-                detectTapGestures(
-                    onPress = {
-                        pressed = true
-                        onPtt(true)
-                        try {
-                            tryAwaitRelease()
-                        } finally {
-                            pressed = false
-                            onPtt(false)
-                        }
-                    },
-                )
-            },
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(
-            stringResource(R.string.ptt_hold),
-            color = if (pressed) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onPrimaryContainer,
-            style = MaterialTheme.typography.titleMedium,
-        )
-    }
 }
 
 @Composable

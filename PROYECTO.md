@@ -25,6 +25,11 @@
     - Latencia de entrada 3–10 ms y de salida 155–173 ms.
     - Boca-oreja estimado de 270–350 ms, con el búfer bajando solo de 60 a 40 ms.
     - Con la app de un móvil congelada, el otro corta el enlace a los 6 s y reconecta en unos 10 s al volver.
+- 14/10/2026: Bloque 3B (uso diario) programado: autoconexión al encender el casco, grupos guardados con uno por defecto y micro siempre del casco. Compila, 40 pruebas y lint limpio.
+  - Visto en el emulador: elegir casco (pide permiso; sin emparejados, lista vacía) y la entrada de autoconexión (pide permisos, conecta con el grupo por defecto y avisa de que no hay micro del casco).
+  - Sin casco real el emulador no puede mostrar la conexión del casco (ACL) ni el diálogo de asociación de Android.
+- 14/10/2026: música primero (T53–T55). A2DP es el modo normal y la música no baja nunca de calidad; manos libres queda como compatibilidad. Fuera el PTT: hablar es Abierto, Voz (VAD) o Solo escuchar. Voz a 48 kHz, 24 kbps por defecto y escalones hasta 48. Compila, 41 pruebas y lint limpio.
+  - Sin casco en el emulador no hay micro en ningún modo: la voz de punta a punta a 48 kHz y el micro LE Audio quedan para probar con los cascos.
 
 ## 1. Qué es
 
@@ -39,17 +44,19 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 |---|---|---|
 | Plataforma | Android ahora, iOS después | — |
 | Stack | Kotlin nativo + Compose; núcleo `:core` en Kotlin puro (solo stdlib, nada de `synchronized` ni `java.*`) | Lo crítico (L2CAP, audio en tiempo real con ruta HFP/A2DP, segundo plano) es nativo en las dos plataformas: Flutter solo compartiría la interfaz. `:core` pasa a Kotlin Multiplatform sin reescribirse |
-| Códec | Opus 1.5.2 (C, `third_party/opus`), 16 kHz mono, 20 ms, 16 kbps, FEC | Compila igual en iOS; PLC y FEC para tramas descartadas |
+| Códec | Opus 1.5.2 (C, `third_party/opus`), 48 kHz mono (banda completa), 20 ms, 24 kbps por defecto, FEC | Compila igual en iOS; PLC y FEC para tramas descartadas. 48 kHz es la frecuencia de A2DP y del mezclador de Android: sin remuestreo |
 | Transporte | BLE L2CAP CoC (Android 10+, iOS 11+), sin emparejar en el sistema | Compatible con iOS; detrás de `LinkTransport` para añadir Wi-Fi Aware o internet |
 | Topología | Malla con relevo (estado de enlaces + árbol de caminos de menor coste por origen) | En fila, el primero oye al último a través de los del medio; si todos se ven, nadie reenvía; un enlace directo malo se evita si hay dos saltos buenos |
-| Calidad de voz | Opus adaptativo: baja de 16 a 12 y 8 kbps si las colas descartan voz, sube cuando van limpias | Las pérdidas aquí son de saturación (L2CAP no pierde), no de radio: menos bitrate alivia; más redundancia (DRED) cargaría más |
+| Calidad de voz | Opus adaptativo por escalones (8, 12, 16, 24, 32, 40, 48 kbps): baja uno si las colas descartan voz, sube cuando van limpias. Por defecto 24: la radio la comparte el BLE con el A2DP de la música, y lo que cae antes es la voz, no la música | Las pérdidas aquí son de saturación (L2CAP no pierde), no de radio: menos bitrate alivia; más redundancia (DRED) cargaría más |
 | Grupos | Nombre + clave aleatoria de 32 bytes; se comparte por QR, por enlace `motointercom://join` o pegando el texto | Dos grupos con el mismo nombre no se mezclan; el código corto (del advId) deja comprobar que todos están en el mismo |
 | Cifrado | AES-256-GCM por enlace (clave derivada de la del grupo y de dos nonces); el enlace solo vale si el otro demuestra tener la clave | Sin la clave no se oye ni se inyecta nada; el contador implícito solo suma la etiqueta (16 B por trama) |
 | Segundo plano | Servicio en primer plano (micrófono + dispositivo conectado) con notificación; el motor vive en la Application | Pantalla apagada y app cerrada sin cortar; la notificación silencia y desconecta |
-| Audio | Modo casco (HFP) y modo mezcla (A2DP + micro del móvil), sin ducking | — |
+| Audio | **Música primero (A2DP), el modo normal:** la música no baja nunca de calidad; las voces llegan como multimedia mezcladas con ella. Micro del casco solo con LE Audio; un casco clásico solo escucha. **Manos libres (HFP)**, compatibilidad: se habla con cualquier casco, todo a calidad de llamada. Sin ducking. Solo el casco y el móvil: nunca el micro del móvil ni micros externos | Pedido por Eduardo (14/10/2026): evitar Discord, que hunde la música; si algo tiene que caer, que sea la voz |
+| Autoconexión | Se elige el casco en Ajustes; al conectarse al móvil la app se abre y conecta con el grupo por defecto, y cuelga 2 min después de que se vaya | Pedido por Eduardo (14/10/2026): encender el casco y listo |
+| Grupos guardados | Lista de grupos; uno por defecto (el de siempre, p. ej. la pareja) y otro activo para salidas en grupo | Pedido por Eduardo (14/10/2026) |
 | Volumen | Tres controles en la pantalla principal: maestro, voz y multimedia. El maestro mueve los dos a la par conservando la diferencia; los botones del móvil o del casco mueven el maestro | Pedido por Eduardo (13/10/2026): con voz 4/10 y música 6/10, subir deja 5 y 7 |
 | Pantallas | Principal (conectar, hablar, volumen + música, grupo, diagnóstico), Ajustes (identidad, grupo, audio, casco, radio, batería, información) y Probar casco | Pedido por Eduardo (13/10/2026) |
-| Hablar | Auto (VAD) / PTT en pantalla / abierto / silencio; el botón de reproducir/pausa del casco abre o cierra el micro (opcional) | Viento: el VAD da falsos positivos, por eso el PTT |
+| Hablar | Abierto (por defecto) / Voz (VAD) / Solo escuchar; el botón de reproducir/pausa del casco silencia o devuelve el micro (opcional). Sin PTT | Con guantes y las manos en el manillar no se puede pulsar nada (Eduardo, 14/10/2026) |
 | Avisos | Pitidos al abrir/cerrar el micro y cuando alguien entra o sale del grupo (desactivables) | En moto no se mira la pantalla |
 | Android | minSdk 29, targetSdk 36, compileSdk 37; `com.sanabria.motointercom` | 29: API de L2CAP |
 | Textos | `strings.xml` en inglés + es/fr/de/it/pt; idioma por app desde Android 13 (`locales_config`) | — |
@@ -67,16 +74,17 @@ core/  (Kotlin puro, KMP-ready)
   audio/     Voice.kt (formato, interfaces de códec) · JitterBuffer.kt · Mixer.kt (limitador suave) · Vad.kt · TalkSender.kt
              VolumeLink.kt (maestro sobre voz y multimedia) · Earcons.kt (avisos sonoros) · BitrateController.kt (calidad adaptativa)
 app/
-  MotoIntercomApp.kt (dueña del motor y los ajustes) · IntercomService.kt (servicio en primer plano, notificación, MediaSession)
-  MainActivity.kt (pantallas, permisos, encender BT, invitaciones: enlace, QR, portapapeles) · IntercomViewModel.kt
+  MotoIntercomApp.kt (dueña del motor y los ajustes) · IntercomService.kt (servicio en primer plano, notificación, MediaSession, colgar sin casco)
+  MainActivity.kt (pantallas, permisos, encender BT, invitaciones: enlace, QR, portapapeles; asociar el casco; autoconexión) · IntercomViewModel.kt
+  HelmetReceiver.kt (el casco elegido se conecta o desconecta: abre la app o avisa)
   crypto/    AndroidCrypto.kt (javax.crypto, un Cipher por hilo)
   ble/       BleMesh.kt (anuncio 1M + Coded, escaneo adaptativo, servidor L2CAP, GATT→L2CAP, duplicados, reintentos)
              BleLink.kt (lectura/escritura por enlace; cifra al escribir; cola con descarte de voz vieja) · GattHandle
-  audio/     AudioIo.kt (rutas HFP/mezcla, recuperación de la ruta al casco, teclas multimedia) · VolumeOutputs.kt
+  audio/     AudioIo.kt (música primero y manos libres, micro del casco (LE Audio o SCO), recuperación de la ruta al casco, teclas multimedia) · VolumeOutputs.kt
              HelmetTester.kt (asistente: grabar, reproducir, medir) + HelmetCompat (resultados por casco, lista, recomendación)
   assets/    helmets.tsv (lista de cascos con modo recomendado; se rellena con los resultados compartidos)
   opus/      Opus.kt + cpp/opus_jni.c (JNI), cpp/CMakeLists.txt (Opus como estática, -O2 también en Debug)
-  engine/    IntercomEngine.kt (une todo; malla que se rehace con el BT; avisos; micro del casco) · Settings.kt (+ repositorio)
+  engine/    IntercomEngine.kt (une todo; malla que se rehace con el BT; avisos; micro del casco) · Settings.kt (+ repositorio, grupos guardados)
   ui/        MainScreen · SettingsScreen · HelmetTestScreen · GroupDialogs (QR, grupo nuevo, unirse) · Components · Theme
 ```
 
@@ -150,13 +158,13 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 
 ## 6. Audio
 
-- **Captura:** 320 muestras (20 ms). El VAD va siempre (para el medidor).
+- **Captura:** 960 muestras (20 ms a 48 kHz). El VAD va siempre (para el medidor).
   - Detector: el ruido es el mínimo del nivel en 1,6 s, más 3 dB. El umbral va de +6 a +20 dB según la sensibilidad, con un mínimo de −50 dBFS. Abre tras 2 tramas y mantiene 400 ms de cola.
   - Opus codifica todo, aunque no se envíe. `TalkSender` envía 2 tramas previas (pre-roll) al abrir y marca START/END.
-- **Micro desde el casco o la notificación:** en PTT, una pulsación abre el micro hasta la siguiente. En Auto y Abierto, lo silencia o lo devuelve. Suena un pitido agudo o grave según cómo queda.
+- **Micro desde el casco o la notificación:** lo silencia o lo devuelve. Suena un pitido agudo o grave según cómo queda. Silenciado o en Solo escuchar, en música primero se suelta el micro del casco y queda solo la música.
 - **Envío:** cola por enlace de 5 tramas de voz (100 ms). Si va llena se tira la más vieja; el control no se descarta.
 - **Calidad adaptativa** (`BitrateController`, cada 2 s, con la voz enviada y descartada por todos los enlaces):
-  - Con más del 5 % descartado baja un escalón de 4 kbps, hasta 8 kbps.
+  - Con más del 5 % descartado baja un escalón (48, 40, 32, 24, 16, 12, 8 kbps), hasta 8 kbps.
   - Tras 5 periodos por debajo del 1 % sube un escalón, hasta el máximo de Ajustes.
   - Con menos de 25 tramas en el periodo no decide.
 - **Latencia:** `AudioRecord.getTimestamp` y `AudioTrack.getTimestamp`, una vez por segundo, dan cuánto tarda el micro en entregar y la salida en sonar (incluido el Bluetooth si el sistema lo informa).
@@ -175,14 +183,15 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - **Música:** anterior, reproducir/pausa y siguiente con `dispatchMediaKeyEvent`; los recibe la app de música activa. Con el botón del casco activado, reproducir/pausa lo recibe la MediaSession de la app y no la música.
 - **Rutas:**
   - **Casco (HFP):** `MODE_IN_COMMUNICATION` + `setCommunicationDevice` (LE Audio si lo hay; si no, SCO). Fuente `VOICE_COMMUNICATION` y uso `USAGE_VOICE_COMMUNICATION`. Si el casco se va y vuelve, `AudioDeviceCallback` rehace la ruta.
-  - **Mezcla:** `MODE_NORMAL`, micro con cable o USB si hay, si no el del móvil. Fuente procesada (`VOICE_COMMUNICATION`) o directa (`MIC`). Las voces salen como multimedia o como llamada. En Diagnóstico se ve por qué dispositivo sale cada cosa.
+  - **Música primero:** `MODE_NORMAL`; el casco no sale nunca de A2DP (o de multimedia LE Audio). Las voces salen como multimedia (con `setPreferredDevice` al casco) o como llamada. Micro: solo LE Audio (`TYPE_BLE_HEADSET` como dispositivo de comunicación). Con un casco clásico no se abre micro y la pantalla lo explica. En Diagnóstico se ve por qué dispositivo sale cada cosa.
+  - **Micro:** siempre el del casco (`TYPE_BLE_HEADSET`, o `TYPE_BLUETOOTH_SCO` en manos libres, con `setPreferredDevice`). Si no hay, no se abre y la pantalla lo avisa; nunca se usa el del móvil.
 - La reproducción escribe silencio cuando nadie habla, para que A2DP/SCO no se duerma.
 - **Asistente del casco:**
-  1. Prepara la ruta del modo y espera hasta 6 s a que llegue al casco: en HFP el micro tiene que venir del casco; en mezcla, la salida tiene que ir al casco.
-  2. Graba 3 s y los reproduce.
+  1. Prepara la ruta de llamada y espera hasta 6 s a que el micro venga del casco.
+  2. Graba 3 s por el micro del casco y los reproduce: en HFP por la llamada, en mezcla por A2DP.
   3. Pregunta si se ha oído bien.
 
-  Guarda por casco si cada modo funcionó y el tiempo de ruta, y recomienda Casco si funciona; si no, Mezcla.
+  Guarda por casco si cada modo funcionó y el tiempo de ruta, y recomienda Música primero si funciona; si no, Manos libres.
 - **Lista de cascos:** `assets/helmets.tsv` (nombre o parte del nombre Bluetooth, modo, nota).
   - Si hay un casco conectado con modo recomendado distinto del puesto, la pantalla principal lo propone, por la prueba de este móvil o, si no se ha probado, por la lista.
   - «Compartir resultados» exporta las pruebas en TSV para ir llenando la lista.
@@ -223,6 +232,15 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - [x] T26 Enlaces muertos: sin respuesta en 6 s se cierran y se reconectan
 - [x] T27 Calidad de voz adaptativa (16 → 12 → 8 kbps según los descartes); el ajuste pasa a ser el máximo
 
+### Bloque 3B — Uso diario
+
+- [x] T50 Autoconexión: elegir el casco entre los emparejados y asociarlo como dispositivo complementario (deja abrir la app desde segundo plano); receptor de conexión y desconexión del casco; notificación de reserva para conectar con un toque; colgar 2 min después de que el casco se vaya
+- [x] T51 Grupos guardados: lista con activo y por defecto (usar, hacer por defecto, borrar); selector en la pantalla principal; la autoconexión usa el grupo por defecto
+- [x] T52 Micro siempre del casco: fuera la elección de micro; aviso si no hay micro del casco. (Lo de hablar con PTT en mezcla lo sustituyen T53 y T54.)
+- [x] T53 Música primero: A2DP es el modo normal y el casco no sale de él; micro del casco solo con LE Audio; manos libres (HFP) como compatibilidad; la prueba del casco recomienda música primero; los ajustes antiguos (manos libres, PTT, 16 kbps) se pasan a lo nuevo una vez
+- [x] T54 Fuera el PTT: Abierto (por defecto), Voz (VAD) y Solo escuchar; el botón del casco y la notificación silencian o devuelven el micro, y silenciado se suelta el micro del casco
+- [x] T55 Voz a 48 kHz (banda completa, sin remuestreo), complejidad 10, escalones de calidad hasta 48 kbps y 24 kbps por defecto
+
 ### Bloque 4 — iOS (necesita un Mac con Xcode)
 
 - [ ] T30 `:core` → Kotlin Multiplatform
@@ -249,4 +267,6 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - **Núcleo KMP:** `synchronized` y `toSortedSet` son solo JVM; en `:core` se evitan y los cerrojos los pone quien lo usa. `kotlin.concurrent.Volatile` sí es común.
 - **Emuladores:** dos AVD arrancados a la vez comparten Bluetooth virtual (anuncio, escaneo, Coded PHY, L2CAP): sirven para probar la malla de punta a punta. Sin casco, el asistente lo detecta ("la ruta no llegó al casco").
 - **Rutas con costes:** para que todos los nodos calculen el mismo árbol, el coste de un enlace propio no puede ser la medida del momento. Es el último coste anunciado (el que ven los demás), combinado igual que el resto: el peor de los dos extremos.
+- **Abrir la app desde segundo plano:** Android 10+ lo bloquea, salvo para apps con un dispositivo complementario asociado (`CompanionDeviceManager`). Por eso se asocia el casco al elegirlo; si Android no lo deja, queda la notificación.
+- **Micro del casco con la música:** un casco Bluetooth clásico solo tiene micro en HFP (llamada), y entonces todo, música incluida, va a calidad de llamada. Por eso Discord hunde la música, y la app no puede evitarlo. Detectar la voz para cambiar de modo tampoco sirve, porque para detectarla el micro ya tiene que estar abierto. LE Audio (LC3) sí da micro y buena calidad a la vez, pero solo si el casco lo tiene.
 - **Riesgo abierto:** el BLE entre móviles y el audio Bluetooth al casco comparten la radio del teléfono. Con SCO o A2DP activos, el enlace BLE puede ir más justo. Se mira en "Enlaces": kbps, cola y descartadas.

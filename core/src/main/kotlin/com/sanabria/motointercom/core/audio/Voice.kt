@@ -1,8 +1,11 @@
 package com.sanabria.motointercom.core.audio
 
-/** Formato de la voz en todo el sistema: mono, 16 kHz (banda ancha, lo que da HFP con mSBC), tramas de 20 ms. */
+/**
+ * Formato de la voz en todo el sistema: mono, 48 kHz (banda completa, la frecuencia nativa de A2DP y del mezclador de
+ * Android: sin remuestreo en el modo de alta calidad), tramas de 20 ms. Opus decide el ancho de banda según el bitrate.
+ */
 object VoiceFormat {
-    const val SAMPLE_RATE = 16_000
+    const val SAMPLE_RATE = 48_000
     const val FRAME_MS = 20
     const val FRAME_SAMPLES = SAMPLE_RATE * FRAME_MS / 1000
     const val MAX_PACKET = 400

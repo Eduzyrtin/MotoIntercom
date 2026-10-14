@@ -18,20 +18,22 @@ import android.os.Process
 import android.view.KeyEvent
 import com.sanabria.motointercom.core.audio.VoiceFormat
 import com.sanabria.motointercom.engine.AudioMode
-import com.sanabria.motointercom.engine.MicSource
 import com.sanabria.motointercom.engine.VoiceOutput
 import kotlin.concurrent.thread
 
 /**
- * Captura y reproducción a 16 kHz mono en tramas de 20 ms, cada una en su hilo de prioridad de audio.
+ * Captura y reproducción a 48 kHz mono en tramas de 20 ms, cada una en su hilo de prioridad de audio.
  *
- * - [AudioMode.HELMET]: modo comunicación y el casco como dispositivo de comunicación (HFP/SCO, o LE Audio si lo tiene).
- *   Micro y voces van por el casco.
- * - [AudioMode.MIX]: modo normal. Las voces salen como multimedia (A2DP, el sistema las mezcla con la música de otras
- *   apps) y se capta con el micro con cable/USB si hay, o con el del móvil.
+ * Solo se usan el casco y el móvil; el micro del móvil, nunca. Sin micro del casco no se capta nada ([micOpen] = false)
+ * y la app solo escucha.
+ * - [AudioMode.MIX] (música primero): modo normal y la música no se toca. Las voces salen como multimedia hacia el casco
+ *   y el sistema las mezcla con la música de otras apps. El micro del casco solo se usa si es LE Audio, que da micro y
+ *   buena calidad a la vez; un casco clásico no tiene micro sin manos libres (HFP), y eso hundiría la música.
+ * - [AudioMode.HELMET] (compatibilidad): modo comunicación todo el rato. Micro y voces van por el casco como manos libres.
+ * En los dos, el micro se abre en cuanto el casco aparece y se cierra si se va.
  *
- * La reproducción escribe siempre (silencio si nadie habla): así el enlace A2DP/SCO no se duerme y la primera palabra
- * no llega tarde.
+ * La reproducción escribe siempre (silencio si nadie habla): así el enlace con el casco no se duerme y la primera
+ * palabra no llega tarde.
  */
 @SuppressLint("MissingPermission")
 class AudioIo(context: Context, private val callbacks: Callbacks) {
@@ -49,56 +51,70 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
 
     private val am = context.getSystemService(AudioManager::class.java)
     private val main = Handler(Looper.getMainLooper())
+    private val lock = Any()
 
     @Volatile private var running = false
+    private var mode = AudioMode.MIX
     private var record: AudioRecord? = null
     private var track: AudioTrack? = null
     private var captureThread: Thread? = null
     private var playbackThread: Thread? = null
+    @Volatile private var capturing = false
     @Volatile private var helmetRoute = false
+    @Volatile private var micEnabled = true
+    private var micDevice: AudioDeviceInfo? = null
     @Volatile private var inputLatencyMs = -1
     @Volatile private var outputLatencyMs = -1
 
-    /** Si el casco se va (Bluetooth apagado, fuera de alcance) y vuelve, se recupera la ruta HFP sin tocar nada. */
+    /** El micro del casco está captando. */
+    val micOpen: Boolean get() = capturing
+
+    /** Si el casco se va (Bluetooth apagado, fuera de alcance) y vuelve, el micro y la salida se recuperan solos. */
     private val devices = object : AudioDeviceCallback() {
-        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) {
-            if (helmetRoute && added.any { it.type in HELMET_TYPES }) enterHelmetRoute()
-        }
+        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) = refresh()
+
+        override fun onAudioDevicesRemoved(removed: Array<out AudioDeviceInfo>) = refresh()
     }
 
-    fun start(mode: AudioMode, mic: MicSource, voiceOutput: VoiceOutput) {
+    fun start(mode: AudioMode, voiceOutput: VoiceOutput) {
         stop()
-        if (mode == AudioMode.HELMET) {
-            enterHelmetRoute()
-            am.registerAudioDeviceCallback(devices, main)
-        } else {
-            am.mode = AudioManager.MODE_NORMAL
-        }
-        val rec = buildRecord(mode, mic)
+        this.mode = mode
+        am.mode = if (mode == AudioMode.HELMET) AudioManager.MODE_IN_COMMUNICATION else AudioManager.MODE_NORMAL
+        am.registerAudioDeviceCallback(devices, main)
         val trk = buildTrack(mode, voiceOutput)
-        record = rec
         track = trk
         running = true
-        captureThread = thread(name = "audio-capture") { captureLoop(rec) }
         playbackThread = thread(name = "audio-playback") { playbackLoop(trk) }
+        main.post { refresh() }
     }
 
     fun stop() {
         am.unregisterAudioDeviceCallback(devices)
         running = false
-        captureThread?.join(500)
+        closeMic()
         playbackThread?.join(500)
-        captureThread = null
         playbackThread = null
-        record?.release()
         track?.release()
-        record = null
         track = null
         if (helmetRoute) leaveHelmetRoute()
+        am.mode = AudioManager.MODE_NORMAL
     }
 
+    /**
+     * En música primero, soltar el micro del casco (solo escuchar) o volver a usarlo. Suelto, el casco queda solo con la
+     * música. En manos libres no hace nada: la ruta de llamada no se toca para no cortar.
+     */
+    fun setMicEnabled(enabled: Boolean) {
+        if (micEnabled == enabled) return
+        micEnabled = enabled
+        main.post { refresh() }
+    }
+
+    /** El casco tiene LE Audio: en música primero hay micro sin bajar la calidad. */
+    val leAudio: Boolean get() = leMic() != null
+
     fun route(): Route {
-        val i = record?.routedDevice
+        val i = if (capturing) record?.routedDevice else null
         val o = track?.routedDevice
         return Route(i?.type, i?.productName?.toString().orEmpty(), o?.type, o?.productName?.toString().orEmpty())
     }
@@ -109,15 +125,73 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
         am.dispatchMediaKeyEvent(KeyEvent(KeyEvent.ACTION_UP, code))
     }
 
+    /** Lo que tarda el audio en llegar del micro a la app y de la app al altavoz, o null si el sistema no lo dice. */
+    fun latency(): Pair<Int?, Int?> = inputLatencyMs.takeIf { it >= 0 } to outputLatencyMs.takeIf { it >= 0 }
+
+    /** Pone el micro que toca según lo conectado (o lo cierra si no hay) y, en música primero, las voces hacia el casco. */
+    private fun refresh() {
+        if (!running) return
+        if (mode == AudioMode.MIX) track?.setPreferredDevice(helmetOutput())
+        val want = when {
+            mode == AudioMode.HELMET -> helmetMic()
+            micEnabled -> leMic()
+            else -> null
+        }
+        if (capturing && want != null && want.id == micDevice?.id) return
+        closeMic()
+        if (want == null) {
+            // Sin micro, la música queda sola en el casco
+            if (mode == AudioMode.MIX && helmetRoute) leaveHelmetRoute()
+            return
+        }
+        enterHelmetRoute()
+        openMic(want)
+    }
+
+    private fun openMic(input: AudioDeviceInfo): Unit = synchronized(lock) {
+        if (capturing) return
+        val rec = runCatching { buildRecord(input) }.getOrNull() ?: return
+        record = rec
+        micDevice = input
+        capturing = true
+        captureThread = thread(name = "audio-capture") { captureLoop(rec) }
+    }
+
+    private fun closeMic(): Unit = synchronized(lock) {
+        if (!capturing && record == null) return
+        capturing = false
+        captureThread?.join(500)
+        captureThread = null
+        record?.release()
+        record = null
+        micDevice = null
+    }
+
+    /** El micro del casco para manos libres: LE Audio si lo tiene, si no el de HFP (SCO). */
+    private fun helmetMic(): AudioDeviceInfo? =
+        leMic() ?: am.getDevices(AudioManager.GET_DEVICES_INPUTS).firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
+
+    /** El micro LE Audio del casco, si lo tiene. */
+    private fun leMic(): AudioDeviceInfo? = am.getDevices(AudioManager.GET_DEVICES_INPUTS).firstOrNull { it.type == TYPE_BLE_HEADSET }
+
+    /** Salida del casco para las voces en música primero (A2DP, o LE Audio), si está conectado. */
+    private fun helmetOutput(): AudioDeviceInfo? {
+        val outputs = am.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        return outputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP } ?: outputs.firstOrNull { it.type == TYPE_BLE_HEADSET }
+    }
+
+    /**
+     * Pide al sistema el micro del casco como dispositivo de comunicación. En música primero solo se llega aquí con LE
+     * Audio, que no quita la música de alta calidad; en manos libres, LE Audio si lo hay y si no SCO.
+     */
     private fun enterHelmetRoute() {
-        am.mode = AudioManager.MODE_IN_COMMUNICATION
         helmetRoute = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val available = am.availableCommunicationDevices
-            val helmet = available.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLE_HEADSET }
-                ?: available.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
+            val helmet = available.firstOrNull { it.type == TYPE_BLE_HEADSET }
+                ?: available.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }.takeIf { mode == AudioMode.HELMET }
             if (helmet != null && am.communicationDevice?.id != helmet.id) am.setCommunicationDevice(helmet)
-        } else {
+        } else if (mode == AudioMode.HELMET) {
             @Suppress("DEPRECATION")
             am.startBluetoothSco()
             @Suppress("DEPRECATION")
@@ -134,24 +208,19 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
             @Suppress("DEPRECATION")
             am.stopBluetoothSco()
         }
-        am.mode = AudioManager.MODE_NORMAL
         helmetRoute = false
     }
 
-    private fun buildRecord(mode: AudioMode, mic: MicSource): AudioRecord {
-        val source = if (mode == AudioMode.HELMET || mic == MicSource.VOICE) {
-            MediaRecorder.AudioSource.VOICE_COMMUNICATION
-        } else {
-            MediaRecorder.AudioSource.MIC
-        }
+    private fun buildRecord(input: AudioDeviceInfo): AudioRecord {
         val min = AudioRecord.getMinBufferSize(VoiceFormat.SAMPLE_RATE, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT)
         val rec = AudioRecord.Builder()
-            .setAudioSource(source)
+            .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
             .setAudioFormat(format(AudioFormat.CHANNEL_IN_MONO))
             .setBufferSizeInBytes(maxOf(min, FRAME_BYTES * 4))
             .build()
         check(rec.state == AudioRecord.STATE_INITIALIZED) { "AudioRecord" }
-        if (mode == AudioMode.MIX) phoneMic()?.let { rec.setPreferredDevice(it) }
+        // El micro del casco se pide explícitamente: si no, Android podría coger el del móvil
+        rec.setPreferredDevice(input)
         return rec
     }
 
@@ -171,21 +240,11 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
             .build()
     }
 
-    /** En modo mezcla: micro con cable o USB si hay uno; si no, el del móvil (nunca el del casco, que abriría HFP). */
-    private fun phoneMic(): AudioDeviceInfo? {
-        val inputs = am.getDevices(AudioManager.GET_DEVICES_INPUTS)
-        val wired = setOf(AudioDeviceInfo.TYPE_WIRED_HEADSET, AudioDeviceInfo.TYPE_USB_HEADSET, AudioDeviceInfo.TYPE_USB_DEVICE)
-        return inputs.firstOrNull { it.type in wired } ?: inputs.firstOrNull { it.type == AudioDeviceInfo.TYPE_BUILTIN_MIC }
-    }
-
     private fun format(channel: Int) = AudioFormat.Builder()
         .setSampleRate(VoiceFormat.SAMPLE_RATE)
         .setChannelMask(channel)
         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
         .build()
-
-    /** Lo que tarda el audio en llegar del micro a la app y de la app al altavoz, o null si el sistema no lo dice. */
-    fun latency(): Pair<Int?, Int?> = inputLatencyMs.takeIf { it >= 0 } to outputLatencyMs.takeIf { it >= 0 }
 
     private fun captureLoop(rec: AudioRecord) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
@@ -194,9 +253,9 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
         var framesRead = 0L
         rec.startRecording()
         try {
-            while (running) {
+            while (capturing) {
                 var got = 0
-                while (got < buf.size && running) {
+                while (got < buf.size && capturing) {
                     val n = rec.read(buf, got, buf.size - got)
                     if (n < 0) return
                     got += n
@@ -213,7 +272,7 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
                 if (got == buf.size) callbacks.onCapture(buf)
             }
         } finally {
-            rec.stop()
+            runCatching { rec.stop() }
             inputLatencyMs = -1
         }
     }
@@ -254,13 +313,12 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
         private const val LATENCY_EVERY_FRAMES = VoiceFormat.SAMPLE_RATE.toLong()
         private const val NANOS_PER_FRAME = 1_000_000_000L / VoiceFormat.SAMPLE_RATE
 
-        /** Tipos de dispositivo que son un casco por Bluetooth (LE Audio es de API 31; antes ningún dispositivo lo tiene). */
+        /** LE Audio es de API 31: antes ningún dispositivo tiene este tipo y compararlo no hace daño. */
         @SuppressLint("InlinedApi")
-        val HELMET_TYPES = setOf(
-            AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
-            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
-            AudioDeviceInfo.TYPE_BLE_HEADSET,
-        )
+        private const val TYPE_BLE_HEADSET = AudioDeviceInfo.TYPE_BLE_HEADSET
+
+        /** Tipos de dispositivo que son un casco por Bluetooth. */
+        val HELMET_TYPES = setOf(AudioDeviceInfo.TYPE_BLUETOOTH_SCO, AudioDeviceInfo.TYPE_BLUETOOTH_A2DP, TYPE_BLE_HEADSET)
 
         /** Cascos (o auriculares) Bluetooth conectados ahora mismo, por nombre. */
         fun bluetoothHeadsets(context: Context): List<String> =

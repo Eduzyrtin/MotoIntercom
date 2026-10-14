@@ -26,15 +26,13 @@
     <string name="problem_scan">Não foi possível procurar (código %1$d)</string>
 
     <string name="section_audio">Áudio</string>
-    <string name="mode_helmet">Capacete (HFP)</string>
-    <string name="mode_mix">Mistura (A2DP)</string>
-    <string name="mode_helmet_hint">Microfone e vozes pelo capacete como uma chamada mãos-livres. Funciona com qualquer capacete; qualidade de chamada, e a música desce para qualidade de chamada enquanto está ativo.</string>
-    <string name="mode_mix_hint">Vozes misturadas com a tua música no capacete. Falas pelo microfone do telemóvel ou por um com fio.</string>
-    <string name="talk_auto">Auto</string>
-    <string name="talk_ptt">PTT</string>
+    <string name="mode_helmet">Mãos livres (HFP)</string>
+    <string name="mode_mix">Música primeiro (A2DP)</string>
+    <string name="mode_helmet_hint">Compatibilidade: microfone e vozes pelo capacete como uma chamada mãos livres. Pode-se falar com qualquer capacete, mas tudo, incluindo a música, desce para qualidade de chamada.</string>
+    <string name="mode_mix_hint">A música nunca perde qualidade: as vozes chegam ao capacete como multimédia, misturadas com a tua música. Para falar, o capacete tem de ter LE Audio; com um capacete Bluetooth clássico só ouves.</string>
+    <string name="talk_auto">Voz</string>
     <string name="talk_open">Aberto</string>
-    <string name="talk_mute">Silêncio</string>
-    <string name="ptt_hold">Mantém premido para falar</string>
+    <string name="talk_mute">Só ouvir</string>
     <string name="mic_sending">A enviar</string>
     <string name="mic_idle">Microfone fechado</string>
     <string name="mic_level">Microfone: %1$d dBFS</string>
@@ -68,9 +66,6 @@
     <string name="long_range">Anúncio de longo alcance (Coded PHY)</string>
     <string name="bitrate_label">Qualidade de voz máxima: %1$d kbps</string>
     <string name="max_links">Ligações máximas: %1$d</string>
-    <string name="mic_source_label">Microfone em modo mistura</string>
-    <string name="mic_voice">Processado</string>
-    <string name="mic_raw">Direto</string>
     <string name="voice_output_label">Vozes em modo mistura como</string>
     <string name="voice_output_media">Multimédia</string>
     <string name="voice_output_call">Chamada</string>
@@ -105,7 +100,7 @@
     <string name="volume_voices">Voz: %1$d %%</string>
     <string name="volume_music">Multimédia: %1$d %%</string>
     <string name="volume_hint">Os botões de volume do telemóvel e do capacete mexem no volume geral: voz e multimédia sobem e descem juntos, mantendo a diferença.</string>
-    <string name="mix_voice_limit">No modo mistura as vozes partilham o canal multimédia com a música: podem ficar no máximo 12 dB acima dela.</string>
+    <string name="mix_voice_limit">Em Música primeiro as vozes partilham o canal multimédia com a música: no máximo podem soar 12 dB acima dela.</string>
     <string name="media_previous">Anterior</string>
     <string name="media_play_pause">Reproduzir ou pausa</string>
     <string name="media_next">Seguinte</string>
@@ -115,11 +110,8 @@
     <string name="scan_mode_fast">Procura rápida</string>
     <string name="scan_mode_saving">Procura em poupança</string>
     <string name="mic_muted">Microfone silenciado (capacete ou notificação)</string>
-    <string name="ptt_latched">A falar (botão do capacete)</string>
     <string name="action_unmute">Ativar microfone</string>
     <string name="action_mute">Silenciar</string>
-    <string name="action_talk">Falar</string>
-    <string name="action_stop_talking">Parar de falar</string>
 
     <string name="notif_channel">Intercomunicador</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -132,8 +124,6 @@
     <string name="notif_mic_open">microfone aberto</string>
     <string name="notif_mic_muted">microfone silenciado</string>
     <string name="notif_mic_off">microfone desligado</string>
-    <string name="notif_ptt">premir para falar</string>
-    <string name="notif_talking">a falar</string>
 
     <string name="group_current">%1$s · código %2$s</string>
     <string name="group_code">Código %1$s</string>
@@ -157,8 +147,8 @@
     <string name="action_join">Juntar-me</string>
 
     <string name="section_helmet">Capacete</string>
-    <string name="helmet_button">O botão do capacete abre e fecha o microfone</string>
-    <string name="helmet_button_hint">Usa o botão de reproduzir/pausa. Enquanto estiver ativo, esse botão deixa de controlar a música (usa os botões da app). Funciona melhor no modo mistura: no modo capacete alguns capacetes usam-no para chamadas ou para o assistente de voz.</string>
+    <string name="helmet_button">O botão do capacete silencia o microfone</string>
+    <string name="helmet_button_hint">Usa o botão de reproduzir/pausa: um toque silencia o microfone e outro devolve-o. Enquanto estiver ativo, esse botão já não controla a música (usa os botões da app).</string>
     <string name="earcons_label">Avisos sonoros</string>
     <string name="earcons_hint">Um bipe quando o microfone abre ou fecha e quando alguém entra ou sai do grupo.</string>
     <string name="helmet_test_open">Testar capacete</string>
@@ -175,7 +165,7 @@
     <string name="battery_open">Abrir definições de bateria</string>
 
     <string name="test_title">Testar capacete</string>
-    <string name="test_intro">Emparelha o capacete com o telemóvel como sempre e liga-o. Cada teste grava 3 segundos pelo microfone e reprodu-los para ti.</string>
+    <string name="test_intro">Emparelha o capacete com o telemóvel como sempre e liga-o. Cada teste grava 3 segundos pelo microfone do capacete e reprodu-los para ti.</string>
     <string name="test_devices">Ligado: %1$s</string>
     <string name="test_no_devices">Não há nenhum capacete Bluetooth ligado.</string>
     <string name="test_run">Testar</string>
@@ -191,10 +181,10 @@
     <string name="test_result_ok">Funciona</string>
     <string name="test_result_bad">Não funciona</string>
     <string name="test_recommendation">Recomendação</string>
-    <string name="test_recommend_helmet">Recomendado: Capacete (HFP).</string>
-    <string name="test_recommend_mix">Recomendado: Mistura (A2DP).</string>
-    <string name="test_recommend_none">Nenhum modo funcionou: verifica o emparelhamento ou usa auriculares com fio.</string>
-    <string name="test_both_hint">Funcionam os dois: Capacete usa o microfone do capacete; Mistura mantém a música com boa qualidade.</string>
+    <string name="test_recommend_helmet">Recomendado: Mãos livres (HFP).</string>
+    <string name="test_recommend_mix">Recomendado: Música primeiro (A2DP).</string>
+    <string name="test_recommend_none">Nenhum modo funcionou: confirma que o capacete está emparelhado e ligado.</string>
+    <string name="test_both_hint">Funcionam os dois. Música primeiro deixa a música intacta; Mãos livres deixa falar com um capacete clássico à custa da música.</string>
     <string name="test_use_mode">Usar este modo</string>
 
     <!-- Bloque 3 -->
@@ -211,4 +201,28 @@
     <string name="hint_list">segundo a lista de capacetes</string>
     <string name="helmets_share">Partilhar resultados</string>
     <string name="helmets_share_hint">Envia-os para os acrescentar à lista de capacetes da app.</string>
+
+    <!-- Uso diario -->
+    <string name="no_helmet_mic">Sem microfone do capacete: liga o capacete por Bluetooth (o microfone do telemóvel nunca é usado).</string>
+    <string name="group_active">em uso</string>
+    <string name="group_default">predefinido</string>
+    <string name="action_use">Usar</string>
+    <string name="action_make_default">Predefinido</string>
+    <string name="action_delete">Apagar</string>
+    <string name="group_delete_title">Apagar «%1$s»?</string>
+    <string name="group_delete_text">Para voltar a entrar será preciso outro convite.</string>
+    <string name="helmet_none">Nenhum capacete escolhido</string>
+    <string name="helmet_selected">Capacete: %1$s</string>
+    <string name="helmet_choose">Escolher capacete</string>
+    <string name="auto_connect">Ligar ao acender o capacete</string>
+    <string name="auto_connect_hint">Quando este capacete se liga ao telemóvel, a app abre e liga ao grupo predefinido. Se o capacete se desligar, desliga ao fim de 2 minutos.</string>
+    <string name="helmet_pick_title">Escolhe o teu capacete</string>
+    <string name="no_bonded">Não há dispositivos Bluetooth emparelhados</string>
+    <string name="cdm_failed">O Android não deixou associar o capacete: quando se ligar vais receber uma notificação para ligar.</string>
+    <string name="notif_helmet_channel">Capacete</string>
+    <string name="notif_helmet_title">Capacete ligado</string>
+    <string name="notif_helmet_text">Toca para ligar com %1$s</string>
+    <string name="no_mic_classic">O teu capacete não tem LE Audio: ouves os outros com a música intacta, mas o microfone dele só funciona em Mãos livres (Definições → Áudio), que baixa a música para qualidade de chamada.</string>
+    <string name="le_audio_on">LE Audio: microfone do capacete e música com boa qualidade ao mesmo tempo.</string>
+    <string name="notif_listen_only">só a ouvir</string>
 </resources>

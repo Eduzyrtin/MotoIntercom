@@ -27,15 +27,13 @@
     <string name="problem_scan">Could not scan (code %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Helmet (HFP)</string>
-    <string name="mode_mix">Mix (A2DP)</string>
-    <string name="mode_helmet_hint">Mic and voices through the helmet as a hands-free call. Works with any helmet; call quality, and music drops to call quality while it is on.</string>
-    <string name="mode_mix_hint">Voices mixed with your music through the helmet. You talk through the phone mic or a wired one.</string>
-    <string name="talk_auto">Auto</string>
-    <string name="talk_ptt">PTT</string>
+    <string name="mode_helmet">Hands-free (HFP)</string>
+    <string name="mode_mix">Music first (A2DP)</string>
+    <string name="mode_helmet_hint">Compatibility: mic and voices through the helmet as a hands-free call. You can talk with any helmet, but everything, music included, drops to call quality.</string>
+    <string name="mode_mix_hint">The music never loses quality: voices reach the helmet as media, mixed with your music. To talk, the helmet needs LE Audio; with a classic Bluetooth helmet you only listen.</string>
+    <string name="talk_auto">Voice</string>
     <string name="talk_open">Open</string>
-    <string name="talk_mute">Mute</string>
-    <string name="ptt_hold">Hold to talk</string>
+    <string name="talk_mute">Listen only</string>
     <string name="mic_sending">Sending</string>
     <string name="mic_idle">Mic closed</string>
     <string name="mic_level">Mic: %1$d dBFS</string>
@@ -68,9 +66,6 @@
     <string name="long_range">Long-range advertising (Coded PHY)</string>
     <string name="bitrate_label">Maximum voice quality: %1$d kbps</string>
     <string name="max_links">Maximum links: %1$d</string>
-    <string name="mic_source_label">Mic in mix mode</string>
-    <string name="mic_voice">Processed</string>
-    <string name="mic_raw">Raw</string>
     <string name="voice_output_label">Voices in mix mode as</string>
     <string name="voice_output_media">Media</string>
     <string name="voice_output_call">Call</string>
@@ -105,7 +100,7 @@
     <string name="volume_voices">Voice: %1$d %%</string>
     <string name="volume_music">Media: %1$d %%</string>
     <string name="volume_hint">The phone and helmet volume buttons move the master: voice and media go up and down together, keeping their difference.</string>
-    <string name="mix_voice_limit">In mix mode voices share the media channel with the music: they can be at most 12 dB louder than it.</string>
+    <string name="mix_voice_limit">In Music first voices share the media channel with the music: they can be at most 12 dB louder than it.</string>
     <string name="media_previous">Previous</string>
     <string name="media_play_pause">Play or pause</string>
     <string name="media_next">Next</string>
@@ -115,11 +110,8 @@
     <string name="scan_mode_fast">Fast scanning</string>
     <string name="scan_mode_saving">Power-saving scanning</string>
     <string name="mic_muted">Mic muted (helmet or notification)</string>
-    <string name="ptt_latched">Talking (helmet button)</string>
     <string name="action_unmute">Unmute</string>
     <string name="action_mute">Mute</string>
-    <string name="action_talk">Talk</string>
-    <string name="action_stop_talking">Stop talking</string>
 
     <string name="notif_channel">Intercom</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -131,8 +123,6 @@
     <string name="notif_mic_open">mic open</string>
     <string name="notif_mic_muted">mic muted</string>
     <string name="notif_mic_off">mic off</string>
-    <string name="notif_ptt">push to talk</string>
-    <string name="notif_talking">talking</string>
 
     <string name="group_current">%1$s · code %2$s</string>
     <string name="group_code">Code %1$s</string>
@@ -156,8 +146,8 @@
     <string name="action_join">Join</string>
 
     <string name="section_helmet">Helmet</string>
-    <string name="helmet_button">Helmet button opens and closes the mic</string>
-    <string name="helmet_button_hint">Uses the play/pause button. While this is on, that button no longer controls the music (use the app buttons). Works best in mix mode: in helmet mode some helmets use it for calls or the voice assistant.</string>
+    <string name="helmet_button">Helmet button mutes the mic</string>
+    <string name="helmet_button_hint">Uses the play/pause button: one press mutes the mic, another brings it back. While this is on, that button no longer controls the music (use the app buttons).</string>
     <string name="earcons_label">Sound cues</string>
     <string name="earcons_hint">A beep when the mic opens or closes and when someone joins or leaves the group.</string>
     <string name="helmet_test_open">Test helmet</string>
@@ -174,7 +164,7 @@
     <string name="battery_open">Open battery settings</string>
 
     <string name="test_title">Test helmet</string>
-    <string name="test_intro">Pair the helmet with the phone as usual and turn it on. Each test records 3 seconds through the mic and plays them back to you.</string>
+    <string name="test_intro">Pair the helmet with the phone as usual and turn it on. Each test records 3 seconds through the helmet mic and plays them back to you.</string>
     <string name="test_devices">Connected: %1$s</string>
     <string name="test_no_devices">No Bluetooth helmet connected.</string>
     <string name="test_run">Test</string>
@@ -190,10 +180,10 @@
     <string name="test_result_ok">Works</string>
     <string name="test_result_bad">Does not work</string>
     <string name="test_recommendation">Recommendation</string>
-    <string name="test_recommend_helmet">Recommended: Helmet (HFP).</string>
-    <string name="test_recommend_mix">Recommended: Mix (A2DP).</string>
-    <string name="test_recommend_none">Neither mode worked: check the pairing or use wired earphones.</string>
-    <string name="test_both_hint">Both work: Helmet uses the helmet mic; Mix keeps the music in good quality.</string>
+    <string name="test_recommend_helmet">Recommended: Hands-free (HFP).</string>
+    <string name="test_recommend_mix">Recommended: Music first (A2DP).</string>
+    <string name="test_recommend_none">Neither mode worked: check that the helmet is paired and connected.</string>
+    <string name="test_both_hint">Both work. Music first keeps the music intact; Hands-free lets you talk with a classic helmet at the cost of the music.</string>
     <string name="test_use_mode">Use this mode</string>
 
     <!-- Bloque 3 -->
@@ -210,4 +200,28 @@
     <string name="hint_list">from the helmet list</string>
     <string name="helmets_share">Share results</string>
     <string name="helmets_share_hint">Send them so they can be added to the helmet list in the app.</string>
+
+    <!-- Uso diario -->
+    <string name="no_helmet_mic">No helmet mic: connect the helmet by Bluetooth (the phone mic is never used).</string>
+    <string name="group_active">in use</string>
+    <string name="group_default">default</string>
+    <string name="action_use">Use</string>
+    <string name="action_make_default">Make default</string>
+    <string name="action_delete">Delete</string>
+    <string name="group_delete_title">Delete «%1$s»?</string>
+    <string name="group_delete_text">To get back in you will need a new invite.</string>
+    <string name="helmet_none">No helmet chosen</string>
+    <string name="helmet_selected">Helmet: %1$s</string>
+    <string name="helmet_choose">Choose helmet</string>
+    <string name="auto_connect">Connect when the helmet turns on</string>
+    <string name="auto_connect_hint">When this helmet connects to the phone, the app opens and connects to the default group. If the helmet turns off, it disconnects after 2 minutes.</string>
+    <string name="helmet_pick_title">Choose your helmet</string>
+    <string name="no_bonded">No paired Bluetooth devices</string>
+    <string name="cdm_failed">Android did not allow linking the helmet: when it connects you will get a notification to connect.</string>
+    <string name="notif_helmet_channel">Helmet</string>
+    <string name="notif_helmet_title">Helmet connected</string>
+    <string name="notif_helmet_text">Tap to connect with %1$s</string>
+    <string name="no_mic_classic">Your helmet has no LE Audio: you hear the others with your music intact, but its mic only works in Hands-free (Settings → Audio), which drops the music to call quality.</string>
+    <string name="le_audio_on">LE Audio: helmet mic and music in good quality at the same time.</string>
+    <string name="notif_listen_only">listening only</string>
 </resources>

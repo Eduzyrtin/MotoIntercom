@@ -26,15 +26,13 @@
     <string name="problem_scan">Ricerca non riuscita (codice %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Casco (HFP)</string>
-    <string name="mode_mix">Mix (A2DP)</string>
-    <string name="mode_helmet_hint">Microfono e voci nel casco come una chiamata in vivavoce. Va con qualsiasi casco; qualità chiamata, e la musica scende a qualità chiamata finché è attivo.</string>
-    <string name="mode_mix_hint">Voci mescolate alla tua musica nel casco. Parli con il microfono del telefono o con uno a filo.</string>
-    <string name="talk_auto">Auto</string>
-    <string name="talk_ptt">PTT</string>
+    <string name="mode_helmet">Vivavoce (HFP)</string>
+    <string name="mode_mix">Prima la musica (A2DP)</string>
+    <string name="mode_helmet_hint">Compatibilità: microfono e voci nel casco come una chiamata in vivavoce. Si può parlare con qualsiasi casco, ma tutto, musica compresa, scende a qualità chiamata.</string>
+    <string name="mode_mix_hint">La musica non perde mai qualità: le voci arrivano al casco come multimedia, mescolate alla tua musica. Per parlare il casco deve avere LE Audio; con un casco Bluetooth classico ascolti soltanto.</string>
+    <string name="talk_auto">Voce</string>
     <string name="talk_open">Aperto</string>
-    <string name="talk_mute">Muto</string>
-    <string name="ptt_hold">Tieni premuto per parlare</string>
+    <string name="talk_mute">Solo ascolto</string>
     <string name="mic_sending">Invio</string>
     <string name="mic_idle">Microfono chiuso</string>
     <string name="mic_level">Microfono: %1$d dBFS</string>
@@ -68,9 +66,6 @@
     <string name="long_range">Annuncio a lungo raggio (Coded PHY)</string>
     <string name="bitrate_label">Qualità della voce massima: %1$d kbps</string>
     <string name="max_links">Collegamenti massimi: %1$d</string>
-    <string name="mic_source_label">Microfono in modalità mix</string>
-    <string name="mic_voice">Elaborato</string>
-    <string name="mic_raw">Diretto</string>
     <string name="voice_output_label">Voci in modalità mix come</string>
     <string name="voice_output_media">Multimedia</string>
     <string name="voice_output_call">Chiamata</string>
@@ -105,7 +100,7 @@
     <string name="volume_voices">Voce: %1$d %%</string>
     <string name="volume_music">Multimedia: %1$d %%</string>
     <string name="volume_hint">I tasti del volume del telefono e del casco muovono il volume generale: voce e multimedia salgono e scendono insieme mantenendo la differenza.</string>
-    <string name="mix_voice_limit">In modalità mix le voci condividono il canale multimediale con la musica: possono stare al massimo 12 dB sopra di essa.</string>
+    <string name="mix_voice_limit">In Prima la musica le voci condividono il canale multimediale con la musica: possono essere al massimo 12 dB più forti.</string>
     <string name="media_previous">Precedente</string>
     <string name="media_play_pause">Riproduci o pausa</string>
     <string name="media_next">Successivo</string>
@@ -115,11 +110,8 @@
     <string name="scan_mode_fast">Ricerca veloce</string>
     <string name="scan_mode_saving">Ricerca a risparmio</string>
     <string name="mic_muted">Microfono silenziato (casco o notifica)</string>
-    <string name="ptt_latched">Stai parlando (tasto del casco)</string>
     <string name="action_unmute">Attiva microfono</string>
     <string name="action_mute">Silenzia</string>
-    <string name="action_talk">Parla</string>
-    <string name="action_stop_talking">Smetti di parlare</string>
 
     <string name="notif_channel">Interfono</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -132,8 +124,6 @@
     <string name="notif_mic_open">microfono aperto</string>
     <string name="notif_mic_muted">microfono silenziato</string>
     <string name="notif_mic_off">microfono spento</string>
-    <string name="notif_ptt">premi per parlare</string>
-    <string name="notif_talking">stai parlando</string>
 
     <string name="group_current">%1$s · codice %2$s</string>
     <string name="group_code">Codice %1$s</string>
@@ -157,8 +147,8 @@
     <string name="action_join">Unisciti</string>
 
     <string name="section_helmet">Casco</string>
-    <string name="helmet_button">Il tasto del casco apre e chiude il microfono</string>
-    <string name="helmet_button_hint">Usa il tasto play/pausa. Finché è attivo, quel tasto non controlla più la musica (usa i tasti della app). Funziona meglio in modalità mix: in modalità casco alcuni caschi lo usano per le chiamate o per l\'assistente vocale.</string>
+    <string name="helmet_button">Il tasto del casco silenzia il microfono</string>
+    <string name="helmet_button_hint">Usa il tasto play/pausa: una pressione silenzia il microfono, un\'altra lo riattiva. Finché è attivo, quel tasto non controlla più la musica (usa i tasti dell\'app).</string>
     <string name="earcons_label">Avvisi sonori</string>
     <string name="earcons_hint">Un bip quando il microfono si apre o si chiude e quando qualcuno entra o esce dal gruppo.</string>
     <string name="helmet_test_open">Prova casco</string>
@@ -175,7 +165,7 @@
     <string name="battery_open">Apri impostazioni batteria</string>
 
     <string name="test_title">Prova casco</string>
-    <string name="test_intro">Abbina il casco al telefono come sempre e accendilo. Ogni prova registra 3 secondi con il microfono e te li fa riascoltare.</string>
+    <string name="test_intro">Abbina il casco al telefono come sempre e accendilo. Ogni prova registra 3 secondi con il microfono del casco e te li fa riascoltare.</string>
     <string name="test_devices">Connesso: %1$s</string>
     <string name="test_no_devices">Nessun casco Bluetooth connesso.</string>
     <string name="test_run">Prova</string>
@@ -191,10 +181,10 @@
     <string name="test_result_ok">Funziona</string>
     <string name="test_result_bad">Non funziona</string>
     <string name="test_recommendation">Consiglio</string>
-    <string name="test_recommend_helmet">Consigliato: Casco (HFP).</string>
-    <string name="test_recommend_mix">Consigliato: Mix (A2DP).</string>
-    <string name="test_recommend_none">Nessuna modalità ha funzionato: controlla l\'abbinamento o usa auricolari a filo.</string>
-    <string name="test_both_hint">Funzionano entrambe: Casco usa il microfono del casco; Mix mantiene la musica in buona qualità.</string>
+    <string name="test_recommend_helmet">Consigliato: Vivavoce (HFP).</string>
+    <string name="test_recommend_mix">Consigliato: Prima la musica (A2DP).</string>
+    <string name="test_recommend_none">Nessuna modalità ha funzionato: controlla che il casco sia abbinato e collegato.</string>
+    <string name="test_both_hint">Funzionano entrambe. Prima la musica lascia la musica intatta; Vivavoce permette di parlare con un casco classico a scapito della musica.</string>
     <string name="test_use_mode">Usa questa modalità</string>
 
     <!-- Bloque 3 -->
@@ -211,4 +201,28 @@
     <string name="hint_list">secondo la lista dei caschi</string>
     <string name="helmets_share">Condividi risultati</string>
     <string name="helmets_share_hint">Inviali per aggiungerli alla lista dei caschi della app.</string>
+
+    <!-- Uso diario -->
+    <string name="no_helmet_mic">Nessun microfono del casco: collega il casco via Bluetooth (il microfono del telefono non si usa mai).</string>
+    <string name="group_active">in uso</string>
+    <string name="group_default">predefinito</string>
+    <string name="action_use">Usa</string>
+    <string name="action_make_default">Predefinito</string>
+    <string name="action_delete">Elimina</string>
+    <string name="group_delete_title">Eliminare «%1$s»?</string>
+    <string name="group_delete_text">Per rientrare servirà un nuovo invito.</string>
+    <string name="helmet_none">Nessun casco scelto</string>
+    <string name="helmet_selected">Casco: %1$s</string>
+    <string name="helmet_choose">Scegli casco</string>
+    <string name="auto_connect">Connetti quando si accende il casco</string>
+    <string name="auto_connect_hint">Quando questo casco si collega al telefono, la app si apre e si connette al gruppo predefinito. Se il casco si spegne, si disconnette dopo 2 minuti.</string>
+    <string name="helmet_pick_title">Scegli il tuo casco</string>
+    <string name="no_bonded">Nessun dispositivo Bluetooth abbinato</string>
+    <string name="cdm_failed">Android non ha permesso di associare il casco: quando si collega arriverà una notifica per connettersi.</string>
+    <string name="notif_helmet_channel">Casco</string>
+    <string name="notif_helmet_title">Casco collegato</string>
+    <string name="notif_helmet_text">Tocca per connetterti con %1$s</string>
+    <string name="no_mic_classic">Il tuo casco non ha LE Audio: senti gli altri con la musica intatta, ma il suo microfono funziona solo in Vivavoce (Impostazioni → Audio), che porta la musica a qualità chiamata.</string>
+    <string name="le_audio_on">LE Audio: microfono del casco e musica di buona qualità insieme.</string>
+    <string name="notif_listen_only">solo ascolto</string>
 </resources>

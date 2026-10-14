@@ -14,7 +14,9 @@ JNIEXPORT jlong JNICALL FN(encoderCreate)(JNIEnv *env, jclass clazz, jint sample
     if (err != OPUS_OK || enc == NULL) return 0;
     opus_encoder_ctl(enc, OPUS_SET_BITRATE(bitrate));
     opus_encoder_ctl(enc, OPUS_SET_SIGNAL(OPUS_SIGNAL_VOICE));
-    opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(8));
+    // Banda completa (20 kHz) en cuanto el bitrate lo permite; con poco bitrate Opus la estrecha solo
+    opus_encoder_ctl(enc, OPUS_SET_MAX_BANDWIDTH(OPUS_BANDWIDTH_FULLBAND));
+    opus_encoder_ctl(enc, OPUS_SET_COMPLEXITY(10));
     // Redundancia de la trama anterior dentro de cada paquete: si un enlace descarta una, la siguiente la reconstruye
     opus_encoder_ctl(enc, OPUS_SET_INBAND_FEC(1));
     opus_encoder_ctl(enc, OPUS_SET_PACKET_LOSS_PERC(10));

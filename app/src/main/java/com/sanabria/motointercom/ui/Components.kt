@@ -31,7 +31,6 @@ class ScreenActions(
     val start: () -> Unit,
     val stop: () -> Unit,
     val update: ((IntercomSettings) -> IntercomSettings) -> Unit,
-    val ptt: (Boolean) -> Unit,
     val toggleMic: () -> Unit,
     val masterVolume: (Float) -> Unit,
     val voiceVolume: (Float) -> Unit,
@@ -47,6 +46,11 @@ class ScreenActions(
     val cancelHelmetTest: () -> Unit,
     val shareHelmetResults: () -> Unit,
     val forgetLinkLimit: () -> Unit,
+    val activateGroup: (String) -> Unit,
+    val makeDefaultGroup: (String) -> Unit,
+    val deleteGroup: (String) -> Unit,
+    /** Abre la lista de dispositivos emparejados para elegir el casco de la autoconexión. */
+    val pickHelmet: () -> Unit,
 )
 
 @Composable

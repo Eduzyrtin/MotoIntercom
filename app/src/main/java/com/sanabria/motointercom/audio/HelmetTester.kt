@@ -7,7 +7,6 @@ import android.os.SystemClock
 import androidx.core.content.edit
 import com.sanabria.motointercom.core.audio.VoiceFormat
 import com.sanabria.motointercom.engine.AudioMode
-import com.sanabria.motointercom.engine.MicSource
 import com.sanabria.motointercom.engine.VoiceOutput
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -22,8 +21,9 @@ import kotlin.math.min
 import kotlin.math.sqrt
 
 /**
- * Prueba de un modo de audio con el casco de verdad: prepara la ruta (como el intercomunicador), graba 3 s por el micro,
- * los reproduce y pregunta si se ha oído bien. Mide cuánto tarda la ruta en llegar al casco y el nivel del micro.
+ * Prueba de un modo de audio con el casco de verdad: graba 3 s por el micro del casco (HFP), los reproduce por la salida
+ * del modo (HFP en Manos libres, A2DP en Música primero) y pregunta si se ha oído bien. Mide cuánto tarda el micro del casco en estar
+ * listo y su nivel.
  * Los resultados se guardan por casco en [HelmetCompat].
  */
 class HelmetTester(private val context: Context) {
@@ -87,22 +87,18 @@ class HelmetTester(private val context: Context) {
         peakDb = SILENCE_DB
         _state.update { it.copy(phase = Phase.ROUTING, mode = mode, secondsLeft = 0, routeMs = null, route = null) }
         val t0 = SystemClock.elapsedRealtime()
+        // Siempre se graba con el micro del casco (HFP), que es el que usa el intercomunicador en los dos modos
         try {
-            withContext(Dispatchers.Default) { io.start(mode, MicSource.VOICE, VoiceOutput.MEDIA) }
+            withContext(Dispatchers.Default) { io.start(AudioMode.HELMET, VoiceOutput.MEDIA) }
         } catch (_: Exception) {
             finish(mode, Result(heard = false, routeMs = null, peakDb = SILENCE_DB, route = null))
             return
         }
-        // Ruta lista: en HFP, el micro tiene que venir del casco; en mezcla, la salida tiene que ir al casco
         var routeMs: Long? = null
         while (SystemClock.elapsedRealtime() - t0 < ROUTE_TIMEOUT_MS) {
             val r = io.route()
             _state.update { it.copy(route = r, levelDb = levelDb) }
-            val ready = when (mode) {
-                AudioMode.HELMET -> r.inputType == AudioDeviceInfo.TYPE_BLUETOOTH_SCO || r.inputType == AudioDeviceInfo.TYPE_BLE_HEADSET
-                AudioMode.MIX -> r.outputType in AudioIo.HELMET_TYPES
-            }
-            if (ready) {
+            if (io.micOpen && (r.inputType == AudioDeviceInfo.TYPE_BLUETOOTH_SCO || r.inputType == AudioDeviceInfo.TYPE_BLE_HEADSET)) {
                 routeMs = SystemClock.elapsedRealtime() - t0
                 break
             }
@@ -111,10 +107,13 @@ class HelmetTester(private val context: Context) {
         recording = true
         countdown(Phase.RECORDING)
         recording = false
+        val recordRoute = io.route()
+        // En mezcla se escucha por A2DP, como las voces de los demás: el casco tiene que soltar HFP
+        if (mode == AudioMode.MIX) withContext(Dispatchers.Default) { io.start(AudioMode.MIX, VoiceOutput.MEDIA) }
         playing = true
         countdown(Phase.PLAYING)
         playing = false
-        val route = io.route()
+        val route = io.route().copy(inputType = recordRoute.inputType, inputName = recordRoute.inputName)
         withContext(Dispatchers.Default) { io.stop() }
         _state.update { it.copy(phase = Phase.ASK, routeMs = routeMs, peakDb = peakDb, route = route) }
     }
@@ -189,14 +188,14 @@ class HelmetCompat(context: Context) {
     data class Recommendation(val mode: AudioMode, val source: Source)
 
     /**
-     * Modo recomendado para un casco conectado: lo que diga la prueba hecha aquí (Casco si funcionó; si no, Mezcla si
-     * funcionó) y, si no se ha probado, la lista incluida en la app ([listed]).
+     * Modo recomendado para un casco conectado: lo que diga la prueba hecha aquí (Música primero si funcionó; si no,
+     * Manos libres si funcionó) y, si no se ha probado, la lista incluida en la app ([listed]).
      */
     fun recommend(headset: String, listed: List<ListedHelmet>): Recommendation? {
         all().firstOrNull { it.name == headset }?.let { r ->
             when {
-                r.helmet == true -> return Recommendation(AudioMode.HELMET, Source.TESTED)
                 r.mix == true -> return Recommendation(AudioMode.MIX, Source.TESTED)
+                r.helmet == true -> return Recommendation(AudioMode.HELMET, Source.TESTED)
             }
         }
         val key = normalize(headset)

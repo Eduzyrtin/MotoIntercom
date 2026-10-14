@@ -167,6 +167,19 @@ class AudioTest {
     }
 
     @Test
+    fun bitrateLadderFromHighQuality() {
+        val b = BitrateController(32_000)
+        assertEquals(24_000, b.update(sent = 90, dropped = 10))
+        assertEquals(16_000, b.update(sent = 90, dropped = 10))
+        repeat(5) { b.update(sent = 100, dropped = 0) }
+        assertEquals(24_000, b.current)
+        repeat(5) { b.update(sent = 100, dropped = 0) }
+        assertEquals(32_000, b.current)
+        repeat(10) { b.update(sent = 100, dropped = 0) }
+        assertEquals(32_000, b.current)
+    }
+
+    @Test
     fun earconsPlayInOrderAndEnd() {
         val e = Earcons()
         val frame = ShortArray(VoiceFormat.FRAME_SAMPLES)

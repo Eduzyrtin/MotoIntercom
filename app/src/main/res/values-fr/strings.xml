@@ -26,15 +26,13 @@
     <string name="problem_scan">Recherche impossible (code %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Casque (HFP)</string>
-    <string name="mode_mix">Mixage (A2DP)</string>
-    <string name="mode_helmet_hint">Micro et voix par le casque comme un appel mains libres. Marche avec tout casque ; qualité appel, et la musique passe en qualité appel tant qu\'il est actif.</string>
-    <string name="mode_mix_hint">Voix mélangées à ta musique dans le casque. Tu parles avec le micro du téléphone ou un micro filaire.</string>
-    <string name="talk_auto">Auto</string>
-    <string name="talk_ptt">PTT</string>
+    <string name="mode_helmet">Mains libres (HFP)</string>
+    <string name="mode_mix">Musique d\'abord (A2DP)</string>
+    <string name="mode_helmet_hint">Compatibilité : micro et voix par le casque comme un appel mains libres. On peut parler avec n\'importe quel casque, mais tout, musique comprise, passe en qualité appel.</string>
+    <string name="mode_mix_hint">La musique ne perd jamais en qualité : les voix arrivent au casque comme multimédia, mélangées à ta musique. Pour parler, le casque doit avoir LE Audio ; avec un casque Bluetooth classique, tu écoutes seulement.</string>
+    <string name="talk_auto">Voix</string>
     <string name="talk_open">Ouvert</string>
-    <string name="talk_mute">Muet</string>
-    <string name="ptt_hold">Maintiens pour parler</string>
+    <string name="talk_mute">Écouter seulement</string>
     <string name="mic_sending">Envoi</string>
     <string name="mic_idle">Micro fermé</string>
     <string name="mic_level">Micro : %1$d dBFS</string>
@@ -68,9 +66,6 @@
     <string name="long_range">Annonce longue portée (Coded PHY)</string>
     <string name="bitrate_label">Qualité de voix maximale : %1$d kbps</string>
     <string name="max_links">Liens maximum : %1$d</string>
-    <string name="mic_source_label">Micro en mode mixage</string>
-    <string name="mic_voice">Traité</string>
-    <string name="mic_raw">Brut</string>
     <string name="voice_output_label">Voix en mode mixage comme</string>
     <string name="voice_output_media">Multimédia</string>
     <string name="voice_output_call">Appel</string>
@@ -105,7 +100,7 @@
     <string name="volume_voices">Voix : %1$d %%</string>
     <string name="volume_music">Multimédia : %1$d %%</string>
     <string name="volume_hint">Les boutons de volume du téléphone et du casque règlent le volume principal : voix et multimédia montent et descendent ensemble en gardant leur écart.</string>
-    <string name="mix_voice_limit">En mode mixage, les voix partagent le canal multimédia avec la musique : elles peuvent être au plus 12 dB au-dessus.</string>
+    <string name="mix_voice_limit">En Musique d\'abord les voix partagent le canal multimédia avec la musique : elles peuvent être au plus 12 dB plus fortes qu\'elle.</string>
     <string name="media_previous">Précédent</string>
     <string name="media_play_pause">Lecture ou pause</string>
     <string name="media_next">Suivant</string>
@@ -115,11 +110,8 @@
     <string name="scan_mode_fast">Recherche rapide</string>
     <string name="scan_mode_saving">Recherche en économie</string>
     <string name="mic_muted">Micro coupé (casque ou notification)</string>
-    <string name="ptt_latched">Vous parlez (bouton du casque)</string>
     <string name="action_unmute">Activer le micro</string>
     <string name="action_mute">Couper</string>
-    <string name="action_talk">Parler</string>
-    <string name="action_stop_talking">Arrêter de parler</string>
 
     <string name="notif_channel">Intercom</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -132,8 +124,6 @@
     <string name="notif_mic_open">micro ouvert</string>
     <string name="notif_mic_muted">micro coupé</string>
     <string name="notif_mic_off">micro en silence</string>
-    <string name="notif_ptt">appuyer pour parler</string>
-    <string name="notif_talking">vous parlez</string>
 
     <string name="group_current">%1$s · code %2$s</string>
     <string name="group_code">Code %1$s</string>
@@ -157,8 +147,8 @@
     <string name="action_join">Rejoindre</string>
 
     <string name="section_helmet">Casque</string>
-    <string name="helmet_button">Le bouton du casque ouvre et coupe le micro</string>
-    <string name="helmet_button_hint">Utilise le bouton lecture/pause. Tant que c\'est activé, ce bouton ne contrôle plus la musique (utilisez les boutons de l\'appli). Marche mieux en mode mixage : en mode casque, certains casques s\'en servent pour les appels ou l\'assistant vocal.</string>
+    <string name="helmet_button">Le bouton du casque coupe le micro</string>
+    <string name="helmet_button_hint">Utilise le bouton lecture/pause : un appui coupe le micro, un autre le rétablit. Tant que c\'est activé, ce bouton ne contrôle plus la musique (utilisez les boutons de l\'appli).</string>
     <string name="earcons_label">Signaux sonores</string>
     <string name="earcons_hint">Un bip quand le micro s\'ouvre ou se coupe et quand quelqu\'un entre dans le groupe ou en sort.</string>
     <string name="helmet_test_open">Tester le casque</string>
@@ -175,7 +165,7 @@
     <string name="battery_open">Ouvrir les réglages de batterie</string>
 
     <string name="test_title">Tester le casque</string>
-    <string name="test_intro">Associez le casque au téléphone comme d\'habitude et allumez-le. Chaque test enregistre 3 secondes avec le micro et vous les fait écouter.</string>
+    <string name="test_intro">Associez le casque au téléphone comme d\'habitude et allumez-le. Chaque test enregistre 3 secondes avec le micro du casque et vous les fait écouter.</string>
     <string name="test_devices">Connecté : %1$s</string>
     <string name="test_no_devices">Aucun casque Bluetooth connecté.</string>
     <string name="test_run">Tester</string>
@@ -191,10 +181,10 @@
     <string name="test_result_ok">Fonctionne</string>
     <string name="test_result_bad">Ne fonctionne pas</string>
     <string name="test_recommendation">Recommandation</string>
-    <string name="test_recommend_helmet">Recommandé : Casque (HFP).</string>
-    <string name="test_recommend_mix">Recommandé : Mixage (A2DP).</string>
-    <string name="test_recommend_none">Aucun mode n\'a fonctionné : vérifiez l\'association ou utilisez des écouteurs filaires.</string>
-    <string name="test_both_hint">Les deux fonctionnent : Casque utilise le micro du casque ; Mixage garde la musique en bonne qualité.</string>
+    <string name="test_recommend_helmet">Recommandé : Mains libres (HFP).</string>
+    <string name="test_recommend_mix">Recommandé : Musique d\'abord (A2DP).</string>
+    <string name="test_recommend_none">Aucun mode n\'a fonctionné : vérifiez que le casque est associé et connecté.</string>
+    <string name="test_both_hint">Les deux fonctionnent. Musique d\'abord garde la musique intacte ; Mains libres permet de parler avec un casque classique au prix de la musique.</string>
     <string name="test_use_mode">Utiliser ce mode</string>
 
     <!-- Bloque 3 -->
@@ -211,4 +201,28 @@
     <string name="hint_list">d\'après la liste de casques</string>
     <string name="helmets_share">Partager les résultats</string>
     <string name="helmets_share_hint">Envoyez-les pour les ajouter à la liste de casques de l\'appli.</string>
+
+    <!-- Uso diario -->
+    <string name="no_helmet_mic">Pas de micro du casque : connectez le casque en Bluetooth (le micro du téléphone n\'est jamais utilisé).</string>
+    <string name="group_active">utilisé</string>
+    <string name="group_default">par défaut</string>
+    <string name="action_use">Utiliser</string>
+    <string name="action_make_default">Par défaut</string>
+    <string name="action_delete">Supprimer</string>
+    <string name="group_delete_title">Supprimer « %1$s » ?</string>
+    <string name="group_delete_text">Pour revenir, il faudra une nouvelle invitation.</string>
+    <string name="helmet_none">Aucun casque choisi</string>
+    <string name="helmet_selected">Casque : %1$s</string>
+    <string name="helmet_choose">Choisir le casque</string>
+    <string name="auto_connect">Se connecter quand le casque s\'allume</string>
+    <string name="auto_connect_hint">Quand ce casque se connecte au téléphone, l\'appli s\'ouvre et se connecte au groupe par défaut. Si le casque s\'éteint, elle se déconnecte au bout de 2 minutes.</string>
+    <string name="helmet_pick_title">Choisissez votre casque</string>
+    <string name="no_bonded">Aucun appareil Bluetooth associé</string>
+    <string name="cdm_failed">Android n\'a pas permis d\'associer le casque : à sa connexion, une notification permettra de se connecter.</string>
+    <string name="notif_helmet_channel">Casque</string>
+    <string name="notif_helmet_title">Casque connecté</string>
+    <string name="notif_helmet_text">Touchez pour vous connecter avec %1$s</string>
+    <string name="no_mic_classic">Ton casque n\'a pas LE Audio : tu entends les autres avec la musique intacte, mais son micro ne marche qu\'en Mains libres (Réglages → Audio), qui fait passer la musique en qualité appel.</string>
+    <string name="le_audio_on">LE Audio : micro du casque et musique de bonne qualité en même temps.</string>
+    <string name="notif_listen_only">écoute seulement</string>
 </resources>

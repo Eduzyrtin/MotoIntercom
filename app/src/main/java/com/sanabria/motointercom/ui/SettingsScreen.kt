@@ -19,6 +19,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,10 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.sanabria.motointercom.R
 import com.sanabria.motointercom.audio.HelmetCompat
+import com.sanabria.motointercom.core.audio.BitrateController
 import com.sanabria.motointercom.engine.AudioMode
 import com.sanabria.motointercom.engine.EngineState
 import com.sanabria.motointercom.engine.IntercomSettings
-import com.sanabria.motointercom.engine.MicSource
 import com.sanabria.motointercom.engine.PhyPreference
 import com.sanabria.motointercom.engine.VoiceOutput
 import kotlin.math.roundToInt
@@ -97,9 +98,33 @@ private fun IdentitySection(state: EngineState, settings: IntercomSettings, acti
 private fun GroupSection(state: EngineState, settings: IntercomSettings, actions: ScreenActions) {
     var showQr by rememberSaveable { mutableStateOf(false) }
     var newGroup by rememberSaveable { mutableStateOf(false) }
+    var deleting by rememberSaveable { mutableStateOf<String?>(null) }
+    val free = !state.running
     Section(stringResource(R.string.section_group)) {
-        Text(stringResource(R.string.group_current, settings.groupName, settings.groupCode), style = MaterialTheme.typography.bodyLarge)
-        val free = !state.running
+        // Grupos guardados: el que está en uso y el de por defecto (el de la autoconexión)
+        for (g in settings.groups) {
+            val active = g.keyText == settings.activeGroup
+            val isDefault = g.keyText == settings.defaultGroup
+            Column {
+                Text(
+                    stringResource(R.string.group_current, g.name, g.code),
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = if (active) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+                )
+                val tags = listOfNotNull(
+                    if (active) stringResource(R.string.group_active) else null,
+                    if (isDefault) stringResource(R.string.group_default) else null,
+                )
+                if (tags.isNotEmpty()) Text(tags.joinToString(" · "), style = MaterialTheme.typography.bodySmall)
+                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (!active) TextButton(onClick = { actions.activateGroup(g.keyText) }, enabled = free) { Text(stringResource(R.string.action_use)) }
+                    if (!isDefault) TextButton(onClick = { actions.makeDefaultGroup(g.keyText) }) { Text(stringResource(R.string.action_make_default)) }
+                    if (settings.groups.size > 1) {
+                        TextButton(onClick = { deleting = g.keyText }, enabled = free || !active) { Text(stringResource(R.string.action_delete)) }
+                    }
+                }
+            }
+        }
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = { showQr = true }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.group_show_qr)) }
             OutlinedButton(onClick = actions.scanInvite, enabled = free, modifier = Modifier.weight(1f)) {
@@ -120,6 +145,21 @@ private fun GroupSection(state: EngineState, settings: IntercomSettings, actions
         )
     }
     if (showQr) QrDialog(settings.group, onShare = actions.shareInvite, onDismiss = { showQr = false })
+    deleting?.let { key ->
+        val g = settings.groups.firstOrNull { it.keyText == key }
+        if (g == null) {
+            deleting = null
+        } else {
+            DeleteGroupDialog(
+                g.name,
+                onDelete = {
+                    actions.deleteGroup(key)
+                    deleting = null
+                },
+                onDismiss = { deleting = null },
+            )
+        }
+    }
     if (newGroup) {
         NewGroupDialog(
             onCreate = {
@@ -144,10 +184,6 @@ private fun AudioSection(settings: IntercomSettings, actions: ScreenActions) {
         LabeledSlider(stringResource(R.string.vad_sensitivity, percent(settings.vadSensitivity)), settings.vadSensitivity) { v ->
             actions.update { it.copy(vadSensitivity = v) }
         }
-        Text(stringResource(R.string.mic_source_label), style = MaterialTheme.typography.bodyMedium)
-        Choice(MicSource.entries, settings.micSource, {
-            stringResource(if (it == MicSource.VOICE) R.string.mic_voice else R.string.mic_raw)
-        }) { m -> actions.update { it.copy(micSource = m) } }
         Text(stringResource(R.string.voice_output_label), style = MaterialTheme.typography.bodyMedium)
         Choice(VoiceOutput.entries, settings.voiceOutput, {
             stringResource(if (it == VoiceOutput.MEDIA) R.string.voice_output_media else R.string.voice_output_call)
@@ -170,6 +206,16 @@ private fun HelmetSection(
     openHelmetTest: () -> Unit,
 ) {
     Section(stringResource(R.string.section_helmet)) {
+        // Autoconexión: al conectarse este casco al móvil, la app se abre y conecta con el grupo por defecto
+        Text(
+            if (settings.helmetAddress.isEmpty()) stringResource(R.string.helmet_none) else stringResource(R.string.helmet_selected, settings.helmetName),
+            style = MaterialTheme.typography.bodyLarge,
+        )
+        OutlinedButton(onClick = actions.pickHelmet, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.helmet_choose)) }
+        if (settings.helmetAddress.isNotEmpty()) {
+            SwitchRow(stringResource(R.string.auto_connect), settings.autoConnect) { v -> actions.update { it.copy(autoConnect = v) } }
+        }
+        Text(stringResource(R.string.auto_connect_hint), style = MaterialTheme.typography.bodySmall)
         SwitchRow(stringResource(R.string.helmet_button), settings.helmetButton) { v -> actions.update { it.copy(helmetButton = v) } }
         Text(stringResource(R.string.helmet_button_hint), style = MaterialTheme.typography.bodySmall)
         SwitchRow(stringResource(R.string.earcons_label), settings.earcons) { v -> actions.update { it.copy(earcons = v) } }
@@ -216,8 +262,11 @@ private fun RadioSection(state: EngineState, settings: IntercomSettings, actions
                 enabled = !state.running,
             )
         }
-        LabeledSlider(stringResource(R.string.bitrate_label, settings.bitrate / 1000), settings.bitrate / 1000f, 8f..32f, steps = 5) { v ->
-            actions.update { it.copy(bitrate = v.roundToInt() * 1000) }
+        // Por escalones de la calidad adaptativa (8 … 48 kbps)
+        val ladder = BitrateController.LADDER
+        val step = ladder.indexOfLast { it <= settings.bitrate }.coerceAtLeast(0)
+        LabeledSlider(stringResource(R.string.bitrate_label, settings.bitrate / 1000), step.toFloat(), 0f..ladder.lastIndex.toFloat(), steps = ladder.size - 2) { v ->
+            actions.update { it.copy(bitrate = ladder[v.roundToInt()]) }
         }
         Text(stringResource(R.string.bitrate_hint), style = MaterialTheme.typography.bodySmall)
         LabeledSlider(stringResource(R.string.max_links, settings.maxLinks), settings.maxLinks.toFloat(), 1f..7f, steps = 5) { v ->

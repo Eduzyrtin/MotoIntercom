@@ -4,8 +4,12 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
+import android.companion.AssociationRequest
+import android.companion.BluetoothDeviceFilter
+import android.companion.CompanionDeviceManager
 import android.content.ClipboardManager
 import android.content.Intent
+import android.content.IntentSender
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -15,6 +19,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
@@ -28,6 +33,7 @@ import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
 import com.sanabria.motointercom.core.crypto.Group
 import com.sanabria.motointercom.core.crypto.GroupInvite
 import com.sanabria.motointercom.engine.AudioMode
+import com.sanabria.motointercom.ui.HelmetPickerDialog
 import com.sanabria.motointercom.ui.HelmetTestScreen
 import com.sanabria.motointercom.ui.JoinDialog
 import com.sanabria.motointercom.ui.MainScreen
@@ -56,10 +62,25 @@ class MainActivity : ComponentActivity() {
     // Si el usuario no lo enciende, el motor avisa de que el Bluetooth está apagado
     private val enableBluetooth = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { vm.start() }
 
+    /** Lista de dispositivos emparejados abierta para elegir el casco (null = cerrada). */
+    private var helmetPicker by mutableStateOf<List<IntercomViewModel.Bonded>?>(null)
+
+    /** Casco elegido a la espera de que Android confirme la asociación. */
+    private var pendingHelmet: IntercomViewModel.Bonded? = null
+    private var associationLaunched = false
+
+    private val associateHelmet = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { r ->
+        val h = pendingHelmet ?: return@registerForActivityResult
+        pendingHelmet = null
+        // Sin asociación la autoconexión sigue, pero solo con la notificación (Android no deja abrir la app sola)
+        if (r.resultCode != RESULT_OK) toast(R.string.cdm_failed)
+        vm.setHelmet(h.address, h.name)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        if (savedInstanceState == null) handleInvite(intent)
+        if (savedInstanceState == null) handleIntent(intent)
         setContent {
             MotoTheme {
                 val state by vm.state.collectAsStateWithLifecycle()
@@ -71,7 +92,6 @@ class MainActivity : ComponentActivity() {
                     start = { withPermissions(connectPermissions()) { startWithBluetooth() } },
                     stop = vm::stop,
                     update = vm::update,
-                    ptt = vm::setPtt,
                     toggleMic = vm::toggleMic,
                     masterVolume = vm::setMasterVolume,
                     voiceVolume = vm::setVoiceVolume,
@@ -87,6 +107,10 @@ class MainActivity : ComponentActivity() {
                     cancelHelmetTest = vm::cancelHelmetTest,
                     shareHelmetResults = { shareText(vm.exportHelmets()) },
                     forgetLinkLimit = vm::forgetLinkLimit,
+                    activateGroup = vm::activateGroup,
+                    makeDefaultGroup = vm::makeDefaultGroup,
+                    deleteGroup = vm::deleteGroup,
+                    pickHelmet = { withPermissions(btConnect()) { helmetPicker = vm.bondedDevices() } },
                 )
                 var screen by rememberSaveable { mutableStateOf(Screen.MAIN) }
                 BackHandler(enabled = screen != Screen.MAIN) {
@@ -112,13 +136,82 @@ class MainActivity : ComponentActivity() {
                         onDismiss = { pendingInvite = null },
                     )
                 }
+                helmetPicker?.let { devices ->
+                    HelmetPickerDialog(
+                        devices,
+                        onPick = {
+                            helmetPicker = null
+                            associate(it)
+                        },
+                        onDismiss = { helmetPicker = null },
+                    )
+                }
             }
         }
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleInvite(intent)
+        handleIntent(intent)
+    }
+
+    private fun handleIntent(intent: Intent?) {
+        if (intent?.action == HelmetReceiver.ACTION_AUTOCONNECT) autoConnect() else handleInvite(intent)
+    }
+
+    // --- Autoconexión ---
+
+    /** Se ha encendido el casco: conectar con el grupo por defecto (si no estaba ya conectado). */
+    private fun autoConnect() {
+        if (vm.state.value.running) return
+        vm.useDefaultGroup()
+        withPermissions(connectPermissions()) { startWithBluetooth() }
+    }
+
+    /**
+     * Asocia el casco con Android como dispositivo complementario: con eso Android deja que la app se abra sola cuando
+     * el casco se conecta. Android enseña su propio diálogo de confirmación.
+     */
+    private fun associate(device: IntercomViewModel.Bonded) {
+        val cdm = getSystemService(CompanionDeviceManager::class.java)
+        val old = vm.settings.value.helmetAddress
+        if (cdm == null) {
+            vm.setHelmet(device.address, device.name)
+            return
+        }
+        @Suppress("DEPRECATION")
+        if (old.isNotEmpty() && !old.equals(device.address, true)) runCatching { cdm.disassociate(old) }
+        @Suppress("DEPRECATION")
+        if (cdm.associations.any { it.equals(device.address, ignoreCase = true) }) {
+            vm.setHelmet(device.address, device.name)
+            return
+        }
+        pendingHelmet = device
+        associationLaunched = false
+        val request = AssociationRequest.Builder()
+            .addDeviceFilter(BluetoothDeviceFilter.Builder().setAddress(device.address).build())
+            .setSingleDevice(true)
+            .build()
+        val callback = object : CompanionDeviceManager.Callback() {
+            @Deprecated("Android 12 y anteriores")
+            override fun onDeviceFound(intentSender: IntentSender) = launchAssociation(intentSender)
+
+            override fun onAssociationPending(intentSender: IntentSender) = launchAssociation(intentSender)
+
+            override fun onFailure(error: CharSequence?) {
+                toast(R.string.cdm_failed)
+                pendingHelmet = null
+                vm.setHelmet(device.address, device.name)
+            }
+        }
+        @Suppress("DEPRECATION")
+        cdm.associate(request, callback, null)
+    }
+
+    private fun launchAssociation(sender: IntentSender) {
+        if (associationLaunched) return
+        associationLaunched = true
+        associateHelmet.launch(IntentSenderRequest.Builder(sender).build())
     }
 
     // --- Invitaciones ---

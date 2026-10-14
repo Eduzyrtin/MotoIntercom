@@ -6,6 +6,7 @@ import com.sanabria.motointercom.engine.IntercomEngine
 import com.sanabria.motointercom.engine.IntercomSettings
 import com.sanabria.motointercom.engine.SettingsRepository
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
@@ -20,6 +21,9 @@ class MotoIntercomApp : Application() {
         private set
     lateinit var engine: IntercomEngine
         private set
+
+    /** El casco elegido para la autoconexión está conectado al móvil (null = no se sabe todavía). */
+    val helmetConnected = MutableStateFlow<Boolean?>(null)
 
     private val scope = MainScope()
 

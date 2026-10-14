@@ -1,6 +1,9 @@
 package com.sanabria.motointercom
 
+import android.annotation.SuppressLint
 import android.app.Application
+import android.bluetooth.BluetoothClass
+import android.bluetooth.BluetoothManager
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioManager
@@ -71,9 +74,6 @@ class IntercomViewModel(app: Application) : AndroidViewModel(app) {
 
     fun stop() = IntercomService.stop(getApplication())
 
-    fun setPtt(pressed: Boolean) {
-        intercom.engine.pttPressed = pressed
-    }
 
     fun toggleMic() = intercom.engine.toggleMic()
 
@@ -94,6 +94,38 @@ class IntercomViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun forgetLinkLimit() = update { it.copy(learnedLinkLimit = 0) }
+
+    fun activateGroup(keyText: String) {
+        intercom.settings.activate(keyText)
+    }
+
+    fun makeDefaultGroup(keyText: String) {
+        intercom.settings.makeDefault(keyText)
+    }
+
+    fun deleteGroup(keyText: String) {
+        intercom.settings.deleteGroup(keyText)
+    }
+
+    /** La autoconexión conecta siempre con el grupo por defecto. */
+    fun useDefaultGroup() {
+        intercom.settings.activate(settings.value.defaultGroup)
+    }
+
+    /** Un dispositivo Bluetooth emparejado (candidato a casco). */
+    data class Bonded(val address: String, val name: String, val audio: Boolean)
+
+    /** Dispositivos emparejados, los de audio (cascos, auriculares) primero. Necesita BLUETOOTH_CONNECT. */
+    @SuppressLint("MissingPermission")
+    fun bondedDevices(): List<Bonded> {
+        val adapter = getApplication<Application>().getSystemService(BluetoothManager::class.java)?.adapter ?: return emptyList()
+        return runCatching { adapter.bondedDevices.orEmpty() }.getOrDefault(emptySet()).map {
+            Bonded(it.address, it.name ?: it.address, it.bluetoothClass?.majorDeviceClass == BluetoothClass.Device.Major.AUDIO_VIDEO)
+        }.sortedWith(compareBy({ !it.audio }, { it.name }))
+    }
+
+    /** Casco elegido para la autoconexión (ya asociado con Android si se pudo). */
+    fun setHelmet(address: String, name: String) = update { it.copy(helmetAddress = address, helmetName = name, autoConnect = true) }
 
     /** Resultados de las pruebas de casco de este móvil, en texto para compartir. */
     fun exportHelmets(): String = compat.export("${Build.MANUFACTURER} ${Build.MODEL}")

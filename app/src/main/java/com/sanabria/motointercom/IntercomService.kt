@@ -15,10 +15,13 @@ import android.os.IBinder
 import android.os.PowerManager
 import android.view.KeyEvent
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
 import com.sanabria.motointercom.engine.TalkMode
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import kotlinx.coroutines.flow.combine
@@ -38,7 +41,8 @@ class IntercomService : Service() {
         val riders: Int,
         val talkMode: TalkMode,
         val micMuted: Boolean,
-        val pttLatched: Boolean,
+        /** Sin micro del casco (casco clásico en música primero, o sin casco): solo se escucha. */
+        val noMic: Boolean,
         val groupName: String,
         val helmetButton: Boolean,
     )
@@ -79,6 +83,23 @@ class IntercomService : Service() {
         wakeLock = getSystemService(PowerManager::class.java)
             .newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "motointercom:intercom")
             .apply { acquire(WAKE_LOCK_MS) }
+        // Ya conectado: sobra el aviso de "casco conectado, toca para conectar"
+        NotificationManagerCompat.from(this).cancel(HelmetReceiver.NOTIFICATION_ID)
+        // Con la autoconexión, si se apaga el casco (fin de la ruta) y no vuelve en un rato, se cuelga
+        // Solo cuenta que el casco se apague durante esta conexión, no una desconexión de antes
+        if (app.helmetConnected.value == false) app.helmetConnected.value = null
+        scope.launch {
+            var hangUp: Job? = null
+            app.helmetConnected.collect { connected ->
+                hangUp?.cancel()
+                if (connected == false && app.settings.current.autoConnect) {
+                    hangUp = launch {
+                        delay(HELMET_GONE_MS)
+                        shutdown()
+                    }
+                }
+            }
+        }
         scope.launch {
             combine(app.engine.state, app.settings.settings) { st, s ->
                 Info(
@@ -87,7 +108,7 @@ class IntercomService : Service() {
                     riders = st.nodes.count { it.hops > 0 },
                     talkMode = s.talkMode,
                     micMuted = st.micMuted,
-                    pttLatched = st.pttLatched,
+                    noMic = !st.helmetMic,
                     groupName = s.groupName,
                     helmetButton = s.helmetButton,
                 )
@@ -180,8 +201,8 @@ class IntercomService : Service() {
         val mic = getString(
             when {
                 info.talkMode == TalkMode.MUTE -> R.string.notif_mic_off
-                info.talkMode == TalkMode.PTT -> if (info.pttLatched) R.string.notif_talking else R.string.notif_ptt
                 info.micMuted -> R.string.notif_mic_muted
+                info.noMic -> R.string.notif_listen_only
                 else -> R.string.notif_mic_open
             },
         )
@@ -192,11 +213,7 @@ class IntercomService : Service() {
         }
         b.setContentTitle(getString(R.string.notif_title, info.groupName)).setContentText(text)
         if (info.talkMode != TalkMode.MUTE) {
-            val label = when {
-                info.talkMode == TalkMode.PTT -> if (info.pttLatched) R.string.action_stop_talking else R.string.action_talk
-                info.micMuted -> R.string.action_unmute
-                else -> R.string.action_mute
-            }
+            val label = if (info.micMuted) R.string.action_unmute else R.string.action_mute
             b.addAction(0, getString(label), servicePending(ACTION_TOGGLE_MIC, 1))
         }
         b.addAction(0, getString(R.string.action_stop), servicePending(ACTION_STOP, 2))
@@ -213,6 +230,9 @@ class IntercomService : Service() {
         private const val ACTION_TOGGLE_MIC = "com.sanabria.motointercom.TOGGLE_MIC"
         private const val CHANNEL_ID = "intercom"
         private const val NOTIFICATION_ID = 1
+
+        /** Casco apagado este tiempo con la autoconexión activa: se cuelga. */
+        private const val HELMET_GONE_MS = 2 * 60 * 1000L
 
         /** Un día de ruta como mucho; se suelta al desconectar. */
         private const val WAKE_LOCK_MS = 12 * 60 * 60 * 1000L
