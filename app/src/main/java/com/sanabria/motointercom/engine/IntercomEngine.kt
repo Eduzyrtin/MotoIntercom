@@ -11,6 +11,7 @@ import androidx.core.content.ContextCompat
 import com.sanabria.motointercom.audio.AudioIo
 import com.sanabria.motointercom.audio.VolumeOutputs
 import com.sanabria.motointercom.ble.BleMesh
+import com.sanabria.motointercom.core.audio.BitrateController
 import com.sanabria.motointercom.core.audio.Earcons
 import com.sanabria.motointercom.core.audio.JitterBuffer
 import com.sanabria.motointercom.core.audio.Mixer
@@ -20,6 +21,7 @@ import com.sanabria.motointercom.core.audio.VoiceDecoder
 import com.sanabria.motointercom.core.audio.VoiceFormat
 import com.sanabria.motointercom.core.audio.VolumeLink
 import com.sanabria.motointercom.core.crypto.GroupKeys
+import com.sanabria.motointercom.core.mesh.LinkQuality
 import com.sanabria.motointercom.core.mesh.LinkTransport
 import com.sanabria.motointercom.core.mesh.Router
 import com.sanabria.motointercom.core.mesh.Topology
@@ -48,9 +50,14 @@ data class NodeUi(
     val targetMs: Int,
     val lost: Long,
     val late: Long,
+    /**
+     * Retardo boca-oreja estimado: micro del otro + trama + red + cola de reproducción + salida de este móvil;
+     * null si no hay camino.
+     */
+    val latencyMs: Int?,
 )
 
-data class LinkUi(val info: BleMesh.LinkInfo, val name: String, val txKbps: Float, val rxKbps: Float)
+data class LinkUi(val info: BleMesh.LinkInfo, val name: String, val cost: Int?, val txKbps: Float, val rxKbps: Float)
 
 data class EngineState(
     val running: Boolean = false,
@@ -70,6 +77,11 @@ data class EngineState(
     val pttLatched: Boolean = false,
     val route: AudioIo.Route? = null,
     val volumes: Volumes = Volumes(),
+    /** Latencia medida del micro (hasta la app) y de la salida (de la app al oído), si el sistema la da. */
+    val inputLatencyMs: Int? = null,
+    val outputLatencyMs: Int? = null,
+    /** Calidad de voz en uso (la adaptativa puede ir por debajo de la máxima de los ajustes). */
+    val bitrate: Int = 0,
 )
 
 /** Niveles 0..1 de los tres controles de volumen. */
@@ -99,8 +111,12 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
     @Volatile private var mesh: BleMesh? = null
     private var topology: Topology? = null
     private var router: Router? = null
-    private val linked = HashSet<Int>()
+    /** Enlaces abiertos y el coste que se anuncia de cada uno. */
+    private val linkCosts = HashMap<Int, Int>()
+    private val linkQuality = LinkQuality()
     private var keys: GroupKeys? = null
+    private var bitrateControl = BitrateController(16_000)
+    private var lastAudioTotals = 0L to 0L
 
     private val audio = AudioIo(context, this)
     private val vad = Vad()
@@ -167,8 +183,10 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         synchronized(lock) {
             topology = topo
             router = Router(topo, this)
-            linked.clear()
+            linkCosts.clear()
         }
+        bitrateControl = BitrateController(s.bitrate)
+        lastAudioTotals = 0L to 0L
         reachable = emptySet()
         micMuted = false
         pttLatched = false
@@ -198,7 +216,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         ticker = Executors.newSingleThreadScheduledExecutor { r -> Thread(r, "engine-tick") }.also {
             it.scheduleWithFixedDelay(::tick, TICK_MS, TICK_MS, TimeUnit.MILLISECONDS)
         }
-        _state.value = EngineState(running = true, caps = mesh?.caps, volumes = synchronized(volumeLock) { volumes() })
+        _state.value = EngineState(running = true, caps = mesh?.caps, volumes = synchronized(volumeLock) { volumes() }, bitrate = s.bitrate)
         synchronized(volumeLock) { applyVolumesLocked() }
     }
 
@@ -220,7 +238,8 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         synchronized(lock) {
             router = null
             topology = null
-            linked.clear()
+            linkCosts.forEach { (peer, _) -> linkQuality.forget(peer) }
+            linkCosts.clear()
         }
         lastBytes.clear()
         _state.update {
@@ -237,9 +256,14 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         earconsOn = s.earcons
         if (s.talkMode != TalkMode.PTT) pttLatched = false
         if (!running || old == null) return
-        if (s.bitrate != old.bitrate) pendingBitrate = s.bitrate
+        if (s.bitrate != old.bitrate) {
+            bitrateControl.setMax(s.bitrate)
+            pendingBitrate = bitrateControl.current
+            _state.update { it.copy(bitrate = bitrateControl.current) }
+        }
         if (s.phy != old.phy) mesh?.setPhy(s.phy)
         if (s.maxLinks != old.maxLinks) mesh?.setMaxLinks(s.maxLinks)
+        if (s.learnedLinkLimit == 0 && old.learnedLinkLimit != 0) mesh?.resetLearnedLimit()
         if (s.audioMode != old.audioMode || s.micSource != old.micSource || s.voiceOutput != old.voiceOutput) {
             try {
                 audio.start(s.audioMode, s.micSource, s.voiceOutput)
@@ -279,7 +303,10 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         val s = settings ?: return false
         val k = keys ?: return false
         lastMeshAttempt = clock()
-        val m = BleMesh(context, s.nodeId, AndroidCrypto, k, BleMesh.Options(s.maxLinks, s.longRange, s.phy), this, clock)
+        val m = BleMesh(
+            context, s.nodeId, AndroidCrypto, k,
+            BleMesh.Options(s.maxLinks, s.longRange, s.phy, s.learnedLinkLimit), this, clock,
+        )
         return try {
             m.start()
             mesh = m
@@ -301,8 +328,9 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
     private fun onBluetoothOff() {
         stopMesh()
         synchronized(lock) {
-            linked.clear()
-            topology?.setLocalNeighbors(linked)
+            linkCosts.forEach { (peer, _) -> linkQuality.forget(peer) }
+            linkCosts.clear()
+            topology?.setLocalNeighbors(linkCosts)
         }
         _state.update { it.copy(bluetoothOff = true, mesh = null, links = emptyList()) }
     }
@@ -439,16 +467,17 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
 
     override fun onLinkUp(peer: Int) {
         synchronized(lock) {
-            linked += peer
-            topology?.setLocalNeighbors(linked)
+            linkCosts.putIfAbsent(peer, LinkQuality.DEFAULT_COST)
+            topology?.setLocalNeighbors(linkCosts)
             router?.announce()
         }
     }
 
     override fun onLinkDown(peer: Int) {
         synchronized(lock) {
-            linked -= peer
-            if (topology?.setLocalNeighbors(linked) == true) router?.announce()
+            linkCosts.remove(peer)
+            linkQuality.forget(peer)
+            if (topology?.setLocalNeighbors(linkCosts) == true) router?.announce()
         }
     }
 
@@ -471,10 +500,21 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         val now = clock()
         val nodes: List<Topology.Node>
         val names: Map<Int, String>
+        val announce = now - lastAnnounce >= ANNOUNCE_MS
+        // Cada anuncio lleva el coste medido de cada enlace y la latencia del micro, y ajusta la calidad de voz
+        val snap = if (announce) mesh?.snapshot() else null
+        if (snap != null) adaptBitrate(snap)
         synchronized(lock) {
             val topo = topology ?: return
             val r = router ?: return
-            if (now - lastAnnounce >= ANNOUNCE_MS) {
+            if (announce) {
+                snap?.links?.forEach { l ->
+                    if (l.peer in linkCosts) {
+                        linkCosts[l.peer] = linkQuality.cost(l.peer, LinkQuality.Sample(l.rssi, l.rttMs, l.sentFrames, l.dropped))
+                    }
+                }
+                topo.setLocalNeighbors(linkCosts)
+                topo.selfInputLatencyMs = audio.latency().first ?: 0
                 r.announce()
                 lastAnnounce = now
             }
@@ -488,6 +528,22 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         synchronized(volumeLock) { if (volumeOutputs.pollButtons(volumeLink)) applyVolumesLocked() }
         groupChimes(nodes)
         if (now - lastPublish >= PUBLISH_MS) publish(now, nodes, names)
+    }
+
+    /** Calidad de voz adaptativa: con lo que todos los enlaces enviaron y descartaron desde el último anuncio. */
+    private fun adaptBitrate(snap: BleMesh.Snapshot) {
+        val sent = snap.links.sumOf { it.sentFrames }
+        val dropped = snap.links.sumOf { it.dropped }
+        val (sent0, dropped0) = lastAudioTotals
+        lastAudioTotals = sent to dropped
+        // Si se ha cerrado un enlace los totales bajan: ese periodo no cuenta
+        if (sent < sent0 || dropped < dropped0) return
+        val before = bitrateControl.current
+        val now = bitrateControl.update(sent - sent0, dropped - dropped0)
+        if (now != before) {
+            pendingBitrate = now
+            _state.update { it.copy(bitrate = now) }
+        }
     }
 
     /** Aviso sonoro cuando alguien aparece en el grupo o se pierde (alcanzable directamente o por saltos). */
@@ -508,23 +564,40 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         val dt = (now - lastPublish).coerceAtLeast(1).toFloat()
         lastPublish = now
         fun nameOf(id: Int) = names[id]?.takeIf { it.isNotEmpty() } ?: "%08x".format(id)
+        val costs = synchronized(lock) { HashMap(linkCosts) }
         val links = snap?.links.orEmpty().map { l ->
             val (tx0, rx0) = lastBytes[l.peer] ?: (l.txBytes to l.rxBytes)
             lastBytes[l.peer] = l.txBytes to l.rxBytes
-            LinkUi(l, nameOf(l.peer), (l.txBytes - tx0) * 8f / dt, (l.rxBytes - rx0) * 8f / dt)
+            LinkUi(l, nameOf(l.peer), costs[l.peer], (l.txBytes - tx0) * 8f / dt, (l.rxBytes - rx0) * 8f / dt)
         }
+        val (inLatency, outLatency) = audio.latency()
+        // Red: medio RTT del enlace directo, o medio RTT medio por cada salto
+        val rtts = snap?.links.orEmpty().mapNotNull { l -> l.rttMs?.let { l.peer to it } }.toMap()
+        val halfRtt = if (rtts.isEmpty()) 0 else rtts.values.average().toInt() / 2
         val nodeUi = synchronized(streamsLock) {
             nodes.map { n ->
                 val st = streams[n.id]
+                val speaking = st != null && st.jb.state != JitterBuffer.State.IDLE
+                val target = (st?.jb?.target ?: 2) * VoiceFormat.FRAME_MS
+                val net = when {
+                    n.hops < 1 -> null
+                    n.hops == 1 -> (rtts[n.id] ?: (halfRtt * 2)) / 2
+                    else -> n.hops * halfRtt
+                }
                 NodeUi(
                     id = n.id,
                     name = nameOf(n.id),
                     hops = n.hops,
-                    speaking = st != null && st.jb.state != JitterBuffer.State.IDLE,
+                    speaking = speaking,
                     depthMs = st?.jb?.depthMs ?: 0,
-                    targetMs = (st?.jb?.target ?: 0) * VoiceFormat.FRAME_MS,
+                    targetMs = target,
                     lost = st?.jb?.lost ?: 0,
                     late = st?.jb?.late ?: 0,
+                    latencyMs = net?.let {
+                        // Su micro (o el nuestro como referencia) + trama + red + cola + nuestra salida
+                        (n.inputLatencyMs ?: inLatency ?: 0) + VoiceFormat.FRAME_MS + it +
+                            (if (speaking) st.jb.depthMs else target) + (outLatency ?: 0)
+                    },
                 )
             }
         }
@@ -539,6 +612,8 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
                 micMuted = micMuted,
                 pttLatched = pttLatched,
                 route = route,
+                inputLatencyMs = inLatency,
+                outputLatencyMs = outLatency,
             )
         }
     }

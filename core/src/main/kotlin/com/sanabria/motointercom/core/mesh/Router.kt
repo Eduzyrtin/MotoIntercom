@@ -62,12 +62,13 @@ class Router(private val topology: Topology, private val out: Output) {
         for (p in topology.localNeighbors) if (p != from && p != f.origin) out.send(p, content, false)
     }
 
-    /** Anuncia los vecinos de este nodo. Se llama periódicamente y cada vez que se abre o cierra un enlace. */
+    /** Anuncia los vecinos de este nodo y el coste de cada enlace. Se llama periódicamente y cada vez que cambian. */
     fun announce() {
         val local = topology.localNeighbors
         if (local.isEmpty()) return
         linkStateVersion = Seq.next(linkStateVersion)
-        val content = FrameCodec.encodeBody(Frame.LinkState(selfId, linkStateVersion, 0, topology.selfName, local.toList()))
+        val ls = Frame.LinkState(selfId, linkStateVersion, 0, topology.selfName, topology.selfInputLatencyMs, topology.localLinks)
+        val content = FrameCodec.encodeBody(ls)
         for (p in local) out.send(p, content, false)
     }
 

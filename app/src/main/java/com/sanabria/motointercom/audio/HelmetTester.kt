@@ -182,4 +182,50 @@ class HelmetCompat(context: Context) {
         if (p.size != 4) return null
         return Record(name, p[0].toBooleanStrictOrNull(), p[1].toLongOrNull(), p[2].toBooleanStrictOrNull(), p[3].toLongOrNull())
     }
+
+    /** De dónde sale una recomendación: la prueba de este móvil o la lista de cascos que trae la app. */
+    enum class Source { TESTED, LIST }
+
+    data class Recommendation(val mode: AudioMode, val source: Source)
+
+    /**
+     * Modo recomendado para un casco conectado: lo que diga la prueba hecha aquí (Casco si funcionó; si no, Mezcla si
+     * funcionó) y, si no se ha probado, la lista incluida en la app ([listed]).
+     */
+    fun recommend(headset: String, listed: List<ListedHelmet>): Recommendation? {
+        all().firstOrNull { it.name == headset }?.let { r ->
+            when {
+                r.helmet == true -> return Recommendation(AudioMode.HELMET, Source.TESTED)
+                r.mix == true -> return Recommendation(AudioMode.MIX, Source.TESTED)
+            }
+        }
+        val key = normalize(headset)
+        return listed.firstOrNull { it.key.length >= 3 && key.contains(it.key) }?.let { Recommendation(it.mode, Source.LIST) }
+    }
+
+    /** Resultados de este móvil en texto (TSV) para compartirlos y añadirlos a la lista de la app. */
+    fun export(phone: String): String = buildString {
+        appendLine("helmet\thfp\thfp_ms\tmix\tmix_ms\tphone")
+        for (r in all()) appendLine("${r.name}\t${r.helmet ?: ""}\t${r.helmetMs ?: ""}\t${r.mix ?: ""}\t${r.mixMs ?: ""}\t$phone")
+    }
+
+    /** Un casco de la lista incluida en la app (assets/helmets.tsv). */
+    class ListedHelmet(name: String, val mode: AudioMode) {
+        val key = normalize(name)
+    }
+
+    companion object {
+        /** Lee assets/helmets.tsv: `nombre <TAB> HELMET|MIX <TAB> nota`; las líneas con # son comentarios. */
+        fun listed(context: Context): List<ListedHelmet> = runCatching {
+            context.assets.open("helmets.tsv").bufferedReader().readLines()
+        }.getOrDefault(emptyList()).mapNotNull { line ->
+            if (line.isBlank() || line.startsWith("#")) return@mapNotNull null
+            val p = line.split('\t')
+            val mode = AudioMode.entries.firstOrNull { it.name == p.getOrNull(1)?.trim() } ?: return@mapNotNull null
+            ListedHelmet(p[0].trim(), mode)
+        }
+
+        /** Para comparar nombres Bluetooth: minúsculas, solo letras y números ("SHOEI SRL3 v1.2" → "shoeisrl3v12"). */
+        fun normalize(s: String) = s.lowercase().filter { it.isLetterOrDigit() }
+    }
 }

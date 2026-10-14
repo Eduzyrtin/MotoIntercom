@@ -186,6 +186,10 @@ private fun HelmetSection(
                     style = MaterialTheme.typography.bodySmall,
                 )
             }
+            OutlinedButton(onClick = actions.shareHelmetResults, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.helmets_share))
+            }
+            Text(stringResource(R.string.helmets_share_hint), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
@@ -215,8 +219,19 @@ private fun RadioSection(state: EngineState, settings: IntercomSettings, actions
         LabeledSlider(stringResource(R.string.bitrate_label, settings.bitrate / 1000), settings.bitrate / 1000f, 8f..32f, steps = 5) { v ->
             actions.update { it.copy(bitrate = v.roundToInt() * 1000) }
         }
+        Text(stringResource(R.string.bitrate_hint), style = MaterialTheme.typography.bodySmall)
         LabeledSlider(stringResource(R.string.max_links, settings.maxLinks), settings.maxLinks.toFloat(), 1f..7f, steps = 5) { v ->
             actions.update { it.copy(maxLinks = v.roundToInt()) }
+        }
+        if (settings.learnedLinkLimit > 0) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(R.string.learned_limit, settings.learnedLinkLimit),
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedButton(onClick = actions.forgetLinkLimit) { Text(stringResource(R.string.action_forget)) }
+            }
         }
     }
 }

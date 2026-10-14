@@ -61,12 +61,12 @@
     <string name="unknown">—</string>
     <string name="link_rssi">%1$d dBm</string>
     <string name="link_rtt_ms">%1$d ms</string>
-    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s</string>
+    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s · custo %5$s</string>
     <string name="link_line2">↑%1$.1f ↓%2$.1f kbps · fila %3$d · descartadas %4$d</string>
     <string name="phy_label">PHY das ligações</string>
     <string name="phy_auto">Auto</string>
     <string name="long_range">Anúncio de longo alcance (Coded PHY)</string>
-    <string name="bitrate_label">Qualidade de voz: %1$d kbps</string>
+    <string name="bitrate_label">Qualidade de voz máxima: %1$d kbps</string>
     <string name="max_links">Ligações máximas: %1$d</string>
     <string name="mic_source_label">Microfone em modo mistura</string>
     <string name="mic_voice">Processado</string>
@@ -196,4 +196,19 @@
     <string name="test_recommend_none">Nenhum modo funcionou: verifica o emparelhamento ou usa auriculares com fio.</string>
     <string name="test_both_hint">Funcionam os dois: Capacete usa o microfone do capacete; Mistura mantém a música com boa qualidade.</string>
     <string name="test_use_mode">Usar este modo</string>
+
+    <!-- Bloque 3 -->
+    <string name="latency_line">Latência do telemóvel: entrada %1$s · saída %2$s</string>
+    <string name="bitrate_now">Qualidade de voz agora: %1$d kbps</string>
+    <string name="links_count">Ligações: %1$d de máx. %2$d</string>
+    <string name="chip_limit">limite do chip %1$d</string>
+    <string name="node_latency">boca-ouvido ≈ %1$d ms</string>
+    <string name="bitrate_hint">Desce sozinha (até 8 kbps) se as ligações saturarem e volta a subir quando ficarem livres.</string>
+    <string name="learned_limit">Ligações em simultâneo que o chip aguenta (aprendido): %1$d</string>
+    <string name="action_forget">Esquecer</string>
+    <string name="helmet_hint">Para «%1$s» recomenda-se %2$s (%3$s).</string>
+    <string name="hint_tested">segundo o teu teste</string>
+    <string name="hint_list">segundo a lista de capacetes</string>
+    <string name="helmets_share">Partilhar resultados</string>
+    <string name="helmets_share_hint">Envia-os para os acrescentar à lista de capacetes da app.</string>
 </resources>

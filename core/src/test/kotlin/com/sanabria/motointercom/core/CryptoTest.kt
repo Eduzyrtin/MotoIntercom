@@ -7,6 +7,7 @@ import com.sanabria.motointercom.core.mesh.LinkSession
 import com.sanabria.motointercom.core.protocol.Frame
 import com.sanabria.motointercom.core.protocol.FrameAssembler
 import com.sanabria.motointercom.core.protocol.FrameCodec
+import com.sanabria.motointercom.core.protocol.Neighbor
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -68,7 +69,7 @@ class CryptoTest {
         assertEquals(2, p.a.peerId)
         assertEquals(1, p.b.peerId)
 
-        val ls = Frame.LinkState(1, 5, 0, "Edu", listOf(2))
+        val ls = Frame.LinkState(1, 5, 0, "Edu", 80, listOf(Neighbor(2, 4)))
         p.send(p.a.seal(FrameCodec.encodeBody(ls)), toB = true)
         p.send(p.b.seal(FrameCodec.encodeBody(Frame.Ping(9))), toB = false)
         assertEquals(ls, assertIs<LinkSession.Event.Received>(p.eventsB.last()).frame)

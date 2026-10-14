@@ -7,6 +7,7 @@ import com.sanabria.motointercom.engine.IntercomSettings
 import com.sanabria.motointercom.engine.SettingsRepository
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
@@ -31,6 +32,12 @@ class MotoIntercomApp : Application() {
         scope.launch {
             engine.state.map { it.volumes }.distinctUntilChanged().collect { v ->
                 settings.update { it.copy(voiceLevel = v.voice, mediaLevel = v.media) }
+            }
+        }
+        // El límite de enlaces que aprende la malla se guarda para la próxima conexión
+        scope.launch {
+            engine.state.map { it.mesh?.learnedLimit }.filterNotNull().distinctUntilChanged().collect { l ->
+                settings.update { it.copy(learnedLinkLimit = l) }
             }
         }
     }

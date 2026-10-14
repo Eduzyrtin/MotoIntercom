@@ -66,6 +66,7 @@ class MainActivity : ComponentActivity() {
                 val settings by vm.settings.collectAsStateWithLifecycle()
                 val helmets by vm.helmets.collectAsStateWithLifecycle()
                 val test by vm.helmetTester.state.collectAsStateWithLifecycle()
+                val helmetHint by vm.helmetHint.collectAsStateWithLifecycle()
                 val actions = ScreenActions(
                     start = { withPermissions(connectPermissions()) { startWithBluetooth() } },
                     stop = vm::stop,
@@ -84,6 +85,8 @@ class MainActivity : ComponentActivity() {
                     testHelmet = { mode: AudioMode -> withPermissions(listOf(Manifest.permission.RECORD_AUDIO) + btConnect()) { vm.testHelmet(mode) } },
                     answerHelmetTest = vm::answerHelmetTest,
                     cancelHelmetTest = vm::cancelHelmetTest,
+                    shareHelmetResults = { shareText(vm.exportHelmets()) },
+                    forgetLinkLimit = vm::forgetLinkLimit,
                 )
                 var screen by rememberSaveable { mutableStateOf(Screen.MAIN) }
                 BackHandler(enabled = screen != Screen.MAIN) {
@@ -91,7 +94,7 @@ class MainActivity : ComponentActivity() {
                     screen = if (screen == Screen.HELMET_TEST) Screen.SETTINGS else Screen.MAIN
                 }
                 when (screen) {
-                    Screen.MAIN -> MainScreen(state, settings, permissionsDenied, actions, openSettings = { screen = Screen.SETTINGS })
+                    Screen.MAIN -> MainScreen(state, settings, permissionsDenied, helmetHint, actions, openSettings = { screen = Screen.SETTINGS })
                     Screen.SETTINGS -> SettingsScreen(
                         state, settings, helmets, actions,
                         openHelmetTest = { screen = Screen.HELMET_TEST },
@@ -146,10 +149,10 @@ class MainActivity : ComponentActivity() {
         if (g == null) toast(R.string.invite_invalid) else pendingInvite = g
     }
 
-    private fun shareInvite(uri: String) {
-        val send = Intent(Intent.ACTION_SEND)
-            .setType("text/plain")
-            .putExtra(Intent.EXTRA_TEXT, getString(R.string.invite_share_text, vm.settings.value.groupName, uri))
+    private fun shareInvite(uri: String) = shareText(getString(R.string.invite_share_text, vm.settings.value.groupName, uri))
+
+    private fun shareText(text: String) {
+        val send = Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text)
         startActivity(Intent.createChooser(send, null))
     }
 

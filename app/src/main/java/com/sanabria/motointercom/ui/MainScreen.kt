@@ -45,7 +45,9 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.sanabria.motointercom.IntercomViewModel
 import com.sanabria.motointercom.R
+import com.sanabria.motointercom.audio.HelmetCompat
 import com.sanabria.motointercom.ble.BleMesh
 import com.sanabria.motointercom.engine.AudioMode
 import com.sanabria.motointercom.engine.EngineError
@@ -61,6 +63,7 @@ fun MainScreen(
     state: EngineState,
     settings: IntercomSettings,
     permissionsDenied: Boolean,
+    helmetHint: IntercomViewModel.HelmetHint?,
     actions: ScreenActions,
     openSettings: () -> Unit,
 ) {
@@ -80,6 +83,7 @@ fun MainScreen(
                 }
             }
             ConnectionSection(state, settings, permissionsDenied, actions)
+            helmetHint?.let { HelmetHintCard(it, actions) }
             TalkSection(state, settings, actions)
             VolumeSection(state, settings, actions)
             GroupSection(state)
@@ -89,6 +93,26 @@ fun MainScreen(
 }
 
 // --- Conexión ---
+
+/** El casco conectado tiene un modo recomendado (por la prueba de este móvil o por la lista de cascos) distinto del puesto. */
+@Composable
+private fun HelmetHintCard(hint: IntercomViewModel.HelmetHint, actions: ScreenActions) {
+    val mode = hint.recommendation.mode
+    Section(stringResource(R.string.section_helmet)) {
+        Text(
+            stringResource(
+                R.string.helmet_hint,
+                hint.headset,
+                stringResource(audioModeLabel(mode)),
+                stringResource(
+                    if (hint.recommendation.source == HelmetCompat.Source.TESTED) R.string.hint_tested else R.string.hint_list,
+                ),
+            ),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        OutlinedButton(onClick = { actions.update { it.copy(audioMode = mode) } }) { Text(stringResource(R.string.test_use_mode)) }
+    }
+}
 
 @Composable
 private fun ConnectionSection(state: EngineState, settings: IntercomSettings, permissionsDenied: Boolean, actions: ScreenActions) {
@@ -297,6 +321,7 @@ private fun GroupSection(state: EngineState) {
                     val speaking = if (n.speaking) " · " + stringResource(R.string.node_speaking) else ""
                     Text(hops + speaking, style = MaterialTheme.typography.bodySmall)
                     Text(stringResource(R.string.node_stats, n.depthMs, n.targetMs, n.lost, n.late), style = MaterialTheme.typography.bodySmall)
+                    n.latencyMs?.let { Text(stringResource(R.string.node_latency, it), style = MaterialTheme.typography.bodySmall) }
                 }
             }
         }
@@ -310,9 +335,21 @@ private fun DiagnosticsSection(state: EngineState) {
             Text(stringResource(R.string.route_input, deviceLabel(r.inputType, r.inputName)), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.route_output, deviceLabel(r.outputType, r.outputName)), style = MaterialTheme.typography.bodySmall)
         }
+        val unknown = stringResource(R.string.unknown)
+        if (state.running) {
+            val input = state.inputLatencyMs?.let { stringResource(R.string.link_rtt_ms, it) } ?: unknown
+            val output = state.outputLatencyMs?.let { stringResource(R.string.link_rtt_ms, it) } ?: unknown
+            Text(stringResource(R.string.latency_line, input, output), style = MaterialTheme.typography.bodySmall)
+        }
         state.mesh?.let { m ->
             Text(
                 stringResource(if (m.scanMode == BleMesh.ScanMode.FAST) R.string.scan_mode_fast else R.string.scan_mode_saving),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Text(stringResource(R.string.bitrate_now, state.bitrate / 1000), style = MaterialTheme.typography.bodySmall)
+            val count = stringResource(R.string.links_count, state.links.size, m.maxLinks)
+            Text(
+                if (m.learnedLimit > 0) count + " · " + stringResource(R.string.chip_limit, m.learnedLimit) else count,
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -327,10 +364,10 @@ private fun DiagnosticsSection(state: EngineState) {
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                val unknown = stringResource(R.string.unknown)
                 val rssi = i.rssi?.let { stringResource(R.string.link_rssi, it) } ?: unknown
                 val rtt = i.rttMs?.let { stringResource(R.string.link_rtt_ms, it) } ?: unknown
-                Text(stringResource(R.string.link_line1, rssi, phyName(i.txPhy), phyName(i.rxPhy), rtt), style = MaterialTheme.typography.bodySmall)
+                val cost = l.cost?.toString() ?: unknown
+                Text(stringResource(R.string.link_line1, rssi, phyName(i.txPhy), phyName(i.rxPhy), rtt, cost), style = MaterialTheme.typography.bodySmall)
                 Text(stringResource(R.string.link_line2, l.txKbps, l.rxKbps, i.queued, i.dropped), style = MaterialTheme.typography.bodySmall)
             }
         }

@@ -12,6 +12,19 @@
     - Al apagar y encender el Bluetooth, el enlace vuelve solo.
     - El botón de reproducir/pausa (vía MediaSession) silencia el micro y la notificación lo refleja.
     - La invitación por enlace y el asistente del casco funcionan.
+- 14/10/2026: Bloque 3 (robustez y calidad) programado: protocolo 3, 40 pruebas del núcleo y lint limpio.
+  - Rutas por coste de enlace.
+  - Latencia medida y retardo boca-oreja estimado.
+  - Lista de cascos con recomendación.
+  - Límite de enlaces del chip aprendido.
+  - Enlaces muertos por ping.
+  - Calidad de voz adaptativa.
+  - AAudio (T21) y DRED (T24) descartadas, con su motivo en §7.
+  - Visto en dos emuladores:
+    - Coste 4 por enlace.
+    - Latencia de entrada 3–10 ms y de salida 155–173 ms.
+    - Boca-oreja estimado de 270–350 ms, con el búfer bajando solo de 60 a 40 ms.
+    - Con la app de un móvil congelada, el otro corta el enlace a los 6 s y reconecta en unos 10 s al volver.
 
 ## 1. Qué es
 
@@ -28,7 +41,8 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 | Stack | Kotlin nativo + Compose; núcleo `:core` en Kotlin puro (solo stdlib, nada de `synchronized` ni `java.*`) | Lo crítico (L2CAP, audio en tiempo real con ruta HFP/A2DP, segundo plano) es nativo en las dos plataformas: Flutter solo compartiría la interfaz. `:core` pasa a Kotlin Multiplatform sin reescribirse |
 | Códec | Opus 1.5.2 (C, `third_party/opus`), 16 kHz mono, 20 ms, 16 kbps, FEC | Compila igual en iOS; PLC y FEC para tramas descartadas |
 | Transporte | BLE L2CAP CoC (Android 10+, iOS 11+), sin emparejar en el sistema | Compatible con iOS; detrás de `LinkTransport` para añadir Wi-Fi Aware o internet |
-| Topología | Malla con relevo (estado de enlaces + árbol de caminos mínimos por origen) | En fila, el primero oye al último a través de los del medio; si todos se ven, nadie reenvía |
+| Topología | Malla con relevo (estado de enlaces + árbol de caminos de menor coste por origen) | En fila, el primero oye al último a través de los del medio; si todos se ven, nadie reenvía; un enlace directo malo se evita si hay dos saltos buenos |
+| Calidad de voz | Opus adaptativo: baja de 16 a 12 y 8 kbps si las colas descartan voz, sube cuando van limpias | Las pérdidas aquí son de saturación (L2CAP no pierde), no de radio: menos bitrate alivia; más redundancia (DRED) cargaría más |
 | Grupos | Nombre + clave aleatoria de 32 bytes; se comparte por QR, por enlace `motointercom://join` o pegando el texto | Dos grupos con el mismo nombre no se mezclan; el código corto (del advId) deja comprobar que todos están en el mismo |
 | Cifrado | AES-256-GCM por enlace (clave derivada de la del grupo y de dos nonces); el enlace solo vale si el otro demuestra tener la clave | Sin la clave no se oye ni se inyecta nada; el contador implícito solo suma la etiqueta (16 B por trama) |
 | Segundo plano | Servicio en primer plano (micrófono + dispositivo conectado) con notificación; el motor vive en la Application | Pantalla apagada y app cerrada sin cortar; la notificación silencia y desconecta |
@@ -46,11 +60,12 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 core/  (Kotlin puro, KMP-ready)
   protocol/  Bytes.kt (big-endian, Seq 16 bits) · Frame.kt (tramas, FrameCodec, FrameAssembler) · AdvInfo.kt (anuncio)
   crypto/    Crypto.kt (CryptoProvider, GroupKeys, LinkCipher) · GroupInvite.kt (Group, invitación motointercom://)
-  mesh/      LinkSession.kt (saludo y cifrado de un enlace) · Topology.kt (grafo, árboles BFS por origen, caducidad)
+  mesh/      LinkSession.kt (saludo y cifrado de un enlace) · Topology.kt (grafo con costes, Dijkstra por origen, caducidad)
              Router.kt (entrega, reenvío, duplicados por sesión, anuncios) · LinkPolicy.kt (a quién conectar, reintentos)
+             LinkQuality.kt (coste de cada enlace con histéresis) · LinkLimitLearner.kt (enlaces que aguanta el chip)
              LinkTransport.kt (interfaz de transporte)
   audio/     Voice.kt (formato, interfaces de códec) · JitterBuffer.kt · Mixer.kt (limitador suave) · Vad.kt · TalkSender.kt
-             VolumeLink.kt (maestro sobre voz y multimedia) · Earcons.kt (avisos sonoros)
+             VolumeLink.kt (maestro sobre voz y multimedia) · Earcons.kt (avisos sonoros) · BitrateController.kt (calidad adaptativa)
 app/
   MotoIntercomApp.kt (dueña del motor y los ajustes) · IntercomService.kt (servicio en primer plano, notificación, MediaSession)
   MainActivity.kt (pantallas, permisos, encender BT, invitaciones: enlace, QR, portapapeles) · IntercomViewModel.kt
@@ -58,7 +73,8 @@ app/
   ble/       BleMesh.kt (anuncio 1M + Coded, escaneo adaptativo, servidor L2CAP, GATT→L2CAP, duplicados, reintentos)
              BleLink.kt (lectura/escritura por enlace; cifra al escribir; cola con descarte de voz vieja) · GattHandle
   audio/     AudioIo.kt (rutas HFP/mezcla, recuperación de la ruta al casco, teclas multimedia) · VolumeOutputs.kt
-             HelmetTester.kt (asistente: grabar, reproducir, medir) + HelmetCompat (resultados por casco)
+             HelmetTester.kt (asistente: grabar, reproducir, medir) + HelmetCompat (resultados por casco, lista, recomendación)
+  assets/    helmets.tsv (lista de cascos con modo recomendado; se rellena con los resultados compartidos)
   opus/      Opus.kt + cpp/opus_jni.c (JNI), cpp/CMakeLists.txt (Opus como estática, -O2 también en Debug)
   engine/    IntercomEngine.kt (une todo; malla que se rehace con el BT; avisos; micro del casco) · Settings.kt (+ repositorio)
   ui/        MainScreen · SettingsScreen · HelmetTestScreen · GroupDialogs (QR, grupo nuevo, unirse) · Components · Theme
@@ -73,7 +89,7 @@ Hilos:
 
 Cerrojos: malla → jitter buffers, siempre en ese orden. `BleMesh` nunca avisa al motor con su cerrojo cogido.
 
-## 4. Protocolo (versión 2)
+## 4. Protocolo (versión 3)
 
 **Anuncio BLE.** Servicio `6d6f746f-6963-4f6d-a001-000000000001`. Datos de servicio (12 B): `u8 protocolo, u32 grupo (advId), u32 nodo, u16 PSM, u8 flags`.
 - Anuncio normal (1M, conectable y escaneable): el UUID va en el anuncio y los datos en la respuesta al escaneo.
@@ -103,7 +119,7 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 | 1 Hello | `u8 protocolo, u32 nodo, u32 advId, 16 B nonce, 16 B MAC` (en claro) |
 | 6 Ready | — (primera trama cifrada) |
 | 2 Audio | `u32 origen, u32 sesión, u32 contador, u8 flags (1 START, 2 END), u8 saltos, paquete Opus` |
-| 3 LinkState | `u32 origen, u16 versión, u8 saltos, u8 len + nombre, u8 n, n × u32 vecino` |
+| 3 LinkState | `u32 origen, u16 versión, u8 saltos, u8 len + nombre, u16 latencia del micro (ms), u8 n, n × (u32 vecino, u8 coste)` |
 | 4 Ping / 5 Pong | `u32 tiempo` (RTT por enlace) |
 
 **Invitación:** `motointercom://join?v=1&n=<nombre en %>&k=<clave base64url>`. Va en el QR, se comparte como texto y abre la app desde un enlace.
@@ -112,11 +128,22 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 
 - Cada nodo inunda su lista de vecinos (LinkState) cada 2 s y al abrir o cerrar un enlace. Una entrada caduca a los 6 s sin noticias. El nombre de cada nodo viaja aquí (cifrado), no en el Hello.
 - Un enlace entre otros dos nodos existe si cualquiera de los dos lo anuncia. Los enlaces propios los decide el estado local.
-- Para cada origen, todos calculan el mismo árbol BFS (desempate por id). Un nodo solo reenvía a sus hijos en el árbol del origen.
+- **Coste de cada enlace** (`LinkQuality`, cada 2 s, va en el LinkState): 4 por salto más penalizaciones.
+  - Señal (RSSI suavizado): +0 desde −70 dBm, +2 desde −80, +4 desde −88 y +6 por debajo.
+  - Voz descartada en la cola: +0 por debajo del 1 %, +2 hasta el 5 %, +4 hasta el 15 % y +6 por encima.
+  - RTT por encima de 150 ms: +2.
+  - Histéresis: el coste anunciado solo cambia si el nuevo se repite 3 veces seguidas.
+  - El coste de un enlace es el peor de lo que anuncien sus dos extremos.
+- Para cada origen, todos calculan el mismo árbol de menor coste (Dijkstra; a igual distancia gana el padre de id menor). Un nodo solo reenvía a sus hijos en el árbol del origen.
 - Si el origen aún no está en el grafo, se inunda a todos menos al que la trajo.
 - Duplicados: ventana de contadores por origen y sesión. Una sesión nueva (el emisor se ha reconectado) empieza ventana y cola de reproducción.
 - Límite de 8 saltos.
 - Enlaces: como mucho `maxLinks` (4 por defecto), los de mejor RSSI. Se aceptan hasta 2 entrantes de más.
+- **Límite del chip** (`LinkLimitLearner`): Android no dice cuántos enlaces LE aguanta el controlador.
+  - Se aprende: si añadir un enlace falla 3 veces seguidas con los mismos enlaces abiertos (al menos 2) y un nodo que se ve a −75 dBm o mejor, ese número es el límite.
+  - Si luego un enlace más funciona (también uno entrante), sube.
+  - Se guarda por móvil y se puede olvidar en Ajustes → Radio.
+- **Enlaces muertos:** sin nada del otro (ni el pong del ping de cada segundo) en 6 s, se cierra y se reconecta sin esperar al timeout del Bluetooth.
 - Reintentos tras un fallo: 1, 2, 4, 8 s y como mucho 15 s.
 - **Escaneo adaptativo:** rápido mientras no hay enlaces, falta alguien del grupo que se ve o la malla ha cambiado hace menos de 30 s; si no, en ahorro. Se rearranca como mucho cada 10 s (Android permite 5 arranques cada 30 s). Si el escaneo o el anuncio fallan, se reintentan.
 - **Bluetooth apagado:** se cierra la malla y se avisa en pantalla y en la notificación; al encenderlo se crea una nueva. Si falla, se reintenta cada 5 s.
@@ -128,6 +155,13 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
   - Opus codifica todo, aunque no se envíe. `TalkSender` envía 2 tramas previas (pre-roll) al abrir y marca START/END.
 - **Micro desde el casco o la notificación:** en PTT, una pulsación abre el micro hasta la siguiente. En Auto y Abierto, lo silencia o lo devuelve. Suena un pitido agudo o grave según cómo queda.
 - **Envío:** cola por enlace de 5 tramas de voz (100 ms). Si va llena se tira la más vieja; el control no se descarta.
+- **Calidad adaptativa** (`BitrateController`, cada 2 s, con la voz enviada y descartada por todos los enlaces):
+  - Con más del 5 % descartado baja un escalón de 4 kbps, hasta 8 kbps.
+  - Tras 5 periodos por debajo del 1 % sube un escalón, hasta el máximo de Ajustes.
+  - Con menos de 25 tramas en el periodo no decide.
+- **Latencia:** `AudioRecord.getTimestamp` y `AudioTrack.getTimestamp`, una vez por segundo, dan cuánto tarda el micro en entregar y la salida en sonar (incluido el Bluetooth si el sistema lo informa).
+  - Cada nodo anuncia la latencia de su micro en el LinkState.
+  - El retardo boca-oreja de cada miembro se estima como: micro del otro + trama (20 ms) + red (½ RTT por salto) + cola de reproducción + salida propia.
 - **Recepción:** un jitter buffer por origen, que empieza en 2 tramas y llega a 12.
   - Si falta una trama y hay posteriores, se da por perdida: se reconstruye con el FEC de la siguiente o con PLC.
   - Si no llega nada, el objetivo sube una trama y vuelve a acumular sin saltar la que falta. A los 300 ms sin nada, la ráfaga se acaba.
@@ -149,6 +183,9 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
   3. Pregunta si se ha oído bien.
 
   Guarda por casco si cada modo funcionó y el tiempo de ruta, y recomienda Casco si funciona; si no, Mezcla.
+- **Lista de cascos:** `assets/helmets.tsv` (nombre o parte del nombre Bluetooth, modo, nota).
+  - Si hay un casco conectado con modo recomendado distinto del puesto, la pantalla principal lo propone, por la prueba de este móvil o, si no se ha probado, por la lista.
+  - «Compartir resultados» exporta las pruebas en TSV para ir llenando la lista.
 
 ## 7. Hoja de ruta
 
@@ -177,11 +214,14 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 
 ### Bloque 3 — Robustez y calidad
 
-- [ ] T20 Árbol con peso por calidad de enlace (RSSI, RTT, descartes) en vez de solo saltos
-- [ ] T21 AAudio si AudioRecord/AudioTrack se quedan cortos de latencia
-- [ ] T22 Lista de compatibilidad de cascos compartida (modelo → modo recomendado), a partir de los resultados del asistente
-- [ ] T23 Límite de enlaces según el chipset
-- [ ] T24 Opus DRED para enlaces con muchas pérdidas
+- [x] T20 Rutas por calidad de enlace: coste por RSSI, descartes y RTT con histéresis, anunciado en el LinkState (protocolo 3) y Dijkstra determinista
+- [-] T21 AAudio — descartada. Con el casco por Bluetooth (SCO/A2DP) la latencia la ponen el enlace y su búfer, no la API; el camino MMAP de AAudio solo sirve para altavoz y cable. Sustituida por T25, que mide la latencia real
+- [x] T22 Lista de cascos: `assets/helmets.tsv` + resultados del asistente, recomendación al conectar un casco y exportación de resultados
+- [x] T23 Límite de enlaces del chip, aprendido por fallos con buena señal, guardado por móvil y con opción de olvidarlo
+- [-] T24 Opus DRED — descartada. L2CAP no pierde: las pérdidas solo salen de colas saturadas, donde más redundancia añade carga; además exige varios MB de pesos de red neuronal. Sustituida por T27
+- [x] T25 Latencia medida (entrada y salida del móvil) en Diagnóstico y retardo boca-oreja estimado por miembro del grupo
+- [x] T26 Enlaces muertos: sin respuesta en 6 s se cierran y se reconectan
+- [x] T27 Calidad de voz adaptativa (16 → 12 → 8 kbps según los descartes); el ajuste pasa a ser el máximo
 
 ### Bloque 4 — iOS (necesita un Mac con Xcode)
 
@@ -208,4 +248,5 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - **Escáner de QR de Play Services:** trae un `androidx.fragment` viejo y lint falla con `registerForActivityResult`. Se fuerza `fragment-ktx` 1.8.5.
 - **Núcleo KMP:** `synchronized` y `toSortedSet` son solo JVM; en `:core` se evitan y los cerrojos los pone quien lo usa. `kotlin.concurrent.Volatile` sí es común.
 - **Emuladores:** dos AVD arrancados a la vez comparten Bluetooth virtual (anuncio, escaneo, Coded PHY, L2CAP): sirven para probar la malla de punta a punta. Sin casco, el asistente lo detecta ("la ruta no llegó al casco").
+- **Rutas con costes:** para que todos los nodos calculen el mismo árbol, el coste de un enlace propio no puede ser la medida del momento. Es el último coste anunciado (el que ven los demás), combinado igual que el resto: el peor de los dos extremos.
 - **Riesgo abierto:** el BLE entre móviles y el audio Bluetooth al casco comparten la radio del teléfono. Con SCO o A2DP activos, el enlace BLE puede ir más justo. Se mira en "Enlaces": kbps, cola y descartadas.

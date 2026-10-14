@@ -115,6 +115,14 @@ class BleLink(
     @Volatile var dropped = 0L
         private set
 
+    /** Tramas de voz que han salido de verdad (no descartadas). */
+    @Volatile var sentAudio = 0L
+        private set
+
+    /** Última vez que llegó algo válido del otro (con el ping, al menos una vez por segundo). */
+    @Volatile var lastRxAt = clock()
+        private set
+
     private val closed = AtomicBoolean(false)
     private val lock = ReentrantLock()
     private val notEmpty = lock.newCondition()
@@ -188,7 +196,9 @@ class BleLink(
     }
 
     private fun onContent(b: ByteArray, off: Int, len: Int) {
-        when (val e = session.onContent(b, off, len)) {
+        val e = session.onContent(b, off, len)
+        if (e != null && e !is LinkSession.Event.Failed) lastRxAt = clock()
+        when (e) {
             is LinkSession.Event.PeerHello -> {
                 peer = e.nodeId
                 if (events.onPeerHello(this, e.nodeId)) {
@@ -224,6 +234,7 @@ class BleLink(
                 out.write(bytes)
                 out.flush()
                 txBytes += bytes.size
+                if (item.audio) sentAudio++
             }
         } catch (_: Exception) {
             close()

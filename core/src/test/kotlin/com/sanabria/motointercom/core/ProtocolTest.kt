@@ -5,6 +5,7 @@ import com.sanabria.motointercom.core.protocol.Frame
 import com.sanabria.motointercom.core.protocol.FrameAssembler
 import com.sanabria.motointercom.core.protocol.FrameCodec
 import com.sanabria.motointercom.core.protocol.MalformedFrameException
+import com.sanabria.motointercom.core.protocol.Neighbor
 import com.sanabria.motointercom.core.protocol.Seq
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -37,7 +38,7 @@ class ProtocolTest {
         assertSame(Frame.Ready, roundTrip(Frame.Ready))
         assertEquals(Frame.Ping(123456), roundTrip(Frame.Ping(123456)))
         assertEquals(Frame.Pong(-1), roundTrip(Frame.Pong(-1)))
-        val ls = Frame.LinkState(7, 65535, 3, "Ñandú", listOf(1, 2, -3))
+        val ls = Frame.LinkState(7, 65535, 3, "Ñandú", 120, listOf(Neighbor(1, 4), Neighbor(2, 255), Neighbor(-3, 9)))
         assertEquals(ls, roundTrip(ls))
 
         val a = assertIs<Frame.Audio>(roundTrip(Frame.Audio(-9, 77, -2, Frame.Audio.START, 2, byteArrayOf(1, 2, 3))))
@@ -51,7 +52,7 @@ class ProtocolTest {
 
     @Test
     fun assemblerHandlesSplitAndMergedReads() {
-        val frames = listOf(Frame.Ping(1), Frame.LinkState(1, 2, 0, "x", emptyList()), Frame.Pong(4))
+        val frames = listOf(Frame.Ping(1), Frame.LinkState(1, 2, 0, "x", 0, emptyList()), Frame.Pong(4))
         val stream = frames.map { FrameCodec.encode(it) }.reduce { a, b -> a + b }
         val out = mutableListOf<Frame>()
         val asm = FrameAssembler.plain { out += it }

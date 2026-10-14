@@ -47,8 +47,11 @@ data class IntercomSettings(
     val vadSensitivity: Float = 0.5f,
     val phy: PhyPreference = PhyPreference.AUTO,
     val longRange: Boolean = true,
+    /** Calidad de voz máxima: la adaptativa baja de aquí si los enlaces se saturan. */
     val bitrate: Int = 16_000,
     val maxLinks: Int = 4,
+    /** Enlaces a la vez que aguanta el chip de este móvil, aprendido al conectar (0 = no se sabe). */
+    val learnedLinkLimit: Int = 0,
     val micSource: MicSource = MicSource.VOICE,
     val voiceOutput: VoiceOutput = VoiceOutput.MEDIA,
     /** El botón de reproducir/pausa del casco abre y cierra el micro (en PTT, habla mientras está activado). */
@@ -115,6 +118,7 @@ class SettingsRepository(context: Context) {
             longRange = prefs.getBoolean("longRange", d.longRange),
             bitrate = prefs.getInt("bitrate", d.bitrate),
             maxLinks = prefs.getInt("maxLinks", d.maxLinks),
+            learnedLinkLimit = prefs.getInt("learnedLinkLimit", d.learnedLinkLimit),
             micSource = enumOr(prefs.getString("micSource", null), d.micSource),
             voiceOutput = enumOr(prefs.getString("voiceOutput", null), d.voiceOutput),
             helmetButton = prefs.getBoolean("helmetButton", d.helmetButton),
@@ -135,6 +139,7 @@ class SettingsRepository(context: Context) {
         putBoolean("longRange", s.longRange)
         putInt("bitrate", s.bitrate)
         putInt("maxLinks", s.maxLinks)
+        putInt("learnedLinkLimit", s.learnedLinkLimit)
         putString("micSource", s.micSource.name)
         putString("voiceOutput", s.voiceOutput.name)
         putBoolean("helmetButton", s.helmetButton)

@@ -59,12 +59,12 @@
     <string name="unknown">—</string>
     <string name="link_rssi">%1$d dBm</string>
     <string name="link_rtt_ms">%1$d ms</string>
-    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s</string>
+    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s · Kosten %5$s</string>
     <string name="link_line2">↑%1$.1f ↓%2$.1f kbps · Warteschlange %3$d · verworfen %4$d</string>
     <string name="phy_label">PHY der Verbindungen</string>
     <string name="phy_auto">Auto</string>
     <string name="long_range">Advertising mit großer Reichweite (Coded PHY)</string>
-    <string name="bitrate_label">Sprachqualität: %1$d kbps</string>
+    <string name="bitrate_label">Maximale Sprachqualität: %1$d kbps</string>
     <string name="max_links">Maximale Verbindungen: %1$d</string>
     <string name="mic_source_label">Mikro im Mix-Modus</string>
     <string name="mic_voice">Bearbeitet</string>
@@ -193,4 +193,19 @@
     <string name="test_recommend_none">Kein Modus hat funktioniert: Prüfe die Kopplung oder nutze Kabelkopfhörer.</string>
     <string name="test_both_hint">Beide funktionieren: Helm nutzt das Helmmikro; Mix behält die Musik in guter Qualität.</string>
     <string name="test_use_mode">Diesen Modus verwenden</string>
+
+    <!-- Bloque 3 -->
+    <string name="latency_line">Latenz des Handys: Eingang %1$s · Ausgang %2$s</string>
+    <string name="bitrate_now">Sprachqualität jetzt: %1$d kbps</string>
+    <string name="links_count">Verbindungen: %1$d von max. %2$d</string>
+    <string name="chip_limit">Chip-Limit %1$d</string>
+    <string name="node_latency">Mund zu Ohr ≈ %1$d ms</string>
+    <string name="bitrate_hint">Sinkt von selbst (bis 8 kbps), wenn die Verbindungen überlastet sind, und steigt wieder, wenn sie frei werden.</string>
+    <string name="learned_limit">Gleichzeitige Verbindungen, die der Chip schafft (gelernt): %1$d</string>
+    <string name="action_forget">Vergessen</string>
+    <string name="helmet_hint">Für „%1$s“ wird %2$s empfohlen (%3$s).</string>
+    <string name="hint_tested">laut deinem Test</string>
+    <string name="hint_list">laut Helmliste</string>
+    <string name="helmets_share">Ergebnisse teilen</string>
+    <string name="helmets_share_hint">Schick sie, damit sie in die Helmliste der App kommen.</string>
 </resources>

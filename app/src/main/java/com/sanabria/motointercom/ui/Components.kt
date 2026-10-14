@@ -45,6 +45,8 @@ class ScreenActions(
     val testHelmet: (AudioMode) -> Unit,
     val answerHelmetTest: (Boolean) -> Unit,
     val cancelHelmetTest: () -> Unit,
+    val shareHelmetResults: () -> Unit,
+    val forgetLinkLimit: () -> Unit,
 )
 
 @Composable

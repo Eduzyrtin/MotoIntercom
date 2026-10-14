@@ -41,8 +41,19 @@ sealed class Frame {
         }
     }
 
-    /** Estado de enlaces de [origin] (sus vecinos directos). Se inunda por la malla para que todos calculen las rutas. */
-    data class LinkState(val origin: Int, val version: Int, val hops: Int, val name: String, val neighbors: List<Int>) : Frame()
+    /**
+     * Estado de enlaces de [origin]: sus vecinos directos con el coste de cada enlace (ver LinkQuality). Se inunda por la
+     * malla para que todos calculen las mismas rutas. [inputLatencyMs] es lo que tarda su micro en entregar el audio
+     * (para estimar el retardo boca-oreja); 0 si no lo sabe.
+     */
+    data class LinkState(
+        val origin: Int,
+        val version: Int,
+        val hops: Int,
+        val name: String,
+        val inputLatencyMs: Int,
+        val neighbors: List<Neighbor>,
+    ) : Frame()
 
     /** Medida de ida y vuelta de un enlace: el otro extremo devuelve [time] en un [Pong]. */
     data class Ping(val time: Int) : Frame()
@@ -50,8 +61,11 @@ sealed class Frame {
     data class Pong(val time: Int) : Frame()
 }
 
+/** Un vecino directo en un [Frame.LinkState]: id y coste del enlace (1..255; más es peor). */
+data class Neighbor(val id: Int, val cost: Int)
+
 object FrameCodec {
-    const val PROTOCOL = 2
+    const val PROTOCOL = 3
     const val MAX_FRAME = 2048
     const val MAX_NAME_BYTES = 32
     const val MAX_NEIGHBORS = 32
@@ -106,9 +120,13 @@ object FrameCodec {
                 w.u16(f.version)
                 w.u8(f.hops)
                 name(w, f.name)
+                w.u16(f.inputLatencyMs.coerceIn(0, 0xFFFF))
                 val n = minOf(f.neighbors.size, MAX_NEIGHBORS)
                 w.u8(n)
-                for (i in 0 until n) w.u32(f.neighbors[i])
+                for (i in 0 until n) {
+                    w.u32(f.neighbors[i].id)
+                    w.u8(f.neighbors[i].cost.coerceIn(1, 255))
+                }
             }
             is Frame.Ping -> {
                 w.u8(PING)
@@ -141,8 +159,9 @@ object FrameCodec {
                 val version = r.u16()
                 val hops = r.u8()
                 val name = name(r)
+                val latency = r.u16()
                 val n = r.u8()
-                Frame.LinkState(origin, version, hops, name, List(n) { r.u32() })
+                Frame.LinkState(origin, version, hops, name, latency, List(n) { Neighbor(r.u32(), r.u8()) })
             }
             PING -> Frame.Ping(r.u32())
             PONG -> Frame.Pong(r.u32())

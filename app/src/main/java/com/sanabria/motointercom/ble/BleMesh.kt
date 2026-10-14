@@ -18,6 +18,7 @@ import android.content.Context
 import android.os.ParcelUuid
 import com.sanabria.motointercom.core.crypto.CryptoProvider
 import com.sanabria.motointercom.core.crypto.GroupKeys
+import com.sanabria.motointercom.core.mesh.LinkLimitLearner
 import com.sanabria.motointercom.core.mesh.LinkPolicy
 import com.sanabria.motointercom.core.mesh.LinkSession
 import com.sanabria.motointercom.core.mesh.LinkTransport
@@ -56,7 +57,8 @@ class BleMesh(
     private val clock: () -> Long,
 ) : LinkTransport {
 
-    data class Options(val maxLinks: Int, val longRange: Boolean, val phy: PhyPreference)
+    /** [learnedLimit] = límite de enlaces del chip aprendido en conexiones anteriores (0 = no se sabe). */
+    data class Options(val maxLinks: Int, val longRange: Boolean, val phy: PhyPreference, val learnedLimit: Int = 0)
 
     data class Caps(val codedPhy: Boolean, val le2M: Boolean, val extendedAdvertising: Boolean, val maxAdvertisingData: Int)
 
@@ -73,6 +75,7 @@ class BleMesh(
         val rttMs: Int?,
         val txBytes: Long,
         val rxBytes: Long,
+        val sentFrames: Long,
         val dropped: Long,
         val queued: Int,
     )
@@ -87,6 +90,9 @@ class BleMesh(
         val links: List<LinkInfo>,
         val problem: Problem?,
         val problemCode: Int,
+        /** Enlaces máximos en uso: los del usuario, sin pasar del límite aprendido del chip. */
+        val maxLinks: Int,
+        val learnedLimit: Int,
     )
 
     private class Seen(var device: BluetoothDevice, var psm: Int, var rssi: Int, var lastSeen: Long, var waitingSince: Long)
@@ -103,7 +109,9 @@ class BleMesh(
     private val links = mutableListOf<BleLink>()
     private val seen = HashMap<Int, Seen>()
     private val connecting = HashSet<Int>()
-    private val policy = LinkPolicy(selfId).apply { maxLinks = options.maxLinks }
+    private var userMaxLinks = options.maxLinks
+    private val learner = LinkLimitLearner(options.learnedLimit)
+    private val policy = LinkPolicy(selfId).apply { maxLinks = learner.limit(options.maxLinks) }
 
     @Volatile private var running = false
     @Volatile private var phy = options.phy
@@ -160,18 +168,35 @@ class BleMesh(
         synchronized(lock) { links.filter { it.ready } }.forEach { applyPhy(it) }
     }
 
-    fun setMaxLinks(n: Int) = synchronized(lock) { policy.maxLinks = n }
+    fun setMaxLinks(n: Int) = synchronized(lock) {
+        userMaxLinks = n
+        policy.maxLinks = learner.limit(n)
+    }
+
+    /** Olvida el límite aprendido del chip (el usuario lo pide desde Ajustes). */
+    fun resetLearnedLimit() = synchronized(lock) {
+        learner.reset()
+        policy.maxLinks = learner.limit(userMaxLinks)
+    }
 
     fun snapshot(): Snapshot {
         val (infos, seenCount) = synchronized(lock) {
             links.filter { it.ready }.map {
                 LinkInfo(
                     it.peer, it.initiator, it.gatt.rssi, it.gatt.txPhy, it.gatt.rxPhy, it.rttMs,
-                    it.txBytes, it.rxBytes, it.dropped, it.queued,
+                    it.txBytes, it.rxBytes, it.sentAudio, it.dropped, it.queued,
                 )
             } to seen.size
         }
-        return Snapshot(psm, advertising, codedAdvertising, scanning, scanMode, seenCount, infos, problem, problemCode)
+        val (max, learned) = synchronized(lock) { policy.maxLinks to learner.learned }
+        return Snapshot(psm, advertising, codedAdvertising, scanning, scanMode, seenCount, infos, problem, problemCode, max, learned)
+    }
+
+    /** Resultado de añadir un enlace, para aprender el límite del chip. Con el cerrojo cogido. */
+    private fun learnLimit(ready: Int, rssi: Int?, success: Boolean) {
+        if (learner.onResult(ready, goodSignal = rssi != null && rssi >= GOOD_RSSI, success = success)) {
+            policy.maxLinks = learner.limit(userMaxLinks)
+        }
     }
 
     // --- Anuncio ---
@@ -309,6 +334,8 @@ class BleMesh(
             for (id in linked) seen[id]?.waitingSince = now
             seen.entries.removeAll { now - it.value.lastSeen > FORGET_SEEN_MS }
             links.filter { !it.ready && now - it.createdAt > HELLO_TIMEOUT_MS }.forEach { toClose += it }
+            // Enlace muerto: el otro no contesta ni al ping. Se corta ya para reconectar, sin esperar al Bluetooth
+            links.filter { it.ready && now - it.lastRxAt > DEAD_LINK_MS }.forEach { toClose += it }
 
             val candidates = seen.map { (id, s) -> LinkPolicy.Candidate(id, s.rssi, s.lastSeen, s.waitingSince) }
             for (id in policy.pick(candidates, linked, connecting, now)) {
@@ -321,7 +348,7 @@ class BleMesh(
                 seen.any { (id, s) -> id !in linked && now - s.lastSeen < LinkPolicy.SEEN_TIMEOUT_MS })
         }
         toClose.forEach { it.close() }
-        toConnect.forEach { (id, s) -> connect(id, s.device, s.psm) }
+        toConnect.forEach { (id, s) -> connect(id, s.device, s.psm, s.rssi) }
         if (tickCount % (PING_MS / TICK_MS) == 0L) open.forEach { it.ping() }
         if (tickCount % (RSSI_MS / TICK_MS) == 0L) open.forEach { it.gatt.gatt?.readRemoteRssi() }
 
@@ -337,7 +364,8 @@ class BleMesh(
         }
     }
 
-    private fun connect(id: Int, device: BluetoothDevice, psm: Int) = thread(name = "ble-connect") {
+    private fun connect(id: Int, device: BluetoothDevice, psm: Int, rssi: Int) = thread(name = "ble-connect") {
+        val ready = synchronized(lock) { links.count { it.ready } }
         val handle = GattHandle()
         try {
             val mask = if (options.longRange && caps.codedPhy) {
@@ -359,7 +387,10 @@ class BleMesh(
             register(BleLink(socket, initiator = true, gatt = handle, session = newSession(true), clock = clock, events = linkEvents))
         } catch (_: Exception) {
             handle.close()
-            synchronized(lock) { policy.onFailure(id, clock()) }
+            synchronized(lock) {
+                policy.onFailure(id, clock())
+                if (running) learnLimit(ready, rssi, success = false)
+            }
         } finally {
             synchronized(lock) { connecting -= id }
         }
@@ -443,6 +474,8 @@ class BleMesh(
                 } else {
                     lastLinkChange = clock()
                     policy.onSuccess(link.peer)
+                    // Un enlace más con los que ya había: el chip lo aguanta (entrantes incluidos)
+                    if (others.none { it.ready }) learnLimit(links.count { it.ready && it !== link }, link.gatt.rssi, success = true)
                     others
                 }
             }
@@ -484,6 +517,12 @@ class BleMesh(
         const val CONNECT_TIMEOUT_MS = 8_000L
         const val HELLO_TIMEOUT_MS = 5_000L
         const val FORGET_SEEN_MS = 30_000L
+
+        /** Sin nada del otro (ni el pong de un ping por segundo) en este tiempo, el enlace se da por muerto. */
+        const val DEAD_LINK_MS = 6_000L
+
+        /** Con esta señal o mejor, si no se puede añadir un enlace no es por alcance (para aprender el límite del chip). */
+        const val GOOD_RSSI = -75
 
         /** Sin cambios en los enlaces durante este tiempo, la malla se da por estable y el escaneo pasa a ahorro. */
         const val STABLE_MS = 30_000L

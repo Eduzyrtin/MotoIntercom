@@ -1,5 +1,6 @@
 package com.sanabria.motointercom.core
 
+import com.sanabria.motointercom.core.audio.BitrateController
 import com.sanabria.motointercom.core.audio.Earcons
 import com.sanabria.motointercom.core.audio.JitterBuffer
 import com.sanabria.motointercom.core.audio.Mixer
@@ -143,6 +144,26 @@ class AudioTest {
         assertEquals(listOf(4, 5, 6, 7, 8), sent.map { it.third })
         assertEquals(listOf(Frame.Audio.START, 0, 0, 0, Frame.Audio.END), sent.map { it.second })
         assertEquals(listOf(0, 1, 2, 3, 4), sent.map { it.first })
+    }
+
+    @Test
+    fun bitrateFollowsQueueDrops() {
+        val b = BitrateController(16_000)
+        // Poco tráfico: sin datos, no se toca
+        assertEquals(16_000, b.update(sent = 10, dropped = 5))
+        assertEquals(12_000, b.update(sent = 90, dropped = 10))
+        assertEquals(8_000, b.update(sent = 90, dropped = 10))
+        assertEquals(8_000, b.update(sent = 90, dropped = 10))
+        // Limpio: sube un escalón cada 5 periodos, hasta el máximo
+        repeat(4) { assertEquals(8_000, b.update(sent = 100, dropped = 0)) }
+        assertEquals(12_000, b.update(sent = 100, dropped = 0))
+        repeat(5) { b.update(sent = 100, dropped = 0) }
+        assertEquals(16_000, b.current)
+        repeat(10) { b.update(sent = 100, dropped = 0) }
+        assertEquals(16_000, b.current)
+        // El usuario baja el máximo
+        b.setMax(12_000)
+        assertEquals(12_000, b.current)
     }
 
     @Test

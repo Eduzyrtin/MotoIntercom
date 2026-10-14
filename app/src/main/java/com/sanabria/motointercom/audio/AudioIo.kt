@@ -8,6 +8,7 @@ import android.media.AudioDeviceInfo
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioRecord
+import android.media.AudioTimestamp
 import android.media.AudioTrack
 import android.media.MediaRecorder
 import android.os.Build
@@ -55,6 +56,8 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
     private var captureThread: Thread? = null
     private var playbackThread: Thread? = null
     @Volatile private var helmetRoute = false
+    @Volatile private var inputLatencyMs = -1
+    @Volatile private var outputLatencyMs = -1
 
     /** Si el casco se va (Bluetooth apagado, fuera de alcance) y vuelve, se recupera la ruta HFP sin tocar nada. */
     private val devices = object : AudioDeviceCallback() {
@@ -181,9 +184,14 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
         .build()
 
+    /** Lo que tarda el audio en llegar del micro a la app y de la app al altavoz, o null si el sistema no lo dice. */
+    fun latency(): Pair<Int?, Int?> = inputLatencyMs.takeIf { it >= 0 } to outputLatencyMs.takeIf { it >= 0 }
+
     private fun captureLoop(rec: AudioRecord) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val buf = ShortArray(VoiceFormat.FRAME_SAMPLES)
+        val ts = AudioTimestamp()
+        var framesRead = 0L
         rec.startRecording()
         try {
             while (running) {
@@ -193,16 +201,28 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
                     if (n < 0) return
                     got += n
                 }
+                framesRead += got
+                // Una vez por segundo: la marca dice cuándo se captó una muestra; la última leída se captó
+                // (leídas - marca) muestras después. Lo que falta hasta ahora es la latencia de entrada.
+                if (framesRead % LATENCY_EVERY_FRAMES < got &&
+                    rec.getTimestamp(ts, AudioTimestamp.TIMEBASE_MONOTONIC) == AudioRecord.SUCCESS
+                ) {
+                    val capturedAt = ts.nanoTime + (framesRead - ts.framePosition) * NANOS_PER_FRAME
+                    inputLatencyMs = ((System.nanoTime() - capturedAt) / 1_000_000).toInt().coerceAtLeast(0)
+                }
                 if (got == buf.size) callbacks.onCapture(buf)
             }
         } finally {
             rec.stop()
+            inputLatencyMs = -1
         }
     }
 
     private fun playbackLoop(trk: AudioTrack) {
         Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO)
         val out = ShortArray(VoiceFormat.FRAME_SAMPLES)
+        val ts = AudioTimestamp()
+        var framesWritten = 0L
         trk.play()
         try {
             while (running) {
@@ -213,8 +233,16 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
                     if (n < 0) return
                     off += n
                 }
+                framesWritten += off
+                // La marca dice cuándo sale por el altavoz (o el casco) una muestra; lo escrito y aún no presentado,
+                // menos el tiempo desde la marca, es la latencia de salida (incluye la del Bluetooth si el sistema la da)
+                if (framesWritten % LATENCY_EVERY_FRAMES < off && trk.getTimestamp(ts)) {
+                    val pendingNs = (framesWritten - ts.framePosition) * NANOS_PER_FRAME
+                    outputLatencyMs = ((pendingNs - (System.nanoTime() - ts.nanoTime)) / 1_000_000).toInt().coerceAtLeast(0)
+                }
             }
         } finally {
+            outputLatencyMs = -1
             trk.pause()
             trk.flush()
             trk.stop()
@@ -223,6 +251,8 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
 
     companion object {
         private const val FRAME_BYTES = VoiceFormat.FRAME_SAMPLES * 2
+        private const val LATENCY_EVERY_FRAMES = VoiceFormat.SAMPLE_RATE.toLong()
+        private const val NANOS_PER_FRAME = 1_000_000_000L / VoiceFormat.SAMPLE_RATE
 
         /** Tipos de dispositivo que son un casco por Bluetooth (LE Audio es de API 31; antes ningún dispositivo lo tiene). */
         @SuppressLint("InlinedApi")

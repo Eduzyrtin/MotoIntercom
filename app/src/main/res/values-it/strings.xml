@@ -61,12 +61,12 @@
     <string name="unknown">—</string>
     <string name="link_rssi">%1$d dBm</string>
     <string name="link_rtt_ms">%1$d ms</string>
-    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s</string>
+    <string name="link_line1">%1$s · PHY %2$s/%3$s · RTT %4$s · costo %5$s</string>
     <string name="link_line2">↑%1$.1f ↓%2$.1f kbps · coda %3$d · scartate %4$d</string>
     <string name="phy_label">PHY dei collegamenti</string>
     <string name="phy_auto">Auto</string>
     <string name="long_range">Annuncio a lungo raggio (Coded PHY)</string>
-    <string name="bitrate_label">Qualità della voce: %1$d kbps</string>
+    <string name="bitrate_label">Qualità della voce massima: %1$d kbps</string>
     <string name="max_links">Collegamenti massimi: %1$d</string>
     <string name="mic_source_label">Microfono in modalità mix</string>
     <string name="mic_voice">Elaborato</string>
@@ -196,4 +196,19 @@
     <string name="test_recommend_none">Nessuna modalità ha funzionato: controlla l\'abbinamento o usa auricolari a filo.</string>
     <string name="test_both_hint">Funzionano entrambe: Casco usa il microfono del casco; Mix mantiene la musica in buona qualità.</string>
     <string name="test_use_mode">Usa questa modalità</string>
+
+    <!-- Bloque 3 -->
+    <string name="latency_line">Latenza del telefono: ingresso %1$s · uscita %2$s</string>
+    <string name="bitrate_now">Qualità della voce ora: %1$d kbps</string>
+    <string name="links_count">Collegamenti: %1$d su max %2$d</string>
+    <string name="chip_limit">limite del chip %1$d</string>
+    <string name="node_latency">bocca-orecchio ≈ %1$d ms</string>
+    <string name="bitrate_hint">Scende da sola (fino a 8 kbps) se i collegamenti si saturano e risale quando si liberano.</string>
+    <string name="learned_limit">Collegamenti contemporanei che regge il chip (appreso): %1$d</string>
+    <string name="action_forget">Dimentica</string>
+    <string name="helmet_hint">Per «%1$s» si consiglia %2$s (%3$s).</string>
+    <string name="hint_tested">secondo la tua prova</string>
+    <string name="hint_list">secondo la lista dei caschi</string>
+    <string name="helmets_share">Condividi risultati</string>
+    <string name="helmets_share_hint">Inviali per aggiungerli alla lista dei caschi della app.</string>
 </resources>
