@@ -1,5 +1,6 @@
 package com.sanabria.motointercom.core
 
+import com.sanabria.motointercom.core.audio.Earcons
 import com.sanabria.motointercom.core.audio.JitterBuffer
 import com.sanabria.motointercom.core.audio.Mixer
 import com.sanabria.motointercom.core.audio.TalkSender
@@ -141,7 +142,24 @@ class AudioTest {
 
         assertEquals(listOf(4, 5, 6, 7, 8), sent.map { it.third })
         assertEquals(listOf(Frame.Audio.START, 0, 0, 0, Frame.Audio.END), sent.map { it.second })
-        val seqs = sent.map { it.first }
-        assertTrue(seqs.zipWithNext().all { (a, b) -> b == (a + 1) and 0xFFFF })
+        assertEquals(listOf(0, 1, 2, 3, 4), sent.map { it.first })
+    }
+
+    @Test
+    fun earconsPlayInOrderAndEnd() {
+        val e = Earcons()
+        val frame = ShortArray(VoiceFormat.FRAME_SAMPLES)
+        assertFalse(e.next(frame))
+        e.play(Earcons.Kind.MIC_ON)
+        e.play(Earcons.Kind.JOINED)
+        var frames = 0
+        var peak = 0
+        while (e.next(frame)) {
+            frames++
+            peak = maxOf(peak, frame.maxOf { abs(it.toInt()) })
+        }
+        // 90 ms + 90 + 40 + 90 = 310 ms → 16 tramas de 20 ms
+        assertEquals(16, frames)
+        assertTrue(peak in 5000..9000)
     }
 }

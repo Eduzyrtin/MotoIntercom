@@ -109,4 +109,91 @@
     <string name="media_previous">Précédent</string>
     <string name="media_play_pause">Lecture ou pause</string>
     <string name="media_next">Suivant</string>
+
+    <!-- Bloque 2 -->
+    <string name="status_bt_off">Bluetooth désactivé : le maillage revient tout seul quand vous le rallumez</string>
+    <string name="scan_mode_fast">Recherche rapide</string>
+    <string name="scan_mode_saving">Recherche en économie</string>
+    <string name="mic_muted">Micro coupé (casque ou notification)</string>
+    <string name="ptt_latched">Vous parlez (bouton du casque)</string>
+    <string name="action_unmute">Activer le micro</string>
+    <string name="action_mute">Couper</string>
+    <string name="action_talk">Parler</string>
+    <string name="action_stop_talking">Arrêter de parler</string>
+
+    <string name="notif_channel">Intercom</string>
+    <string name="notif_title">MotoIntercom · %1$s</string>
+    <string name="notif_connecting">Connexion…</string>
+    <plurals name="notif_riders">
+        <item quantity="one">%1$d dans le groupe</item>
+        <item quantity="many">%1$d dans le groupe</item>
+        <item quantity="other">%1$d dans le groupe</item>
+    </plurals>
+    <string name="notif_mic_open">micro ouvert</string>
+    <string name="notif_mic_muted">micro coupé</string>
+    <string name="notif_mic_off">micro en silence</string>
+    <string name="notif_ptt">appuyer pour parler</string>
+    <string name="notif_talking">vous parlez</string>
+
+    <string name="group_current">%1$s · code %2$s</string>
+    <string name="group_code">Code %1$s</string>
+    <string name="group_show_qr">Afficher le QR</string>
+    <string name="group_scan_qr">Scanner un QR</string>
+    <string name="group_paste">Coller l\'invitation</string>
+    <string name="group_new">Nouveau groupe</string>
+    <string name="group_hint">Seuls les téléphones avec la même clé de groupe se voient. Tout le monde doit voir le même code.</string>
+    <string name="group_locked_hint">Déconnectez-vous pour changer de groupe.</string>
+    <string name="group_qr_warning">Quiconque a ce code entre dans le groupe et peut vous entendre. Ne le montrez qu\'aux vôtres.</string>
+    <string name="group_new_hint">Les autres devront rejoindre à nouveau avec votre QR.</string>
+    <string name="group_join_title">Rejoindre « %1$s » ?</string>
+    <string name="group_join_text">Code %1$s. Vous quitterez votre groupe actuel.</string>
+    <string name="invite_invalid">Aucune invitation valide</string>
+    <string name="invite_share_text">Rejoins mon groupe MotoIntercom « %1$s » : %2$s</string>
+    <string name="scan_failed">Impossible d\'ouvrir le scanner de QR</string>
+    <string name="action_share">Partager</string>
+    <string name="action_close">Fermer</string>
+    <string name="action_cancel">Annuler</string>
+    <string name="action_create">Créer</string>
+    <string name="action_join">Rejoindre</string>
+
+    <string name="section_helmet">Casque</string>
+    <string name="helmet_button">Le bouton du casque ouvre et coupe le micro</string>
+    <string name="helmet_button_hint">Utilise le bouton lecture/pause. Tant que c\'est activé, ce bouton ne contrôle plus la musique (utilisez les boutons de l\'appli). Marche mieux en mode mixage : en mode casque, certains casques s\'en servent pour les appels ou l\'assistant vocal.</string>
+    <string name="earcons_label">Signaux sonores</string>
+    <string name="earcons_hint">Un bip quand le micro s\'ouvre ou se coupe et quand quelqu\'un entre dans le groupe ou en sort.</string>
+    <string name="helmet_test_open">Tester le casque</string>
+    <string name="helmet_test_locked">Déconnectez-vous pour tester le casque.</string>
+    <string name="helmets_tested">Casques testés</string>
+    <string name="helmet_record">%1$s : casque %2$s · mixage %3$s</string>
+    <string name="result_ok">OK</string>
+    <string name="result_bad">échec</string>
+    <string name="result_untested">non testé</string>
+
+    <string name="section_battery">Batterie</string>
+    <string name="battery_ok">Aucune restriction de batterie : l\'appli continue écran éteint.</string>
+    <string name="battery_restricted">Android peut arrêter l\'appli écran éteint. Retirez-lui l\'optimisation de batterie.</string>
+    <string name="battery_open">Ouvrir les réglages de batterie</string>
+
+    <string name="test_title">Tester le casque</string>
+    <string name="test_intro">Associez le casque au téléphone comme d\'habitude et allumez-le. Chaque test enregistre 3 secondes avec le micro et vous les fait écouter.</string>
+    <string name="test_devices">Connecté : %1$s</string>
+    <string name="test_no_devices">Aucun casque Bluetooth connecté.</string>
+    <string name="test_run">Tester</string>
+    <string name="test_routing">Préparation du trajet audio…</string>
+    <string name="test_recording">Parlez maintenant… %1$d</string>
+    <string name="test_playing">Écoutez… %1$d</string>
+    <string name="test_ask">Vous êtes-vous bien entendu dans le casque ?</string>
+    <string name="answer_yes">Oui</string>
+    <string name="answer_no">Non</string>
+    <string name="test_route_line">Trajet prêt en %1$d ms</string>
+    <string name="test_route_timeout">Le trajet n\'a jamais atteint le casque</string>
+    <string name="test_level">Niveau maximal : %1$d dBFS</string>
+    <string name="test_result_ok">Fonctionne</string>
+    <string name="test_result_bad">Ne fonctionne pas</string>
+    <string name="test_recommendation">Recommandation</string>
+    <string name="test_recommend_helmet">Recommandé : Casque (HFP).</string>
+    <string name="test_recommend_mix">Recommandé : Mixage (A2DP).</string>
+    <string name="test_recommend_none">Aucun mode n\'a fonctionné : vérifiez l\'association ou utilisez des écouteurs filaires.</string>
+    <string name="test_both_hint">Les deux fonctionnent : Casque utilise le micro du casque ; Mixage garde la musique en bonne qualité.</string>
+    <string name="test_use_mode">Utiliser ce mode</string>
 </resources>

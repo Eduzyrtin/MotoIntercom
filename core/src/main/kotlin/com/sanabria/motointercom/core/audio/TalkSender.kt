@@ -1,18 +1,16 @@
 package com.sanabria.motointercom.core.audio
 
 import com.sanabria.motointercom.core.protocol.Frame
-import com.sanabria.motointercom.core.protocol.Seq
-import kotlin.random.Random
 
 /**
  * Convierte el flujo continuo de tramas codificadas en ráfagas de voz. Mientras la puerta está cerrada guarda las
  * últimas [preRoll] tramas: al abrir se envían primero (el detector tarda 40 ms en reaccionar y se comería el inicio de
  * la palabra). La primera trama lleva [Frame.Audio.START] y la de cierre [Frame.Audio.END].
  *
- * La secuencia solo avanza con lo que se envía, así que dentro de una ráfaga un hueco es siempre una pérdida.
+ * El contador solo avanza con lo que se envía, así que dentro de una ráfaga un hueco es siempre una pérdida.
  */
-class TalkSender(private val preRoll: Int = 2, private val emit: (seq: Int, flags: Int, payload: ByteArray) -> Unit) {
-    private var seq = Random.nextInt(0x10000)
+class TalkSender(private val preRoll: Int = 2, private val emit: (counter: Int, flags: Int, payload: ByteArray) -> Unit) {
+    private var counter = 0
     private val pending = ArrayDeque<ByteArray>()
 
     var talking = false
@@ -48,7 +46,7 @@ class TalkSender(private val preRoll: Int = 2, private val emit: (seq: Int, flag
     }
 
     private fun send(payload: ByteArray, flags: Int) {
-        emit(seq, flags, payload)
-        seq = Seq.next(seq)
+        emit(counter, flags, payload)
+        counter++
     }
 }

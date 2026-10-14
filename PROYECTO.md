@@ -2,7 +2,16 @@
 
 ## 0. Estado
 
-- 13/10/2026: Bloque 1 (base técnica) programado, con volumen maestro, controles de música y pantalla de ajustes (T06–T09). Compila (Debug, arm64-v8a + x86_64), las 27 pruebas del núcleo pasan y lint no da avisos propios. En el emulador arranca, anuncia (1M y Coded), escanea, abre el canal L2CAP y capta el micro.
+- 13/10/2026: Bloque 1 (base técnica) programado, con volumen maestro, controles de música y pantalla de ajustes.
+- 14/10/2026: Bloque 2 (app de grupo usable) programado.
+  - Compila; las 35 pruebas del núcleo pasan y lint no da avisos propios.
+  - Visto en dos emuladores con Bluetooth virtual:
+    - Se encuentran por el código de grupo, conectan por L2CAP y completan el saludo cifrado.
+    - Los nombres viajan cifrados y la voz pasa (16 kbps, 0 perdidas).
+    - La búsqueda pasa a ahorro con la malla estable.
+    - Al apagar y encender el Bluetooth, el enlace vuelve solo.
+    - El botón de reproducir/pausa (vía MediaSession) silencia el micro y la notificación lo refleja.
+    - La invitación por enlace y el asistente del casco funcionan.
 
 ## 1. Qué es
 
@@ -16,15 +25,18 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 | Tema | Decisión | Por qué |
 |---|---|---|
 | Plataforma | Android ahora, iOS después | — |
-| Stack | Kotlin nativo + Compose; núcleo `:core` en Kotlin puro (solo stdlib) | Lo crítico (L2CAP, audio en tiempo real con ruta HFP/A2DP, segundo plano) es nativo en las dos plataformas: Flutter solo compartiría la interfaz. `:core` pasa a Kotlin Multiplatform sin reescribirse |
+| Stack | Kotlin nativo + Compose; núcleo `:core` en Kotlin puro (solo stdlib, nada de `synchronized` ni `java.*`) | Lo crítico (L2CAP, audio en tiempo real con ruta HFP/A2DP, segundo plano) es nativo en las dos plataformas: Flutter solo compartiría la interfaz. `:core` pasa a Kotlin Multiplatform sin reescribirse |
 | Códec | Opus 1.5.2 (C, `third_party/opus`), 16 kHz mono, 20 ms, 16 kbps, FEC | Compila igual en iOS; PLC y FEC para tramas descartadas |
 | Transporte | BLE L2CAP CoC (Android 10+, iOS 11+), sin emparejar en el sistema | Compatible con iOS; detrás de `LinkTransport` para añadir Wi-Fi Aware o internet |
 | Topología | Malla con relevo (estado de enlaces + árbol de caminos mínimos por origen) | En fila, el primero oye al último a través de los del medio; si todos se ven, nadie reenvía |
+| Grupos | Nombre + clave aleatoria de 32 bytes; se comparte por QR, por enlace `motointercom://join` o pegando el texto | Dos grupos con el mismo nombre no se mezclan; el código corto (del advId) deja comprobar que todos están en el mismo |
+| Cifrado | AES-256-GCM por enlace (clave derivada de la del grupo y de dos nonces); el enlace solo vale si el otro demuestra tener la clave | Sin la clave no se oye ni se inyecta nada; el contador implícito solo suma la etiqueta (16 B por trama) |
+| Segundo plano | Servicio en primer plano (micrófono + dispositivo conectado) con notificación; el motor vive en la Application | Pantalla apagada y app cerrada sin cortar; la notificación silencia y desconecta |
 | Audio | Modo casco (HFP) y modo mezcla (A2DP + micro del móvil), sin ducking | — |
 | Volumen | Tres controles en la pantalla principal: maestro, voz y multimedia. El maestro mueve los dos a la par conservando la diferencia; los botones del móvil o del casco mueven el maestro | Pedido por Eduardo (13/10/2026): con voz 4/10 y música 6/10, subir deja 5 y 7 |
-| Pantallas | Principal (conectar, hablar, volumen + música, grupo, diagnóstico) y Ajustes aparte (identidad, audio, radio, información) | Pedido por Eduardo (13/10/2026) |
-| Hablar | Auto (VAD) / PTT en pantalla / abierto / silencio | Viento: el VAD da falsos positivos, por eso el PTT |
-| Identidad | Id de nodo aleatorio de 32 bits por móvil; grupo = nombre (FNV-1a) | El QR con clave llega en el bloque 2 |
+| Pantallas | Principal (conectar, hablar, volumen + música, grupo, diagnóstico), Ajustes (identidad, grupo, audio, casco, radio, batería, información) y Probar casco | Pedido por Eduardo (13/10/2026) |
+| Hablar | Auto (VAD) / PTT en pantalla / abierto / silencio; el botón de reproducir/pausa del casco abre o cierra el micro (opcional) | Viento: el VAD da falsos positivos, por eso el PTT |
+| Avisos | Pitidos al abrir/cerrar el micro y cuando alguien entra o sale del grupo (desactivables) | En moto no se mira la pantalla |
 | Android | minSdk 29, targetSdk 36, compileSdk 37; `com.sanabria.motointercom` | 29: API de L2CAP |
 | Textos | `strings.xml` en inglés + es/fr/de/it/pt; idioma por app desde Android 13 (`locales_config`) | — |
 
@@ -32,110 +44,142 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 
 ```
 core/  (Kotlin puro, KMP-ready)
-  protocol/  Bytes.kt (big-endian, Seq 16 bits) · Frame.kt (tramas, FrameCodec, FrameAssembler) · AdvInfo.kt (anuncio, GroupId)
-  mesh/      Topology.kt (grafo, árboles BFS por origen, caducidad) · Router.kt (entrega, reenvío, duplicados, anuncios)
-             LinkPolicy.kt (a quién conectar, reintentos) · LinkTransport.kt (interfaz de transporte)
+  protocol/  Bytes.kt (big-endian, Seq 16 bits) · Frame.kt (tramas, FrameCodec, FrameAssembler) · AdvInfo.kt (anuncio)
+  crypto/    Crypto.kt (CryptoProvider, GroupKeys, LinkCipher) · GroupInvite.kt (Group, invitación motointercom://)
+  mesh/      LinkSession.kt (saludo y cifrado de un enlace) · Topology.kt (grafo, árboles BFS por origen, caducidad)
+             Router.kt (entrega, reenvío, duplicados por sesión, anuncios) · LinkPolicy.kt (a quién conectar, reintentos)
+             LinkTransport.kt (interfaz de transporte)
   audio/     Voice.kt (formato, interfaces de códec) · JitterBuffer.kt · Mixer.kt (limitador suave) · Vad.kt · TalkSender.kt
-             VolumeLink.kt (maestro sobre voz y multimedia, con la diferencia guardada)
+             VolumeLink.kt (maestro sobre voz y multimedia) · Earcons.kt (avisos sonoros)
 app/
-  ble/       BleMesh.kt (anuncio 1M + Coded, escaneo, servidor L2CAP, conexión GATT→L2CAP, saludo, duplicados)
-             BleLink.kt (lectura/escritura por enlace, cola con descarte de voz vieja, ping) · GattHandle (RSSI, PHY, prioridad)
-  audio/     AudioIo.kt (rutas HFP/mezcla, AudioRecord/AudioTrack en hilos de prioridad de audio, teclas multimedia)
-             VolumeOutputs.kt (niveles → volúmenes del sistema y ganancia de voces según el modo; botones → maestro)
+  MotoIntercomApp.kt (dueña del motor y los ajustes) · IntercomService.kt (servicio en primer plano, notificación, MediaSession)
+  MainActivity.kt (pantallas, permisos, encender BT, invitaciones: enlace, QR, portapapeles) · IntercomViewModel.kt
+  crypto/    AndroidCrypto.kt (javax.crypto, un Cipher por hilo)
+  ble/       BleMesh.kt (anuncio 1M + Coded, escaneo adaptativo, servidor L2CAP, GATT→L2CAP, duplicados, reintentos)
+             BleLink.kt (lectura/escritura por enlace; cifra al escribir; cola con descarte de voz vieja) · GattHandle
+  audio/     AudioIo.kt (rutas HFP/mezcla, recuperación de la ruta al casco, teclas multimedia) · VolumeOutputs.kt
+             HelmetTester.kt (asistente: grabar, reproducir, medir) + HelmetCompat (resultados por casco)
   opus/      Opus.kt + cpp/opus_jni.c (JNI), cpp/CMakeLists.txt (Opus como estática, -O2 también en Debug)
-  engine/    IntercomEngine.kt (une todo; estado para la interfaz) · Settings.kt
-  ui/        MainScreen.kt · SettingsScreen.kt · Components.kt · Theme.kt
-  MainActivity.kt (permisos, encender BT, pantallas, pantalla siempre encendida y "atrás" sin colgar mientras conecta)
-  IntercomViewModel.kt (guarda también los volúmenes que mueven los botones)
+  engine/    IntercomEngine.kt (une todo; malla que se rehace con el BT; avisos; micro del casco) · Settings.kt (+ repositorio)
+  ui/        MainScreen · SettingsScreen · HelmetTestScreen · GroupDialogs (QR, grupo nuevo, unirse) · Components · Theme
 ```
 
-Hilos: captura (VAD + Opus + envío), reproducción (jitter buffers + decodificación + mezcla), lectura y escritura por enlace, `ble-mesh` (política de enlaces, ping, RSSI) y `engine-tick` (anuncios de malla, caducidad, estado). Cerrojos: malla → jitter buffers, siempre en ese orden. `BleMesh` nunca avisa al motor con su cerrojo cogido.
+Hilos:
+- Captura: VAD + Opus + envío.
+- Reproducción: jitter buffers + decodificación + mezcla + avisos.
+- Lectura y escritura por enlace (la escritura cifra).
+- `ble-mesh`: política de enlaces, ping, RSSI, escaneo adaptativo, reintentos.
+- `engine-tick`: anuncios de malla, caducidad, botones de volumen, avisos de grupo, reintento de malla, estado.
 
-## 4. Protocolo (versión 1)
+Cerrojos: malla → jitter buffers, siempre en ese orden. `BleMesh` nunca avisa al motor con su cerrojo cogido.
 
-**Anuncio BLE.** Servicio `6d6f746f-6963-4f6d-a001-000000000001`. Datos de servicio (12 B): `u8 protocolo, u32 grupo, u32 nodo, u16 PSM, u8 flags`.
+## 4. Protocolo (versión 2)
+
+**Anuncio BLE.** Servicio `6d6f746f-6963-4f6d-a001-000000000001`. Datos de servicio (12 B): `u8 protocolo, u32 grupo (advId), u32 nodo, u16 PSM, u8 flags`.
 - Anuncio normal (1M, conectable y escaneable): el UUID va en el anuncio y los datos en la respuesta al escaneo.
 - Si el chip soporta Coded PHY y anuncio extendido, hay además un anuncio extendido en Coded PHY con todo en un paquete.
+
+**Claves** (HMAC-SHA256 de la clave de grupo K con etiquetas `motointercom/…`):
+- `advId` = 4 primeros bytes de HMAC(K, "adv").
+- Clave de saludo = HMAC(K, "hello").
+- Clave de cifrado = HMAC(K, "enc"). La clave de cada enlace es HMAC(cifrado, "link" ‖ nonce del que inicia ‖ nonce del que acepta).
 
 **Conexión.** Inicia el de id menor. El mayor espera 8 s por si el otro no le ve (alcance asimétrico) y entonces inicia él.
 - `connectGatt` con 1M + Coded y prioridad alta. Sobre esa misma conexión, `createInsecureL2capChannel(PSM)`.
 - El que acepta abre también un cliente GATT sobre la conexión existente, para el RSSI y el PHY.
-- Si se cruzan dos enlaces, ambos lados se quedan con el que inició el de id menor.
+- Si se cruzan dos enlaces, gana siempre el que inició el de id menor, aunque aún no haya terminado de saludar.
 
-**Tramas.** `[u16 longitud][u8 tipo][cuerpo]`, big-endian. Longitud = 1 + cuerpo, como mucho 2048. Un tipo desconocido se salta.
+**Saludo** (`LinkSession`):
+1. Cada extremo envía un Hello en claro: protocolo, nodo, advId, nonce de 16 B y MAC de 16 B con la clave de saludo.
+2. Al recibir el del otro se comprueban versión, grupo y MAC, y se deriva la clave del enlace.
+3. Desde ahí todo va cifrado, empezando por Ready. El enlace vale al recibir el Ready del otro.
+
+Un Hello copiado por alguien de fuera no pasa del paso 2.
+
+**Tramas.** `[u16 longitud][contenido]`, como mucho 2048. Contenido en claro (solo el Hello) = `[u8 tipo][cuerpo]`. Contenido cifrado = AES-256-GCM de `[u8 tipo][cuerpo]` + etiqueta de 16 B. El nonce de 12 B es sentido (1 o 2) + contador de 64 bits; no viaja, porque L2CAP entrega en orden y lo que se descarta se descarta antes de cifrar. Un tipo desconocido se salta.
 
 | Tipo | Cuerpo |
 |---|---|
-| 1 Hello | `u8 protocolo, u32 nodo, u32 grupo, u8 len + nombre UTF-8 (≤32 B)` — primera trama en cada sentido; grupo o versión distintos = se corta |
-| 2 Audio | `u32 origen, u16 seq, u8 flags (1 START, 2 END), u8 saltos, paquete Opus` |
+| 1 Hello | `u8 protocolo, u32 nodo, u32 advId, 16 B nonce, 16 B MAC` (en claro) |
+| 6 Ready | — (primera trama cifrada) |
+| 2 Audio | `u32 origen, u32 sesión, u32 contador, u8 flags (1 START, 2 END), u8 saltos, paquete Opus` |
 | 3 LinkState | `u32 origen, u16 versión, u8 saltos, u8 len + nombre, u8 n, n × u32 vecino` |
 | 4 Ping / 5 Pong | `u32 tiempo` (RTT por enlace) |
 
+**Invitación:** `motointercom://join?v=1&n=<nombre en %>&k=<clave base64url>`. Va en el QR, se comparte como texto y abre la app desde un enlace.
+
 ## 5. Malla con relevo
 
-- Cada nodo inunda su lista de vecinos (LinkState) cada 2 s y al abrir o cerrar un enlace. Una entrada caduca a los 6 s sin noticias.
+- Cada nodo inunda su lista de vecinos (LinkState) cada 2 s y al abrir o cerrar un enlace. Una entrada caduca a los 6 s sin noticias. El nombre de cada nodo viaja aquí (cifrado), no en el Hello.
 - Un enlace entre otros dos nodos existe si cualquiera de los dos lo anuncia. Los enlaces propios los decide el estado local.
 - Para cada origen, todos calculan el mismo árbol BFS (desempate por id). Un nodo solo reenvía a sus hijos en el árbol del origen.
 - Si el origen aún no está en el grafo, se inunda a todos menos al que la trajo.
-- Duplicados: ventana por origen de (seq, instante). La misma seq pasados 2 s cuenta como nueva, por si el emisor se reinicia.
+- Duplicados: ventana de contadores por origen y sesión. Una sesión nueva (el emisor se ha reconectado) empieza ventana y cola de reproducción.
 - Límite de 8 saltos.
 - Enlaces: como mucho `maxLinks` (4 por defecto), los de mejor RSSI. Se aceptan hasta 2 entrantes de más.
 - Reintentos tras un fallo: 1, 2, 4, 8 s y como mucho 15 s.
+- **Escaneo adaptativo:** rápido mientras no hay enlaces, falta alguien del grupo que se ve o la malla ha cambiado hace menos de 30 s; si no, en ahorro. Se rearranca como mucho cada 10 s (Android permite 5 arranques cada 30 s). Si el escaneo o el anuncio fallan, se reintentan.
+- **Bluetooth apagado:** se cierra la malla y se avisa en pantalla y en la notificación; al encenderlo se crea una nueva. Si falla, se reintenta cada 5 s.
 
 ## 6. Audio
 
 - **Captura:** 320 muestras (20 ms). El VAD va siempre (para el medidor).
   - Detector: el ruido es el mínimo del nivel en 1,6 s, más 3 dB. El umbral va de +6 a +20 dB según la sensibilidad, con un mínimo de −50 dBFS. Abre tras 2 tramas y mantiene 400 ms de cola.
   - Opus codifica todo, aunque no se envíe. `TalkSender` envía 2 tramas previas (pre-roll) al abrir y marca START/END.
+- **Micro desde el casco o la notificación:** en PTT, una pulsación abre el micro hasta la siguiente. En Auto y Abierto, lo silencia o lo devuelve. Suena un pitido agudo o grave según cómo queda.
 - **Envío:** cola por enlace de 5 tramas de voz (100 ms). Si va llena se tira la más vieja; el control no se descarta.
 - **Recepción:** un jitter buffer por origen, que empieza en 2 tramas y llega a 12.
   - Si falta una trama y hay posteriores, se da por perdida: se reconstruye con el FEC de la siguiente o con PLC.
   - Si no llega nada, el objetivo sube una trama y vuelve a acumular sin saltar la que falta. A los 300 ms sin nada, la ráfaga se acaba.
   - Si sobra cola durante 0,5 s, se recorta una trama. Tras 10 s sin cortes, el objetivo baja.
-- **Mezcla:** suma, ganancia de voces (la calcula `VolumeOutputs`) y limitador suave a partir de 0,7.
+- **Mezcla:** suma de voces y avisos, ganancia de voces (la calcula `VolumeOutputs`) y limitador suave a partir de 0,7.
 - **Volumen** (niveles 0..1; 1 nivel = 40 dB). `VolumeLink` guarda maestro M = el mayor de voz V y multimedia U, y la diferencia de cada uno con él. Si uno toca fondo, la diferencia se recupera al volver a subir. Lo que se oye debe ser voz ≈ V y música ≈ U:
   - **Casco (HFP):** todo va por SCO y el casco aplica el volumen de llamada a todo. Llamada = M, multimedia = 1 + U − M, voces = ganancia(V − M).
   - **Mezcla, voces como multimedia:** voces y música comparten el canal. Multimedia = U (como poco un paso si hay voz), voces = ganancia(V − U), como mucho +12 dB.
   - **Mezcla, voces como llamada:** multimedia = U, llamada = V.
-  - **Botones:** el canal que manda (llamada en HFP, multimedia en mezcla) se lee cada 250 ms. Lo que suba o baje por botones del móvil o del casco (volumen absoluto AVRCP / HFP) se suma al maestro. El paso lo pone el sistema (en el emulador, la llamada sube de 3 en 3).
-  - Si el casco cambia su volumen por dentro sin decírselo al móvil, ya hace de maestro físico: sube todo a la vez.
-- **Música:** anterior, reproducir/pausa y siguiente con `dispatchMediaKeyEvent`; los recibe la app de música activa.
+  - **Botones:** el canal que manda (llamada en HFP, multimedia en mezcla) se lee cada 250 ms. Lo que suba o baje por botones del móvil o del casco se suma al maestro. El paso lo pone el sistema (en el emulador, la llamada sube de 3 en 3).
+- **Música:** anterior, reproducir/pausa y siguiente con `dispatchMediaKeyEvent`; los recibe la app de música activa. Con el botón del casco activado, reproducir/pausa lo recibe la MediaSession de la app y no la música.
 - **Rutas:**
-  - **Casco (HFP):** `MODE_IN_COMMUNICATION` + `setCommunicationDevice` (LE Audio si lo hay; si no, SCO). Fuente `VOICE_COMMUNICATION` y uso `USAGE_VOICE_COMMUNICATION`.
-  - **Mezcla:** `MODE_NORMAL`, micro con cable o USB si hay, si no el del móvil. Fuente procesada (`VOICE_COMMUNICATION`) o directa (`MIC`).
-    - Las voces salen como multimedia (A2DP, siguen al volumen de la música) o como llamada (volumen propio).
-    - En Avanzado se ve por qué dispositivo sale cada cosa.
+  - **Casco (HFP):** `MODE_IN_COMMUNICATION` + `setCommunicationDevice` (LE Audio si lo hay; si no, SCO). Fuente `VOICE_COMMUNICATION` y uso `USAGE_VOICE_COMMUNICATION`. Si el casco se va y vuelve, `AudioDeviceCallback` rehace la ruta.
+  - **Mezcla:** `MODE_NORMAL`, micro con cable o USB si hay, si no el del móvil. Fuente procesada (`VOICE_COMMUNICATION`) o directa (`MIC`). Las voces salen como multimedia o como llamada. En Diagnóstico se ve por qué dispositivo sale cada cosa.
 - La reproducción escribe silencio cuando nadie habla, para que A2DP/SCO no se duerma.
+- **Asistente del casco:**
+  1. Prepara la ruta del modo y espera hasta 6 s a que llegue al casco: en HFP el micro tiene que venir del casco; en mezcla, la salida tiene que ir al casco.
+  2. Graba 3 s y los reproduce.
+  3. Pregunta si se ha oído bien.
+
+  Guarda por casco si cada modo funcionó y el tiempo de ruta, y recomienda Casco si funciona; si no, Mezcla.
 
 ## 7. Hoja de ruta
 
 ### Bloque 1 — Base técnica
 
 - [x] T01 Proyecto (Gradle 9.8, AGP 9.4.1, Kotlin 2.4.21, Compose) y Opus 1.5.2 por NDK con puente JNI
-- [x] T02 Núcleo: protocolo, malla con relevo, política de enlaces, jitter buffer, mezcla, VAD y ráfagas, con pruebas (23)
+- [x] T02 Núcleo: protocolo, malla con relevo, política de enlaces, jitter buffer, mezcla, VAD y ráfagas, con pruebas
 - [x] T03 Transporte BLE: anuncio 1M + Coded, escaneo, L2CAP, saludo, duplicados, ping, RSSI y PHY
 - [x] T04 Audio: modos casco (HFP) y mezcla (A2DP), dos volúmenes, ruta visible
 - [x] T05 Interfaz: conexión, hablar (modos, PTT, medidor), grupo (saltos, búfer, pérdidas) y diagnóstico (ruta de audio; enlaces con RSSI, PHY, RTT, kbps, cola y descartes)
 - [x] T06 Volumen en la pantalla principal: maestro, voz y multimedia. El maestro mueve los dos conservando la diferencia, y los botones del móvil o del casco mueven el maestro
 - [x] T07 Controles de música en la pantalla principal: anterior, reproducir/pausa y siguiente
-- [x] T08 Pantalla de ajustes aparte: identidad (nombre, grupo), audio (modo, sensibilidad, micro y salida de voces en mezcla), radio (PHY, largo alcance, calidad, enlaces máximos) e información (capacidades del móvil, id de nodo)
-- [x] T09 "Atrás" con la conexión activa manda la app al fondo en vez de cerrarla (cerrarla destruía el motor)
+- [x] T08 Pantalla de ajustes aparte
+- [-] T09 "Atrás" sin colgar — absorbida por T10: el motor vive en la Application y lo mantiene el servicio, cerrar la actividad ya no corta
 
 ### Bloque 2 — App de grupo usable
 
-- [ ] T10 Servicio en primer plano (`microphone|connectedDevice`) con notificación (PTT, colgar); fuera la pantalla siempre encendida
-- [ ] T11 Reconexión en segundo plano y tras apagar y encender el Bluetooth
-- [ ] T12 Grupos por QR con clave
-- [ ] T13 Cifrado de tramas (AEAD con la clave del grupo, nonce = origen + seq) y Hello autenticado
-- [ ] T14 PTT con el botón del casco (MediaSession; en HFP el botón manda órdenes de llamada)
-- [ ] T15 Asistente de compatibilidad del casco: grabar, reproducir, medir y proponer modo
-- [ ] T16 Escaneo adaptativo: bajo consumo con los enlaces estables
+- [x] T10 Servicio en primer plano (`microphone|connectedDevice`) con notificación (miembros, estado del micro, silenciar/hablar, desconectar) y wake lock; fuera la pantalla siempre encendida
+- [x] T11 Reconexión: la malla se rehace al apagar y encender el Bluetooth, el escaneo y el anuncio se reintentan, y la ruta al casco se recupera cuando vuelve
+- [x] T12 Grupos con clave: crear, mostrar QR, compartir, escanear QR (escáner de Google Play Services, sin permiso de cámara), pegar invitación y enlace `motointercom://join`, con confirmación y código corto
+- [x] T13 Cifrado por enlace (AES-256-GCM, clave por enlace, saludo autenticado y Ready), con pruebas de grupo ajeno, Hello copiado y trama manipulada
+- [x] T14 Botón de reproducir/pausa del casco (MediaSession): abre o cierra el micro, con pitido; avisos sonoros de entrada y salida del grupo
+- [x] T15 Asistente de compatibilidad del casco: grabar, reproducir, medir la ruta, recomendar modo y guardar por casco
+- [x] T16 Escaneo adaptativo: rápido mientras falta alguien o la malla cambia, en ahorro con los enlaces estables
+- [x] T17 Batería: aviso si Android puede cortar la app y acceso directo a la optimización de batería
 
 ### Bloque 3 — Robustez y calidad
 
 - [ ] T20 Árbol con peso por calidad de enlace (RSSI, RTT, descartes) en vez de solo saltos
 - [ ] T21 AAudio si AudioRecord/AudioTrack se quedan cortos de latencia
-- [ ] T22 Lista de compatibilidad de cascos (modelo → modo recomendado)
+- [ ] T22 Lista de compatibilidad de cascos compartida (modelo → modo recomendado), a partir de los resultados del asistente
 - [ ] T23 Límite de enlaces según el chipset
 - [ ] T24 Opus DRED para enlaces con muchas pérdidas
 
@@ -145,6 +189,7 @@ Hilos: captura (VAD + Opus + envío), reproducción (jitter buffers + decodifica
 - [ ] T31 CoreBluetooth L2CAP. El PSM también por característica GATT: en segundo plano iOS no anuncia datos de servicio
 - [ ] T32 AVAudioSession (`playAndRecord` + `allowBluetooth` / `allowBluetoothA2DP`)
 - [ ] T33 Interfaz (Compose Multiplatform o SwiftUI)
+- [ ] T34 CryptoProvider con CryptoKit
 
 ### Bloque 5 — Opcional
 
@@ -158,6 +203,9 @@ Hilos: captura (VAD + Opus + envío), reproducción (jitter buffers + decodifica
   - Sin DRED/OSCE no hacen falta los pesos de `dnn/` (y `dnn/torch` sobra).
   - En Debug compila sin optimizar y es muy lento: `-O2` forzado.
 - **`connectGatt`:** las sobrecargas están obsoletas en API 37. Se siguen usando, porque la sustituta no existe en 29–36.
-- **"Atrás" en la actividad raíz:** en el emulador (Android 16) cierra la tarea entera. Con el motor en el ViewModel eso colgaba la conversación (T09).
+- **"Atrás" en la actividad raíz:** en el emulador (Android 16) cierra la tarea entera. Por eso el motor no puede vivir en el ViewModel.
 - **Botones de volumen:** cada pulsación sube el número de pasos que decida el sistema, no siempre uno. Por eso el maestro se mueve con la diferencia real de índice.
+- **Escáner de QR de Play Services:** trae un `androidx.fragment` viejo y lint falla con `registerForActivityResult`. Se fuerza `fragment-ktx` 1.8.5.
+- **Núcleo KMP:** `synchronized` y `toSortedSet` son solo JVM; en `:core` se evitan y los cerrojos los pone quien lo usa. `kotlin.concurrent.Volatile` sí es común.
+- **Emuladores:** dos AVD arrancados a la vez comparten Bluetooth virtual (anuncio, escaneo, Coded PHY, L2CAP): sirven para probar la malla de punta a punta. Sin casco, el asistente lo detecta ("la ruta no llegó al casco").
 - **Riesgo abierto:** el BLE entre móviles y el audio Bluetooth al casco comparten la radio del teléfono. Con SCO o A2DP activos, el enlace BLE puede ir más justo. Se mira en "Enlaces": kbps, cola y descartadas.

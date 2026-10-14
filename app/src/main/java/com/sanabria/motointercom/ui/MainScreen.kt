@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -92,7 +93,7 @@ fun MainScreen(
 @Composable
 private fun ConnectionSection(state: EngineState, settings: IntercomSettings, permissionsDenied: Boolean, actions: ScreenActions) {
     Section(stringResource(R.string.section_connection)) {
-        Text(stringResource(R.string.identity_line, settings.name, settings.group), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.identity_line, settings.name, settings.groupName), style = MaterialTheme.typography.bodyMedium)
         Button(
             onClick = if (state.running) actions.stop else actions.start,
             modifier = Modifier
@@ -116,6 +117,7 @@ private fun ConnectionSection(state: EngineState, settings: IntercomSettings, pe
 
 @Composable
 private fun statusLine(state: EngineState): String {
+    if (state.running && state.bluetoothOff) return stringResource(R.string.status_bt_off)
     val m = state.mesh ?: return stringResource(R.string.status_stopped)
     val parts = mutableListOf<String>()
     parts += stringResource(
@@ -159,6 +161,23 @@ private fun TalkSection(state: EngineState, settings: IntercomSettings, actions:
             actions.update { it.copy(talkMode = t) }
         }
         if (settings.talkMode == TalkMode.PTT) PttButton(state.running, actions.ptt)
+        // Micro silenciado o abierto con el botón del casco o la notificación
+        val latch = when {
+            settings.talkMode == TalkMode.PTT && state.pttLatched -> R.string.ptt_latched to R.string.action_stop_talking
+            settings.talkMode in setOf(TalkMode.AUTO, TalkMode.OPEN) && state.micMuted -> R.string.mic_muted to R.string.action_unmute
+            else -> null
+        }
+        if (latch != null) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    stringResource(latch.first),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.weight(1f),
+                )
+                OutlinedButton(onClick = actions.toggleMic) { Text(stringResource(latch.second)) }
+            }
+        }
         MicMeter(state)
     }
 }
@@ -291,13 +310,19 @@ private fun DiagnosticsSection(state: EngineState) {
             Text(stringResource(R.string.route_input, deviceLabel(r.inputType, r.inputName)), style = MaterialTheme.typography.bodySmall)
             Text(stringResource(R.string.route_output, deviceLabel(r.outputType, r.outputName)), style = MaterialTheme.typography.bodySmall)
         }
+        state.mesh?.let { m ->
+            Text(
+                stringResource(if (m.scanMode == BleMesh.ScanMode.FAST) R.string.scan_mode_fast else R.string.scan_mode_saving),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         Text(stringResource(R.string.section_links), style = MaterialTheme.typography.labelLarge)
         if (state.links.isEmpty()) Text(stringResource(R.string.links_empty), style = MaterialTheme.typography.bodySmall)
         for (l in state.links) {
             val i = l.info
             Column {
                 Text(
-                    i.name + " · " + stringResource(if (i.initiator) R.string.link_out else R.string.link_in),
+                    l.name + " · " + stringResource(if (i.initiator) R.string.link_out else R.string.link_in),
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,

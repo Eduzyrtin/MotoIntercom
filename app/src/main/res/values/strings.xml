@@ -109,4 +109,90 @@
     <string name="media_previous">Previous</string>
     <string name="media_play_pause">Play or pause</string>
     <string name="media_next">Next</string>
+
+    <!-- Bloque 2 -->
+    <string name="status_bt_off">Bluetooth is off: the mesh comes back by itself when you turn it on</string>
+    <string name="scan_mode_fast">Fast scanning</string>
+    <string name="scan_mode_saving">Power-saving scanning</string>
+    <string name="mic_muted">Mic muted (helmet or notification)</string>
+    <string name="ptt_latched">Talking (helmet button)</string>
+    <string name="action_unmute">Unmute</string>
+    <string name="action_mute">Mute</string>
+    <string name="action_talk">Talk</string>
+    <string name="action_stop_talking">Stop talking</string>
+
+    <string name="notif_channel">Intercom</string>
+    <string name="notif_title">MotoIntercom · %1$s</string>
+    <string name="notif_connecting">Connecting…</string>
+    <plurals name="notif_riders">
+        <item quantity="one">%1$d in the group</item>
+        <item quantity="other">%1$d in the group</item>
+    </plurals>
+    <string name="notif_mic_open">mic open</string>
+    <string name="notif_mic_muted">mic muted</string>
+    <string name="notif_mic_off">mic off</string>
+    <string name="notif_ptt">push to talk</string>
+    <string name="notif_talking">talking</string>
+
+    <string name="group_current">%1$s · code %2$s</string>
+    <string name="group_code">Code %1$s</string>
+    <string name="group_show_qr">Show QR</string>
+    <string name="group_scan_qr">Scan QR</string>
+    <string name="group_paste">Paste invite</string>
+    <string name="group_new">New group</string>
+    <string name="group_hint">Only phones with the same group key see each other. Everyone should see the same code.</string>
+    <string name="group_locked_hint">Disconnect to change group.</string>
+    <string name="group_qr_warning">Whoever has this code joins the group and can hear you. Only show it to your own people.</string>
+    <string name="group_new_hint">The others will have to join again with your QR.</string>
+    <string name="group_join_title">Join «%1$s»?</string>
+    <string name="group_join_text">Code %1$s. You will leave your current group.</string>
+    <string name="invite_invalid">No valid invite found</string>
+    <string name="invite_share_text">Join my MotoIntercom group «%1$s»: %2$s</string>
+    <string name="scan_failed">Could not open the QR scanner</string>
+    <string name="action_share">Share</string>
+    <string name="action_close">Close</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_create">Create</string>
+    <string name="action_join">Join</string>
+
+    <string name="section_helmet">Helmet</string>
+    <string name="helmet_button">Helmet button opens and closes the mic</string>
+    <string name="helmet_button_hint">Uses the play/pause button. While this is on, that button no longer controls the music (use the app buttons). Works best in mix mode: in helmet mode some helmets use it for calls or the voice assistant.</string>
+    <string name="earcons_label">Sound cues</string>
+    <string name="earcons_hint">A beep when the mic opens or closes and when someone joins or leaves the group.</string>
+    <string name="helmet_test_open">Test helmet</string>
+    <string name="helmet_test_locked">Disconnect to test the helmet.</string>
+    <string name="helmets_tested">Tested helmets</string>
+    <string name="helmet_record">%1$s: helmet %2$s · mix %3$s</string>
+    <string name="result_ok">OK</string>
+    <string name="result_bad">fails</string>
+    <string name="result_untested">not tested</string>
+
+    <string name="section_battery">Battery</string>
+    <string name="battery_ok">No battery restrictions: the app keeps going with the screen off.</string>
+    <string name="battery_restricted">Android may stop the app with the screen off. Remove its battery optimization.</string>
+    <string name="battery_open">Open battery settings</string>
+
+    <string name="test_title">Test helmet</string>
+    <string name="test_intro">Pair the helmet with the phone as usual and turn it on. Each test records 3 seconds through the mic and plays them back to you.</string>
+    <string name="test_devices">Connected: %1$s</string>
+    <string name="test_no_devices">No Bluetooth helmet connected.</string>
+    <string name="test_run">Test</string>
+    <string name="test_routing">Preparing the audio route…</string>
+    <string name="test_recording">Talk now… %1$d</string>
+    <string name="test_playing">Listen… %1$d</string>
+    <string name="test_ask">Did you hear yourself well in the helmet?</string>
+    <string name="answer_yes">Yes</string>
+    <string name="answer_no">No</string>
+    <string name="test_route_line">Route ready in %1$d ms</string>
+    <string name="test_route_timeout">The route never reached the helmet</string>
+    <string name="test_level">Peak level: %1$d dBFS</string>
+    <string name="test_result_ok">Works</string>
+    <string name="test_result_bad">Does not work</string>
+    <string name="test_recommendation">Recommendation</string>
+    <string name="test_recommend_helmet">Recommended: Helmet (HFP).</string>
+    <string name="test_recommend_mix">Recommended: Mix (A2DP).</string>
+    <string name="test_recommend_none">Neither mode worked: check the pairing or use wired earphones.</string>
+    <string name="test_both_hint">Both work: Helmet uses the helmet mic; Mix keeps the music in good quality.</string>
+    <string name="test_use_mode">Use this mode</string>
 </resources>

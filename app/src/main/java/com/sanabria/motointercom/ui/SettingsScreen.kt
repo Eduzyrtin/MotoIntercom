@@ -1,5 +1,6 @@
 package com.sanabria.motointercom.ui
 
+import android.os.PowerManager
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,17 +14,26 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.LifecycleResumeEffect
 import com.sanabria.motointercom.R
+import com.sanabria.motointercom.audio.HelmetCompat
 import com.sanabria.motointercom.engine.AudioMode
 import com.sanabria.motointercom.engine.EngineState
 import com.sanabria.motointercom.engine.IntercomSettings
@@ -32,9 +42,16 @@ import com.sanabria.motointercom.engine.PhyPreference
 import com.sanabria.motointercom.engine.VoiceOutput
 import kotlin.math.roundToInt
 
-/** Ajustes: identidad, cómo va el audio, la radio e información del móvil. */
+/** Ajustes: identidad, grupo, audio, casco, radio, batería e información del móvil. */
 @Composable
-fun SettingsScreen(state: EngineState, settings: IntercomSettings, actions: ScreenActions, back: () -> Unit) {
+fun SettingsScreen(
+    state: EngineState,
+    settings: IntercomSettings,
+    helmets: List<HelmetCompat.Record>,
+    actions: ScreenActions,
+    openHelmetTest: () -> Unit,
+    back: () -> Unit,
+) {
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier
@@ -51,8 +68,11 @@ fun SettingsScreen(state: EngineState, settings: IntercomSettings, actions: Scre
                 Text(stringResource(R.string.settings_title), style = MaterialTheme.typography.headlineSmall)
             }
             IdentitySection(state, settings, actions)
+            GroupSection(state, settings, actions)
             AudioSection(settings, actions)
+            HelmetSection(state, settings, helmets, actions, openHelmetTest)
             RadioSection(state, settings, actions)
+            BatterySection(actions)
             InfoSection(state, settings)
         }
     }
@@ -69,15 +89,45 @@ private fun IdentitySection(state: EngineState, settings: IntercomSettings, acti
             enabled = !state.running,
             modifier = Modifier.fillMaxWidth(),
         )
-        OutlinedTextField(
-            value = settings.group,
-            onValueChange = { v -> actions.update { it.copy(group = v.take(MAX_NAME_CHARS)) } },
-            label = { Text(stringResource(R.string.field_group)) },
-            singleLine = true,
-            enabled = !state.running,
-            modifier = Modifier.fillMaxWidth(),
-        )
         Text(stringResource(R.string.radio_restart_hint), style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun GroupSection(state: EngineState, settings: IntercomSettings, actions: ScreenActions) {
+    var showQr by rememberSaveable { mutableStateOf(false) }
+    var newGroup by rememberSaveable { mutableStateOf(false) }
+    Section(stringResource(R.string.section_group)) {
+        Text(stringResource(R.string.group_current, settings.groupName, settings.groupCode), style = MaterialTheme.typography.bodyLarge)
+        val free = !state.running
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = { showQr = true }, modifier = Modifier.weight(1f)) { Text(stringResource(R.string.group_show_qr)) }
+            OutlinedButton(onClick = actions.scanInvite, enabled = free, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.group_scan_qr))
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = actions.pasteInvite, enabled = free, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.group_paste))
+            }
+            OutlinedButton(onClick = { newGroup = true }, enabled = free, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.group_new))
+            }
+        }
+        Text(
+            stringResource(if (free) R.string.group_hint else R.string.group_locked_hint),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
+    if (showQr) QrDialog(settings.group, onShare = actions.shareInvite, onDismiss = { showQr = false })
+    if (newGroup) {
+        NewGroupDialog(
+            onCreate = {
+                actions.newGroup(it)
+                newGroup = false
+            },
+            onDismiss = { newGroup = false },
+        )
     }
 }
 
@@ -106,10 +156,48 @@ private fun AudioSection(settings: IntercomSettings, actions: ScreenActions) {
 }
 
 @StringRes
-private fun audioModeLabel(m: AudioMode) = when (m) {
+fun audioModeLabel(m: AudioMode) = when (m) {
     AudioMode.HELMET -> R.string.mode_helmet
     AudioMode.MIX -> R.string.mode_mix
 }
+
+@Composable
+private fun HelmetSection(
+    state: EngineState,
+    settings: IntercomSettings,
+    helmets: List<HelmetCompat.Record>,
+    actions: ScreenActions,
+    openHelmetTest: () -> Unit,
+) {
+    Section(stringResource(R.string.section_helmet)) {
+        SwitchRow(stringResource(R.string.helmet_button), settings.helmetButton) { v -> actions.update { it.copy(helmetButton = v) } }
+        Text(stringResource(R.string.helmet_button_hint), style = MaterialTheme.typography.bodySmall)
+        SwitchRow(stringResource(R.string.earcons_label), settings.earcons) { v -> actions.update { it.copy(earcons = v) } }
+        Text(stringResource(R.string.earcons_hint), style = MaterialTheme.typography.bodySmall)
+        OutlinedButton(onClick = openHelmetTest, enabled = !state.running, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.helmet_test_open))
+        }
+        if (state.running) Text(stringResource(R.string.helmet_test_locked), style = MaterialTheme.typography.bodySmall)
+        if (helmets.isNotEmpty()) {
+            Text(stringResource(R.string.helmets_tested), style = MaterialTheme.typography.labelLarge)
+            for (h in helmets) {
+                Text(
+                    stringResource(R.string.helmet_record, h.name, resultText(h.helmet), resultText(h.mix)),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun resultText(ok: Boolean?) = stringResource(
+    when (ok) {
+        true -> R.string.result_ok
+        false -> R.string.result_bad
+        null -> R.string.result_untested
+    },
+)
 
 @Composable
 private fun RadioSection(state: EngineState, settings: IntercomSettings, actions: ScreenActions) {
@@ -143,6 +231,28 @@ private fun phyPreferenceLabel(p: PhyPreference) = when (p) {
 }
 
 @Composable
+private fun BatterySection(actions: ScreenActions) {
+    val context = LocalContext.current
+    var unrestricted by remember { mutableStateOf(true) }
+    // Se vuelve a mirar al volver de los ajustes del sistema
+    LifecycleResumeEffect(Unit) {
+        unrestricted = context.getSystemService(PowerManager::class.java).isIgnoringBatteryOptimizations(context.packageName)
+        onPauseOrDispose { }
+    }
+    Section(stringResource(R.string.section_battery)) {
+        Text(
+            stringResource(if (unrestricted) R.string.battery_ok else R.string.battery_restricted),
+            style = MaterialTheme.typography.bodyMedium,
+        )
+        if (!unrestricted) {
+            OutlinedButton(onClick = actions.openBatterySettings, modifier = Modifier.fillMaxWidth()) {
+                Text(stringResource(R.string.battery_open))
+            }
+        }
+    }
+}
+
+@Composable
 private fun InfoSection(state: EngineState, settings: IntercomSettings) {
     Section(stringResource(R.string.section_info)) {
         state.caps?.let { c ->
@@ -154,6 +264,14 @@ private fun InfoSection(state: EngineState, settings: IntercomSettings) {
             )
         }
         Text(stringResource(R.string.node_id, "%08X".format(settings.nodeId)), style = MaterialTheme.typography.bodySmall)
+    }
+}
+
+@Composable
+private fun SwitchRow(label: String, checked: Boolean, onChange: (Boolean) -> Unit) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Switch(checked = checked, onCheckedChange = onChange)
     }
 }
 

@@ -5,6 +5,9 @@ coreKtx = "1.19.1"
 activityCompose = "1.13.0"
 composeBom = "2026.09.00"
 lifecycle = "2.11.0"
+zxing = "3.5.3"
+codeScanner = "16.1.0"
+fragment = "1.8.5"
 
 [libraries]
 androidx-core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -16,6 +19,12 @@ androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-lifecycle-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+# Generar el QR de invitación
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing" }
+# Escanear el QR sin permiso de cámara (la interfaz la pone Google Play Services)
+play-services-code-scanner = { module = "com.google.android.gms:play-services-code-scanner", version.ref = "codeScanner" }
+# El escáner trae un androidx.fragment antiguo, incompatible con registerForActivityResult
+androidx-fragment = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

@@ -100,7 +100,7 @@ class Topology(val selfId: Int, var selfName: String, private val expiryMs: Long
                 }
             }
         }
-        val ids = (g.keys + entries.keys).filter { it != selfId }.toSortedSet()
+        val ids = (g.keys + entries.keys).filter { it != selfId }.distinct().sorted()
         return ids.map { Node(it, entries[it]?.name, dist[it] ?: -1) }
     }
 

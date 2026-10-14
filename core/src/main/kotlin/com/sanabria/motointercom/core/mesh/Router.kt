@@ -12,8 +12,11 @@ import kotlin.random.Random
 class Router(private val topology: Topology, private val out: Output) {
 
     interface Output {
-        /** Encola [frame] (ya codificada) en el enlace con [peer]. [audio] = se puede descartar si el enlace va atascado. */
-        fun send(peer: Int, frame: ByteArray, audio: Boolean)
+        /**
+         * Encola el contenido de una trama (tipo + cuerpo, en claro) en el enlace con [peer]; el enlace lo cifra al
+         * enviarlo. [audio] = se puede descartar si el enlace va atascado.
+         */
+        fun send(peer: Int, content: ByteArray, audio: Boolean)
 
         /** Voz de otro nodo para reproducir. */
         fun deliver(audio: Frame.Audio)
@@ -29,16 +32,17 @@ class Router(private val topology: Topology, private val out: Output) {
         private set
 
     /** Voz capturada aquí: va a todos los vecinos directos. */
-    fun sendLocalAudio(seq: Int, flags: Int, payload: ByteArray) {
+    fun sendLocalAudio(session: Int, counter: Int, flags: Int, payload: ByteArray) {
         val targets = topology.forwardTargets(selfId, selfId)
         if (targets.isEmpty()) return
-        val bytes = FrameCodec.encode(Frame.Audio(selfId, seq, flags, 0, payload))
-        for (p in targets) out.send(p, bytes, true)
+        val content = FrameCodec.encodeBody(Frame.Audio(selfId, session, counter, flags, 0, payload))
+        for (p in targets) out.send(p, content, true)
     }
 
-    fun onAudio(from: Int, f: Frame.Audio, now: Long) {
+    fun onAudio(from: Int, f: Frame.Audio) {
         if (f.origin == selfId) return
-        if (!seen.getOrPut(f.origin) { SeenWindow() }.firstTime(f.seq, now)) {
+        val window = seen[f.origin]?.takeIf { it.session == f.session } ?: SeenWindow(f.session).also { seen[f.origin] = it }
+        if (!window.firstTime(f.counter)) {
             duplicates++
             return
         }
@@ -46,16 +50,16 @@ class Router(private val topology: Topology, private val out: Output) {
         if (f.hops + 1 >= MAX_HOPS) return
         val targets = topology.forwardTargets(f.origin, from)
         if (targets.isEmpty()) return
-        val bytes = FrameCodec.encode(f.nextHop())
-        for (p in targets) out.send(p, bytes, true)
+        val content = FrameCodec.encodeBody(f.nextHop())
+        for (p in targets) out.send(p, content, true)
         forwarded += targets.size
     }
 
     fun onLinkState(from: Int, f: Frame.LinkState, now: Long) {
         if (!topology.onLinkState(f, now)) return
         if (f.hops + 1 >= MAX_HOPS) return
-        val bytes = FrameCodec.encode(f.copy(hops = f.hops + 1))
-        for (p in topology.localNeighbors) if (p != from && p != f.origin) out.send(p, bytes, false)
+        val content = FrameCodec.encodeBody(f.copy(hops = f.hops + 1))
+        for (p in topology.localNeighbors) if (p != from && p != f.origin) out.send(p, content, false)
     }
 
     /** Anuncia los vecinos de este nodo. Se llama periódicamente y cada vez que se abre o cierra un enlace. */
@@ -63,11 +67,11 @@ class Router(private val topology: Topology, private val out: Output) {
         val local = topology.localNeighbors
         if (local.isEmpty()) return
         linkStateVersion = Seq.next(linkStateVersion)
-        val bytes = FrameCodec.encode(Frame.LinkState(selfId, linkStateVersion, 0, topology.selfName, local.toList()))
-        for (p in local) out.send(p, bytes, false)
+        val content = FrameCodec.encodeBody(Frame.LinkState(selfId, linkStateVersion, 0, topology.selfName, local.toList()))
+        for (p in local) out.send(p, content, false)
     }
 
-    /** El nodo desapareció de la malla: si vuelve, su secuencia empieza de cero. */
+    /** El nodo desapareció de la malla. */
     fun forget(origin: Int) {
         seen.remove(origin)
     }
@@ -79,23 +83,22 @@ class Router(private val topology: Topology, private val out: Output) {
 }
 
 /**
- * Detecta duplicados por número de secuencia. Un duplicado llega por otro camino en milisegundos; si la misma secuencia
- * vuelve pasados [WINDOW_MS] es una trama nueva (el emisor reinició o la secuencia dio la vuelta).
+ * Detecta duplicados dentro de una sesión de un emisor. El contador no se repite en la sesión, así que basta con
+ * recordar los últimos [SLOTS] (20 s de voz): un duplicado llega por otro camino en milisegundos.
  */
-class SeenWindow {
-    private val seqs = IntArray(SLOTS) { -1 }
-    private val times = LongArray(SLOTS)
+class SeenWindow(val session: Int) {
+    private val counters = IntArray(SLOTS)
+    private val used = BooleanArray(SLOTS)
 
-    fun firstTime(seq: Int, now: Long): Boolean {
-        val i = seq and (SLOTS - 1)
-        if (seqs[i] == seq && now - times[i] < WINDOW_MS) return false
-        seqs[i] = seq
-        times[i] = now
+    fun firstTime(counter: Int): Boolean {
+        val i = counter and (SLOTS - 1)
+        if (used[i] && counters[i] == counter) return false
+        counters[i] = counter
+        used[i] = true
         return true
     }
 
     private companion object {
         const val SLOTS = 1024
-        const val WINDOW_MS = 2_000L
     }
 }

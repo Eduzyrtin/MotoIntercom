@@ -23,18 +23,28 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.sanabria.motointercom.R
+import com.sanabria.motointercom.engine.AudioMode
 import com.sanabria.motointercom.engine.IntercomSettings
 
-/** Lo que la interfaz puede pedir al motor. */
+/** Lo que la interfaz puede pedir al motor y a la actividad. */
 class ScreenActions(
     val start: () -> Unit,
     val stop: () -> Unit,
     val update: ((IntercomSettings) -> IntercomSettings) -> Unit,
     val ptt: (Boolean) -> Unit,
+    val toggleMic: () -> Unit,
     val masterVolume: (Float) -> Unit,
     val voiceVolume: (Float) -> Unit,
     val mediaVolume: (Float) -> Unit,
     val mediaKey: (Int) -> Unit,
+    val newGroup: (String) -> Unit,
+    val scanInvite: () -> Unit,
+    val pasteInvite: () -> Unit,
+    val shareInvite: (String) -> Unit,
+    val openBatterySettings: () -> Unit,
+    val testHelmet: (AudioMode) -> Unit,
+    val answerHelmetTest: (Boolean) -> Unit,
+    val cancelHelmetTest: () -> Unit,
 )
 
 @Composable

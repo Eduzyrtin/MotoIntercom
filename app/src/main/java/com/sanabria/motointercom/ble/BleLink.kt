@@ -5,6 +5,7 @@ import android.bluetooth.BluetoothGatt
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.BluetoothProfile
 import android.bluetooth.BluetoothSocket
+import com.sanabria.motointercom.core.mesh.LinkSession
 import com.sanabria.motointercom.core.protocol.Frame
 import com.sanabria.motointercom.core.protocol.FrameAssembler
 import com.sanabria.motointercom.core.protocol.FrameCodec
@@ -66,29 +67,44 @@ class GattHandle : BluetoothGattCallback() {
 }
 
 /**
- * Un enlace L2CAP con otro móvil: un hilo lee y reconstruye tramas, otro escribe desde una cola. La voz que no sale a
- * tiempo se descarta por la cabeza (mejor perder 20 ms viejos que acumular retardo); el control nunca se descarta.
+ * Un enlace L2CAP con otro móvil: un hilo lee y reconstruye tramas, otro escribe desde una cola.
+ *
+ * El saludo y el cifrado los lleva [session]: el Hello sale en claro y todo lo demás se cifra en el hilo de escritura,
+ * justo antes de enviarlo (así el contador del cifrado sigue el orden real del cable). La voz que no sale a tiempo se
+ * descarta de la cola antes de cifrarla (mejor perder 20 ms viejos que acumular retardo); el control nunca se descarta.
  */
 class BleLink(
     private val socket: BluetoothSocket,
     val initiator: Boolean,
     val gatt: GattHandle,
+    private val session: LinkSession,
     private val clock: () -> Long,
     private val events: Events,
 ) {
     interface Events {
-        fun onHello(link: BleLink, hello: Frame.Hello)
+        /** El otro es del grupo (Hello válido). Devuelve false para rechazar el enlace (hay otro mejor con ese nodo). */
+        fun onPeerHello(link: BleLink, nodeId: Int): Boolean
+
+        /** El otro ha demostrado tener la clave: el enlace ya vale. */
+        fun onUp(link: BleLink)
+
         fun onFrame(link: BleLink, frame: Frame)
+
         fun onClosed(link: BleLink)
     }
 
-    private class Item(val bytes: ByteArray, val audio: Boolean)
+    /** [bytes] es una trama ya lista (Hello en claro) o un contenido que hay que cifrar al enviarlo. */
+    private class Item(val bytes: ByteArray, val audio: Boolean, val raw: Boolean)
 
     val createdAt = clock()
 
+    /** Id del otro extremo (desde su Hello). */
     @Volatile var peer = 0
-    @Volatile var peerName = ""
-    @Volatile var helloDone = false
+        private set
+
+    /** Saludo completo: se le puede mandar voz. */
+    @Volatile var ready = false
+        private set
 
     @Volatile var rttMs: Int? = null
         private set
@@ -107,16 +123,32 @@ class BleLink(
 
     val queued: Int get() = lock.withLock { queue.size }
 
-    fun start(hello: Frame.Hello) {
-        send(FrameCodec.encode(hello), audio = false)
+    fun start() {
+        enqueue(Item(session.hello(), audio = false, raw = true))
         thread(name = "l2cap-read") { readLoop() }
         thread(name = "l2cap-write") { writeLoop() }
     }
 
-    fun send(bytes: ByteArray, audio: Boolean) {
+    /** Contenido (tipo + cuerpo) para este enlace; se cifra al enviarlo. */
+    fun send(content: ByteArray, audio: Boolean) {
+        if (!ready) return
+        enqueue(Item(content, audio, raw = false))
+    }
+
+    fun ping() = send(FrameCodec.encodeBody(Frame.Ping(clock().toInt())), audio = false)
+
+    fun close() {
+        if (!closed.compareAndSet(false, true)) return
+        lock.withLock { notEmpty.signalAll() }
+        runCatching { socket.close() }
+        gatt.close()
+        events.onClosed(this)
+    }
+
+    private fun enqueue(item: Item) {
         lock.withLock {
             if (closed.get()) return
-            if (audio) {
+            if (item.audio) {
                 if (queuedAudio >= MAX_QUEUED_AUDIO) {
                     val it = queue.iterator()
                     while (it.hasNext()) {
@@ -132,31 +164,14 @@ class BleLink(
             } else if (queue.size >= MAX_QUEUED) {
                 return
             }
-            queue.addLast(Item(bytes, audio))
+            queue.addLast(item)
             notEmpty.signal()
         }
     }
 
-    fun ping() = send(FrameCodec.encode(Frame.Ping(clock().toInt())), audio = false)
-
-    fun close() {
-        if (!closed.compareAndSet(false, true)) return
-        lock.withLock { notEmpty.signalAll() }
-        runCatching { socket.close() }
-        gatt.close()
-        events.onClosed(this)
-    }
-
     private fun readLoop() {
         val buf = ByteArray(maxOf(socket.maxReceivePacketSize, 1024))
-        val assembler = FrameAssembler { f ->
-            when (f) {
-                is Frame.Hello -> events.onHello(this, f)
-                is Frame.Ping -> send(FrameCodec.encode(Frame.Pong(f.time)), audio = false)
-                is Frame.Pong -> rttMs = clock().toInt() - f.time
-                else -> if (helloDone) events.onFrame(this, f)
-            }
-        }
+        val assembler = FrameAssembler { b, off, len -> onContent(b, off, len) }
         try {
             val input = socket.inputStream
             while (!closed.get()) {
@@ -172,6 +187,30 @@ class BleLink(
         }
     }
 
+    private fun onContent(b: ByteArray, off: Int, len: Int) {
+        when (val e = session.onContent(b, off, len)) {
+            is LinkSession.Event.PeerHello -> {
+                peer = e.nodeId
+                if (events.onPeerHello(this, e.nodeId)) {
+                    enqueue(Item(FrameCodec.encodeBody(Frame.Ready), audio = false, raw = false))
+                } else {
+                    close()
+                }
+            }
+            LinkSession.Event.Up -> {
+                ready = true
+                events.onUp(this)
+            }
+            is LinkSession.Event.Received -> when (val f = e.frame) {
+                is Frame.Ping -> send(FrameCodec.encodeBody(Frame.Pong(f.time)), audio = false)
+                is Frame.Pong -> rttMs = clock().toInt() - f.time
+                else -> events.onFrame(this, f)
+            }
+            is LinkSession.Event.Failed -> close()
+            null -> Unit
+        }
+    }
+
     private fun writeLoop() {
         try {
             val out = socket.outputStream
@@ -181,9 +220,10 @@ class BleLink(
                     if (closed.get()) return
                     queue.removeFirst().also { if (it.audio) queuedAudio-- }
                 }
-                out.write(item.bytes)
+                val bytes = if (item.raw) item.bytes else session.seal(item.bytes)
+                out.write(bytes)
                 out.flush()
-                txBytes += item.bytes.size
+                txBytes += bytes.size
             }
         } catch (_: Exception) {
             close()

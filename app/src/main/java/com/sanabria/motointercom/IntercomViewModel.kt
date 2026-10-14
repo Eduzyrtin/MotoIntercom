@@ -3,63 +3,72 @@ package com.sanabria.motointercom
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.sanabria.motointercom.audio.HelmetCompat
+import com.sanabria.motointercom.audio.HelmetTester
+import com.sanabria.motointercom.core.crypto.Group
+import com.sanabria.motointercom.engine.AudioMode
 import com.sanabria.motointercom.engine.EngineState
-import com.sanabria.motointercom.engine.IntercomEngine
 import com.sanabria.motointercom.engine.IntercomSettings
-import com.sanabria.motointercom.engine.SettingsStore
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
-/** Dueño del motor: sobrevive a los giros de pantalla. El bloque 2 lo pasa a un servicio en primer plano. */
+/** Puente entre la interfaz y el motor (que vive en la Application y lo arranca el servicio). */
 class IntercomViewModel(app: Application) : AndroidViewModel(app) {
-    private val store = SettingsStore(app)
-    private val engine = IntercomEngine(app)
-    private val _settings = MutableStateFlow(store.load())
+    private val intercom = app as MotoIntercomApp
 
-    val settings: StateFlow<IntercomSettings> = _settings.asStateFlow()
-    val state: StateFlow<EngineState> = engine.state
+    val settings: StateFlow<IntercomSettings> = intercom.settings.settings
+    val state: StateFlow<EngineState> = intercom.engine.state
 
-    init {
-        engine.loadVolumes(_settings.value.voiceLevel, _settings.value.mediaLevel)
-        // Los volúmenes también cambian con los botones del móvil o del casco: se guardan igual
-        viewModelScope.launch {
-            engine.state.map { it.volumes }.distinctUntilChanged().collect { v ->
-                val s = _settings.value
-                if (s.voiceLevel != v.voice || s.mediaLevel != v.media) {
-                    val updated = s.copy(voiceLevel = v.voice, mediaLevel = v.media)
-                    _settings.value = updated
-                    store.save(updated)
-                }
-            }
-        }
-    }
+    val helmetTester = HelmetTester(app)
+    private var testJob: Job? = null
+    private val _helmets = MutableStateFlow(HelmetCompat(app).all())
+    val helmets: StateFlow<List<HelmetCompat.Record>> = _helmets.asStateFlow()
 
-    fun update(change: (IntercomSettings) -> IntercomSettings) {
-        val s = change(_settings.value)
-        _settings.value = s
-        store.save(s)
-        engine.apply(s)
-    }
+    fun update(change: (IntercomSettings) -> IntercomSettings) = intercom.updateSettings(change)
 
-    fun start() = engine.start(_settings.value)
+    fun start() = IntercomService.start(getApplication())
 
-    fun stop() = engine.stop()
+    fun stop() = IntercomService.stop(getApplication())
 
     fun setPtt(pressed: Boolean) {
-        engine.pttPressed = pressed
+        intercom.engine.pttPressed = pressed
     }
 
-    fun setMasterVolume(level: Float) = engine.setMasterVolume(level)
+    fun toggleMic() = intercom.engine.toggleMic()
 
-    fun setVoiceVolume(level: Float) = engine.setVoiceVolume(level)
+    fun setMasterVolume(level: Float) = intercom.engine.setMasterVolume(level)
 
-    fun setMediaVolume(level: Float) = engine.setMediaVolume(level)
+    fun setVoiceVolume(level: Float) = intercom.engine.setVoiceVolume(level)
 
-    fun mediaKey(keyCode: Int) = engine.mediaKey(keyCode)
+    fun setMediaVolume(level: Float) = intercom.engine.setMediaVolume(level)
 
-    override fun onCleared() = engine.stop()
+    fun mediaKey(keyCode: Int) = intercom.engine.mediaKey(keyCode)
+
+    fun newGroup(name: String) {
+        intercom.settings.newGroup(name)
+    }
+
+    fun joinGroup(group: Group) {
+        intercom.settings.joinGroup(group)
+    }
+
+    fun testHelmet(mode: AudioMode) {
+        if (testJob?.isActive == true || state.value.running) return
+        testJob = viewModelScope.launch { helmetTester.run(mode) }
+    }
+
+    fun answerHelmetTest(heard: Boolean) {
+        helmetTester.answer(heard)
+        _helmets.value = HelmetCompat(getApplication()).all()
+    }
+
+    fun cancelHelmetTest() {
+        testJob?.cancel()
+        helmetTester.cancel()
+    }
+
+    override fun onCleared() = cancelHelmetTest()
 }

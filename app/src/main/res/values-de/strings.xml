@@ -107,4 +107,90 @@
     <string name="media_previous">Vorheriger Titel</string>
     <string name="media_play_pause">Wiedergabe oder Pause</string>
     <string name="media_next">Nächster Titel</string>
+
+    <!-- Bloque 2 -->
+    <string name="status_bt_off">Bluetooth ist aus: Das Netz kommt von selbst zurück, wenn du es einschaltest</string>
+    <string name="scan_mode_fast">Schnelle Suche</string>
+    <string name="scan_mode_saving">Stromsparende Suche</string>
+    <string name="mic_muted">Mikro stumm (Helm oder Benachrichtigung)</string>
+    <string name="ptt_latched">Du sprichst (Helmtaste)</string>
+    <string name="action_unmute">Mikro an</string>
+    <string name="action_mute">Stumm</string>
+    <string name="action_talk">Sprechen</string>
+    <string name="action_stop_talking">Nicht mehr sprechen</string>
+
+    <string name="notif_channel">Gegensprechanlage</string>
+    <string name="notif_title">MotoIntercom · %1$s</string>
+    <string name="notif_connecting">Verbinden…</string>
+    <plurals name="notif_riders">
+        <item quantity="one">%1$d in der Gruppe</item>
+        <item quantity="other">%1$d in der Gruppe</item>
+    </plurals>
+    <string name="notif_mic_open">Mikro offen</string>
+    <string name="notif_mic_muted">Mikro stumm</string>
+    <string name="notif_mic_off">Mikro aus</string>
+    <string name="notif_ptt">Drücken zum Sprechen</string>
+    <string name="notif_talking">du sprichst</string>
+
+    <string name="group_current">%1$s · Code %2$s</string>
+    <string name="group_code">Code %1$s</string>
+    <string name="group_show_qr">QR zeigen</string>
+    <string name="group_scan_qr">QR scannen</string>
+    <string name="group_paste">Einladung einfügen</string>
+    <string name="group_new">Neue Gruppe</string>
+    <string name="group_hint">Nur Handys mit demselben Gruppenschlüssel sehen sich. Alle sollten denselben Code sehen.</string>
+    <string name="group_locked_hint">Trenne die Verbindung, um die Gruppe zu wechseln.</string>
+    <string name="group_qr_warning">Wer diesen Code hat, kommt in die Gruppe und kann euch hören. Zeig ihn nur deinen Leuten.</string>
+    <string name="group_new_hint">Die anderen müssen mit deinem QR erneut beitreten.</string>
+    <string name="group_join_title">„%1$s“ beitreten?</string>
+    <string name="group_join_text">Code %1$s. Du verlässt deine aktuelle Gruppe.</string>
+    <string name="invite_invalid">Keine gültige Einladung gefunden</string>
+    <string name="invite_share_text">Tritt meiner MotoIntercom-Gruppe „%1$s“ bei: %2$s</string>
+    <string name="scan_failed">QR-Scanner konnte nicht geöffnet werden</string>
+    <string name="action_share">Teilen</string>
+    <string name="action_close">Schließen</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="action_create">Erstellen</string>
+    <string name="action_join">Beitreten</string>
+
+    <string name="section_helmet">Helm</string>
+    <string name="helmet_button">Die Helmtaste schaltet das Mikro ein und aus</string>
+    <string name="helmet_button_hint">Nutzt die Wiedergabe/Pause-Taste. Solange das aktiv ist, steuert diese Taste nicht mehr die Musik (nutze die Tasten der App). Geht am besten im Mix-Modus: im Helm-Modus nutzen manche Helme sie für Anrufe oder den Sprachassistenten.</string>
+    <string name="earcons_label">Tonsignale</string>
+    <string name="earcons_hint">Ein Piepton, wenn das Mikro auf- oder zugeht und wenn jemand der Gruppe beitritt oder sie verlässt.</string>
+    <string name="helmet_test_open">Helm testen</string>
+    <string name="helmet_test_locked">Trenne die Verbindung, um den Helm zu testen.</string>
+    <string name="helmets_tested">Getestete Helme</string>
+    <string name="helmet_record">%1$s: Helm %2$s · Mix %3$s</string>
+    <string name="result_ok">OK</string>
+    <string name="result_bad">geht nicht</string>
+    <string name="result_untested">nicht getestet</string>
+
+    <string name="section_battery">Akku</string>
+    <string name="battery_ok">Keine Akku-Einschränkungen: Die App läuft auch bei ausgeschaltetem Bildschirm weiter.</string>
+    <string name="battery_restricted">Android kann die App bei ausgeschaltetem Bildschirm beenden. Nimm sie aus der Akku-Optimierung.</string>
+    <string name="battery_open">Akku-Einstellungen öffnen</string>
+
+    <string name="test_title">Helm testen</string>
+    <string name="test_intro">Koppel den Helm wie immer mit dem Handy und schalte ihn ein. Jeder Test nimmt 3 Sekunden über das Mikro auf und spielt sie dir vor.</string>
+    <string name="test_devices">Verbunden: %1$s</string>
+    <string name="test_no_devices">Kein Bluetooth-Helm verbunden.</string>
+    <string name="test_run">Testen</string>
+    <string name="test_routing">Audioweg wird vorbereitet…</string>
+    <string name="test_recording">Sprich jetzt… %1$d</string>
+    <string name="test_playing">Hör zu… %1$d</string>
+    <string name="test_ask">Hast du dich im Helm gut gehört?</string>
+    <string name="answer_yes">Ja</string>
+    <string name="answer_no">Nein</string>
+    <string name="test_route_line">Audioweg bereit in %1$d ms</string>
+    <string name="test_route_timeout">Der Audioweg hat den Helm nie erreicht</string>
+    <string name="test_level">Spitzenpegel: %1$d dBFS</string>
+    <string name="test_result_ok">Funktioniert</string>
+    <string name="test_result_bad">Funktioniert nicht</string>
+    <string name="test_recommendation">Empfehlung</string>
+    <string name="test_recommend_helmet">Empfohlen: Helm (HFP).</string>
+    <string name="test_recommend_mix">Empfohlen: Mix (A2DP).</string>
+    <string name="test_recommend_none">Kein Modus hat funktioniert: Prüfe die Kopplung oder nutze Kabelkopfhörer.</string>
+    <string name="test_both_hint">Beide funktionieren: Helm nutzt das Helmmikro; Mix behält die Musik in guter Qualität.</string>
+    <string name="test_use_mode">Diesen Modus verwenden</string>
 </resources>

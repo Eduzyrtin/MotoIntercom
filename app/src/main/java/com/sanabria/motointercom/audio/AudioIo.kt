@@ -3,6 +3,7 @@ package com.sanabria.motointercom.audio
 import android.annotation.SuppressLint
 import android.content.Context
 import android.media.AudioAttributes
+import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
 import android.media.AudioFormat
 import android.media.AudioManager
@@ -10,6 +11,8 @@ import android.media.AudioRecord
 import android.media.AudioTrack
 import android.media.MediaRecorder
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.os.Process
 import android.view.KeyEvent
 import com.sanabria.motointercom.core.audio.VoiceFormat
@@ -44,17 +47,30 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
     data class Route(val inputType: Int?, val inputName: String, val outputType: Int?, val outputName: String)
 
     private val am = context.getSystemService(AudioManager::class.java)
+    private val main = Handler(Looper.getMainLooper())
 
     @Volatile private var running = false
     private var record: AudioRecord? = null
     private var track: AudioTrack? = null
     private var captureThread: Thread? = null
     private var playbackThread: Thread? = null
-    private var helmetRoute = false
+    @Volatile private var helmetRoute = false
+
+    /** Si el casco se va (Bluetooth apagado, fuera de alcance) y vuelve, se recupera la ruta HFP sin tocar nada. */
+    private val devices = object : AudioDeviceCallback() {
+        override fun onAudioDevicesAdded(added: Array<out AudioDeviceInfo>) {
+            if (helmetRoute && added.any { it.type in HELMET_TYPES }) enterHelmetRoute()
+        }
+    }
 
     fun start(mode: AudioMode, mic: MicSource, voiceOutput: VoiceOutput) {
         stop()
-        if (mode == AudioMode.HELMET) enterHelmetRoute() else am.mode = AudioManager.MODE_NORMAL
+        if (mode == AudioMode.HELMET) {
+            enterHelmetRoute()
+            am.registerAudioDeviceCallback(devices, main)
+        } else {
+            am.mode = AudioManager.MODE_NORMAL
+        }
         val rec = buildRecord(mode, mic)
         val trk = buildTrack(mode, voiceOutput)
         record = rec
@@ -65,6 +81,7 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
     }
 
     fun stop() {
+        am.unregisterAudioDeviceCallback(devices)
         running = false
         captureThread?.join(500)
         playbackThread?.join(500)
@@ -93,10 +110,10 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
         am.mode = AudioManager.MODE_IN_COMMUNICATION
         helmetRoute = true
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            val devices = am.availableCommunicationDevices
-            val helmet = devices.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLE_HEADSET }
-                ?: devices.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
-            if (helmet != null) am.setCommunicationDevice(helmet)
+            val available = am.availableCommunicationDevices
+            val helmet = available.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLE_HEADSET }
+                ?: available.firstOrNull { it.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO }
+            if (helmet != null && am.communicationDevice?.id != helmet.id) am.setCommunicationDevice(helmet)
         } else {
             @Suppress("DEPRECATION")
             am.startBluetoothSco()
@@ -204,7 +221,22 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
         }
     }
 
-    private companion object {
-        const val FRAME_BYTES = VoiceFormat.FRAME_SAMPLES * 2
+    companion object {
+        private const val FRAME_BYTES = VoiceFormat.FRAME_SAMPLES * 2
+
+        /** Tipos de dispositivo que son un casco por Bluetooth (LE Audio es de API 31; antes ningún dispositivo lo tiene). */
+        @SuppressLint("InlinedApi")
+        val HELMET_TYPES = setOf(
+            AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+            AudioDeviceInfo.TYPE_BLE_HEADSET,
+        )
+
+        /** Cascos (o auriculares) Bluetooth conectados ahora mismo, por nombre. */
+        fun bluetoothHeadsets(context: Context): List<String> =
+            context.getSystemService(AudioManager::class.java).getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+                .filter { it.type in HELMET_TYPES }
+                .map { it.productName.toString() }
+                .distinct()
     }
 }
