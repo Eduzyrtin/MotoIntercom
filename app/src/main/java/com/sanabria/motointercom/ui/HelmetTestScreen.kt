@@ -148,8 +148,8 @@ private fun Recommendation(test: HelmetTester.State, settings: IntercomSettings,
     val mix = test.results[AudioMode.MIX]?.heard
     if (helmet == null && mix == null) return
     val recommended = when {
-        mix == true -> AudioMode.MIX
         helmet == true -> AudioMode.HELMET
+        mix == true -> AudioMode.MIX
         else -> null
     }
     Section(stringResource(R.string.test_recommendation)) {

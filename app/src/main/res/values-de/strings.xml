@@ -25,11 +25,11 @@
     <string name="problem_scan">Suche fehlgeschlagen (Code %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Freisprechen (HFP)</string>
+    <string name="mode_helmet">Stimme zuerst (HFP)</string>
     <string name="mode_mix">Musik zuerst (A2DP)</string>
-    <string name="mode_helmet_hint">Kompatibilität: Mikro und Stimmen über den Helm wie ein Freisprechanruf. Sprechen geht mit jedem Helm, aber alles, auch die Musik, fällt auf Anrufqualität.</string>
+    <string name="mode_helmet_hint">Die Stimme klingt immer so gut wie möglich: Mikro und Stimmen über den Helm wie ein Freisprechanruf, immer offen und ohne Tasten. Geht mit jedem Helm. Die Musik läuft weiter, aber in Anrufqualität: eine Grenze des Bluetooth im Helm.</string>
     <string name="mode_mix_hint">Die Musik verliert nie an Qualität: Stimmen kommen als Medien im Helm an, gemischt mit deiner Musik. Zum Sprechen braucht der Helm LE Audio; mit einem klassischen Bluetooth-Helm hörst du nur zu.</string>
-    <string name="talk_auto">Stimme</string>
+    <string name="talk_auto">Bei Sprache</string>
     <string name="talk_open">Offen</string>
     <string name="talk_mute">Nur zuhören</string>
     <string name="mic_sending">Sendet</string>
@@ -178,10 +178,10 @@
     <string name="test_result_ok">Funktioniert</string>
     <string name="test_result_bad">Funktioniert nicht</string>
     <string name="test_recommendation">Empfehlung</string>
-    <string name="test_recommend_helmet">Empfohlen: Freisprechen (HFP).</string>
+    <string name="test_recommend_helmet">Empfohlen: Stimme zuerst (HFP).</string>
     <string name="test_recommend_mix">Empfohlen: Musik zuerst (A2DP).</string>
     <string name="test_recommend_none">Kein Modus hat funktioniert: Prüfe, ob der Helm gekoppelt und verbunden ist.</string>
-    <string name="test_both_hint">Beide funktionieren. Musik zuerst lässt die Musik unangetastet; Freisprechen lässt dich mit einem klassischen Helm sprechen, auf Kosten der Musik.</string>
+    <string name="test_both_hint">Beide funktionieren. Stimme zuerst lässt dich die ganze Zeit sprechen, mit der Musik in Anrufqualität; Musik zuerst lässt die Musik unangetastet, aber nur ein Helm mit LE Audio kann sprechen.</string>
     <string name="test_use_mode">Diesen Modus verwenden</string>
 
     <!-- Bloque 3 -->

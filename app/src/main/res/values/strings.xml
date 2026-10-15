@@ -27,11 +27,11 @@
     <string name="problem_scan">Could not scan (code %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Hands-free (HFP)</string>
+    <string name="mode_helmet">Voice first (HFP)</string>
     <string name="mode_mix">Music first (A2DP)</string>
-    <string name="mode_helmet_hint">Compatibility: mic and voices through the helmet as a hands-free call. You can talk with any helmet, but everything, music included, drops to call quality.</string>
+    <string name="mode_helmet_hint">The voice always sounds its best: mic and voices through the helmet as a hands-free call, always open and with no buttons to press. Works with any helmet. The music still plays, but at call quality: a Bluetooth limit of the helmet.</string>
     <string name="mode_mix_hint">The music never loses quality: voices reach the helmet as media, mixed with your music. To talk, the helmet needs LE Audio; with a classic Bluetooth helmet you only listen.</string>
-    <string name="talk_auto">Voice</string>
+    <string name="talk_auto">On voice</string>
     <string name="talk_open">Open</string>
     <string name="talk_mute">Listen only</string>
     <string name="mic_sending">Sending</string>
@@ -180,10 +180,10 @@
     <string name="test_result_ok">Works</string>
     <string name="test_result_bad">Does not work</string>
     <string name="test_recommendation">Recommendation</string>
-    <string name="test_recommend_helmet">Recommended: Hands-free (HFP).</string>
+    <string name="test_recommend_helmet">Recommended: Voice first (HFP).</string>
     <string name="test_recommend_mix">Recommended: Music first (A2DP).</string>
     <string name="test_recommend_none">Neither mode worked: check that the helmet is paired and connected.</string>
-    <string name="test_both_hint">Both work. Music first keeps the music intact; Hands-free lets you talk with a classic helmet at the cost of the music.</string>
+    <string name="test_both_hint">Both work. Voice first lets you talk all the time, with the music at call quality; Music first keeps the music intact, but only a helmet with LE Audio can talk.</string>
     <string name="test_use_mode">Use this mode</string>
 
     <!-- Bloque 3 -->

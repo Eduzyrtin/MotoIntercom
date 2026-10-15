@@ -26,11 +26,11 @@
     <string name="problem_scan">Não foi possível procurar (código %1$d)</string>
 
     <string name="section_audio">Áudio</string>
-    <string name="mode_helmet">Mãos livres (HFP)</string>
+    <string name="mode_helmet">Voz primeiro (HFP)</string>
     <string name="mode_mix">Música primeiro (A2DP)</string>
-    <string name="mode_helmet_hint">Compatibilidade: microfone e vozes pelo capacete como uma chamada mãos livres. Pode-se falar com qualquer capacete, mas tudo, incluindo a música, desce para qualidade de chamada.</string>
+    <string name="mode_helmet_hint">A voz soa sempre o melhor possível: microfone e vozes pelo capacete como uma chamada mãos livres, sempre abertos e sem carregar em nada. Serve com qualquer capacete. A música ouve-se, mas a qualidade de chamada: é um limite do Bluetooth do capacete.</string>
     <string name="mode_mix_hint">A música nunca perde qualidade: as vozes chegam ao capacete como multimédia, misturadas com a tua música. Para falar, o capacete tem de ter LE Audio; com um capacete Bluetooth clássico só ouves.</string>
-    <string name="talk_auto">Voz</string>
+    <string name="talk_auto">Ao falar</string>
     <string name="talk_open">Aberto</string>
     <string name="talk_mute">Só ouvir</string>
     <string name="mic_sending">A enviar</string>
@@ -181,10 +181,10 @@
     <string name="test_result_ok">Funciona</string>
     <string name="test_result_bad">Não funciona</string>
     <string name="test_recommendation">Recomendação</string>
-    <string name="test_recommend_helmet">Recomendado: Mãos livres (HFP).</string>
+    <string name="test_recommend_helmet">Recomendado: Voz primeiro (HFP).</string>
     <string name="test_recommend_mix">Recomendado: Música primeiro (A2DP).</string>
     <string name="test_recommend_none">Nenhum modo funcionou: confirma que o capacete está emparelhado e ligado.</string>
-    <string name="test_both_hint">Funcionam os dois. Música primeiro deixa a música intacta; Mãos livres deixa falar com um capacete clássico à custa da música.</string>
+    <string name="test_both_hint">Funcionam os dois. Voz primeiro deixa falar o tempo todo, com a música a qualidade de chamada; Música primeiro deixa a música intacta, mas só um capacete com LE Audio pode falar.</string>
     <string name="test_use_mode">Usar este modo</string>
 
     <!-- Bloque 3 -->

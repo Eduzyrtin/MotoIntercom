@@ -26,11 +26,11 @@
     <string name="problem_scan">Recherche impossible (code %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Mains libres (HFP)</string>
+    <string name="mode_helmet">Voix d\'abord (HFP)</string>
     <string name="mode_mix">Musique d\'abord (A2DP)</string>
-    <string name="mode_helmet_hint">Compatibilité : micro et voix par le casque comme un appel mains libres. On peut parler avec n\'importe quel casque, mais tout, musique comprise, passe en qualité appel.</string>
+    <string name="mode_helmet_hint">La voix sonne toujours au mieux : micro et voix par le casque comme un appel mains libres, toujours ouverts et sans rien appuyer. Marche avec n\'importe quel casque. La musique passe, mais en qualité appel : c\'est une limite du Bluetooth du casque.</string>
     <string name="mode_mix_hint">La musique ne perd jamais en qualité : les voix arrivent au casque comme multimédia, mélangées à ta musique. Pour parler, le casque doit avoir LE Audio ; avec un casque Bluetooth classique, tu écoutes seulement.</string>
-    <string name="talk_auto">Voix</string>
+    <string name="talk_auto">À la voix</string>
     <string name="talk_open">Ouvert</string>
     <string name="talk_mute">Écouter seulement</string>
     <string name="mic_sending">Envoi</string>
@@ -181,10 +181,10 @@
     <string name="test_result_ok">Fonctionne</string>
     <string name="test_result_bad">Ne fonctionne pas</string>
     <string name="test_recommendation">Recommandation</string>
-    <string name="test_recommend_helmet">Recommandé : Mains libres (HFP).</string>
+    <string name="test_recommend_helmet">Recommandé : Voix d\'abord (HFP).</string>
     <string name="test_recommend_mix">Recommandé : Musique d\'abord (A2DP).</string>
     <string name="test_recommend_none">Aucun mode n\'a fonctionné : vérifiez que le casque est associé et connecté.</string>
-    <string name="test_both_hint">Les deux fonctionnent. Musique d\'abord garde la musique intacte ; Mains libres permet de parler avec un casque classique au prix de la musique.</string>
+    <string name="test_both_hint">Les deux fonctionnent. Voix d\'abord permet de parler tout le temps, avec la musique en qualité appel ; Musique d\'abord garde la musique intacte, mais seul un casque avec LE Audio peut parler.</string>
     <string name="test_use_mode">Utiliser ce mode</string>
 
     <!-- Bloque 3 -->

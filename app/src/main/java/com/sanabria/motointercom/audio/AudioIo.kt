@@ -26,10 +26,11 @@ import kotlin.concurrent.thread
  *
  * Solo se usan el casco y el móvil; el micro del móvil, nunca. Sin micro del casco no se capta nada ([micOpen] = false)
  * y la app solo escucha.
+ * - [AudioMode.HELMET] (voz primero, el modo normal): modo comunicación todo el rato. Micro y voces van por el casco como
+ *   manos libres (HFP, o LE Audio si lo tiene). La voz va lo mejor que da el casco y la música baja a calidad de llamada.
  * - [AudioMode.MIX] (música primero): modo normal y la música no se toca. Las voces salen como multimedia hacia el casco
  *   y el sistema las mezcla con la música de otras apps. El micro del casco solo se usa si es LE Audio, que da micro y
  *   buena calidad a la vez; un casco clásico no tiene micro sin manos libres (HFP), y eso hundiría la música.
- * - [AudioMode.HELMET] (compatibilidad): modo comunicación todo el rato. Micro y voces van por el casco como manos libres.
  * En los dos, el micro se abre en cuanto el casco aparece y se cierra si se va.
  *
  * La reproducción escribe siempre (silencio si nadie habla): así el enlace con el casco no se duerme y la primera
@@ -54,7 +55,7 @@ class AudioIo(context: Context, private val callbacks: Callbacks) {
     private val lock = Any()
 
     @Volatile private var running = false
-    private var mode = AudioMode.MIX
+    private var mode = AudioMode.HELMET
     private var record: AudioRecord? = null
     private var track: AudioTrack? = null
     private var captureThread: Thread? = null

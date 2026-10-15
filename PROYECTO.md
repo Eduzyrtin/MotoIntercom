@@ -28,7 +28,7 @@
 - 14/10/2026: Bloque 3B (uso diario) programado: autoconexión al encender el casco, grupos guardados con uno por defecto y micro siempre del casco. Compila, 40 pruebas y lint limpio.
   - Visto en el emulador: elegir casco (pide permiso; sin emparejados, lista vacía) y la entrada de autoconexión (pide permisos, conecta con el grupo por defecto y avisa de que no hay micro del casco).
   - Sin casco real el emulador no puede mostrar la conexión del casco (ACL) ni el diálogo de asociación de Android.
-- 14/10/2026: música primero (T53–T55). A2DP es el modo normal y la música no baja nunca de calidad; manos libres queda como compatibilidad. Fuera el PTT: hablar es Abierto, Voz (VAD) o Solo escuchar. Voz a 48 kHz, 24 kbps por defecto y escalones hasta 48. Compila, 41 pruebas y lint limpio.
+- 14/10/2026: voz primero (T53–T56). Con un casco clásico no hay micro y música buena a la vez (A2DP y HFP no pueden estar activos juntos), y Eduardo prefiere la voz: el modo por defecto es Voz primero (HFP, micro siempre abierto) y Música primero (A2DP) queda como alternativa, útil con cascos LE Audio. Fuera el PTT: hablar es Abierto, Al hablar (VAD) o Solo escuchar. Voz a 48 kHz, 24 kbps por defecto y escalones hasta 48. Compila, 41 pruebas y lint limpio.
   - Sin casco en el emulador no hay micro en ningún modo: la voz de punta a punta a 48 kHz y el micro LE Audio quedan para probar con los cascos.
 
 ## 1. Qué es
@@ -51,7 +51,7 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 | Grupos | Nombre + clave aleatoria de 32 bytes; se comparte por QR, por enlace `motointercom://join` o pegando el texto | Dos grupos con el mismo nombre no se mezclan; el código corto (del advId) deja comprobar que todos están en el mismo |
 | Cifrado | AES-256-GCM por enlace (clave derivada de la del grupo y de dos nonces); el enlace solo vale si el otro demuestra tener la clave | Sin la clave no se oye ni se inyecta nada; el contador implícito solo suma la etiqueta (16 B por trama) |
 | Segundo plano | Servicio en primer plano (micrófono + dispositivo conectado) con notificación; el motor vive en la Application | Pantalla apagada y app cerrada sin cortar; la notificación silencia y desconecta |
-| Audio | **Música primero (A2DP), el modo normal:** la música no baja nunca de calidad; las voces llegan como multimedia mezcladas con ella. Micro del casco solo con LE Audio; un casco clásico solo escucha. **Manos libres (HFP)**, compatibilidad: se habla con cualquier casco, todo a calidad de llamada. Sin ducking. Solo el casco y el móvil: nunca el micro del móvil ni micros externos | Pedido por Eduardo (14/10/2026): evitar Discord, que hunde la música; si algo tiene que caer, que sea la voz |
+| Audio | **Voz primero (HFP), el modo por defecto:** micro y voces por el casco como una llamada manos libres, siempre abiertos; la voz va lo mejor que da el casco y la música se oye a calidad de llamada. Vale con cualquier casco. **Música primero (A2DP):** la música no baja nunca de calidad; las voces llegan como multimedia mezcladas con ella; el micro del casco solo con LE Audio, y con un casco clásico solo se escucha. Sin ducking. Solo el casco y el móvil: nunca el micro del móvil ni micros externos | Eduardo (14/10/2026): con un casco clásico no se puede tener música y voz buenas a la vez (A2DP y HFP no coexisten), y prefiere la voz: un canal comunitario donde la voz va bien y la música es secundaria. Cualquier modo sigue siendo Bluetooth puro, sin red |
 | Autoconexión | Se elige el casco en Ajustes; al conectarse al móvil la app se abre y conecta con el grupo por defecto, y cuelga 2 min después de que se vaya | Pedido por Eduardo (14/10/2026): encender el casco y listo |
 | Grupos guardados | Lista de grupos; uno por defecto (el de siempre, p. ej. la pareja) y otro activo para salidas en grupo | Pedido por Eduardo (14/10/2026) |
 | Volumen | Tres controles en la pantalla principal: maestro, voz y multimedia. El maestro mueve los dos a la par conservando la diferencia; los botones del móvil o del casco mueven el maestro | Pedido por Eduardo (13/10/2026): con voz 4/10 y música 6/10, subir deja 5 y 7 |
@@ -237,9 +237,10 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - [x] T50 Autoconexión: elegir el casco entre los emparejados y asociarlo como dispositivo complementario (deja abrir la app desde segundo plano); receptor de conexión y desconexión del casco; notificación de reserva para conectar con un toque; colgar 2 min después de que el casco se vaya
 - [x] T51 Grupos guardados: lista con activo y por defecto (usar, hacer por defecto, borrar); selector en la pantalla principal; la autoconexión usa el grupo por defecto
 - [x] T52 Micro siempre del casco: fuera la elección de micro; aviso si no hay micro del casco. (Lo de hablar con PTT en mezcla lo sustituyen T53 y T54.)
-- [x] T53 Música primero: A2DP es el modo normal y el casco no sale de él; micro del casco solo con LE Audio; manos libres (HFP) como compatibilidad; la prueba del casco recomienda música primero; los ajustes antiguos (manos libres, PTT, 16 kbps) se pasan a lo nuevo una vez
+- [x] T53 Música primero: A2DP sin salir de él; micro del casco solo con LE Audio; manos libres (HFP) como alternativa (el modo por defecto lo cambia T56); la prueba del casco recomienda música primero; los ajustes antiguos (manos libres, PTT, 16 kbps) se pasan a lo nuevo una vez
 - [x] T54 Fuera el PTT: Abierto (por defecto), Voz (VAD) y Solo escuchar; el botón del casco y la notificación silencian o devuelven el micro, y silenciado se suelta el micro del casco
 - [x] T55 Voz a 48 kHz (banda completa, sin remuestreo), complejidad 10, escalones de calidad hasta 48 kbps y 24 kbps por defecto
+- [x] T56 Voz primero por defecto: Voz primero (HFP) pasa a ser el modo normal y Música primero (A2DP) la alternativa; la prueba del casco recomienda Voz primero si funciona; los ajustes de audio se reinician una vez a lo nuevo. En HFP la voz va por SCO (16 kHz con mSBC si el casco y el móvil lo negocian; 8 kHz si no): no se puede forzar desde la app
 
 ### Bloque 4 — iOS (necesita un Mac con Xcode)
 
@@ -248,6 +249,13 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - [ ] T32 AVAudioSession (`playAndRecord` + `allowBluetooth` / `allowBluetoothA2DP`)
 - [ ] T33 Interfaz (Compose Multiplatform o SwiftUI)
 - [ ] T34 CryptoProvider con CryptoKit
+- [ ] T35 Distribución sin App Store y sin Mac propio. Plan:
+  - Compilar en un Mac en la nube (GitHub Actions con `macos-latest`, Codemagic o Xcode Cloud): no hace falta tener un Mac, pero sí escribir el código sin verlo funcionar en un iPhone.
+  - Apple Developer Program: 99 USD al año, imprescindible para TestFlight.
+  - TestFlight: hasta 10 000 probadores con un enlace público; cada build caduca a los 90 días (hay que resubir) y la primera build de cada versión pasa una revisión corta de Apple (no es la del App Store).
+  - Alternativas descartadas: ad hoc (hay que dar el UDID de cada iPhone y vale para 100 aparatos), sideloading con ID gratuito (caduca a los 7 días), tiendas alternativas o distribución web de la UE (solo en la UE, con notarización de Apple y comisiones).
+  - Los dispositivos de Eduardo no valen: el iPhone 5 se quedó en iOS 10 (L2CAP exige iOS 11) y el iPad Air 2 llega a iPadOS 15. Hace falta un iPhone de un amigo que pruebe las builds.
+  - Riesgos del lado de iOS: el anuncio BLE en segundo plano pierde los datos de servicio, y el micro del casco por HFP en `AVAudioSession` se negocia distinto al de Android.
 
 ### Bloque 5 — Opcional
 

@@ -16,14 +16,18 @@ import kotlin.random.Random
 /** Por dónde va el audio. Solo se usan el casco y el móvil; el micro del móvil, nunca. */
 enum class AudioMode {
     /**
-     * Música primero, el modo normal: la música no baja nunca de calidad. Las voces llegan por multimedia, mezcladas
-     * con la música por el sistema. Para hablar se usa el micro del casco solo si tiene LE Audio, que permite micro y
-     * buena calidad a la vez; un casco Bluetooth clásico no tiene micro sin manos libres, así que con él solo se escucha.
+     * Voz primero, el modo normal: micro y voces por el casco como manos libres (HFP), siempre abiertos y sin tocar nada.
+     * Vale con cualquier casco. La voz va lo mejor que da el casco; la música se oye, pero a calidad de llamada: un casco
+     * Bluetooth clásico no puede tener a la vez micro y música en buena calidad.
+     */
+    HELMET,
+
+    /**
+     * Música primero: la música no baja nunca de calidad. Las voces llegan por multimedia, mezcladas con la música por el
+     * sistema. Para hablar se usa el micro del casco solo si tiene LE Audio, que permite micro y buena calidad a la vez;
+     * un casco Bluetooth clásico no tiene micro sin manos libres, así que con él solo se escucha.
      */
     MIX,
-
-    /** Compatibilidad: micro y voces por el casco como manos libres (HFP). Cualquier casco; todo a calidad de llamada. */
-    HELMET,
 }
 
 /** Cuándo se envía la voz: siempre, cuando se detecta voz, o nunca (solo escuchar). */
@@ -49,7 +53,7 @@ data class IntercomSettings(
     val groups: List<SavedGroup>,
     val activeGroup: String,
     val defaultGroup: String,
-    val audioMode: AudioMode = AudioMode.MIX,
+    val audioMode: AudioMode = AudioMode.HELMET,
     val talkMode: TalkMode = TalkMode.OPEN,
     /** Niveles 0..1 de voz y multimedia; el maestro es el mayor de los dos (ver VolumeLink). */
     val voiceLevel: Float = 0.8f,
@@ -145,13 +149,13 @@ class SettingsRepository(context: Context) {
         val active = prefs.getString("activeGroup", null)?.takeIf { k -> groups.any { it.keyText == k } } ?: groups.first().keyText
         val default = prefs.getString("defaultGroup", null)?.takeIf { k -> groups.any { it.keyText == k } } ?: active
         val d = IntercomSettings(nodeId = id, name = Build.MODEL, groups = groups, activeGroup = active, defaultGroup = default)
-        // Ajustes de audio de antes de "música primero" (manos libres, PTT, voz a 16 kHz): se vuelve a lo nuevo
-        if (prefs.getInt(AUDIO_VERSION, 0) < 2) {
+        // Ajustes de audio de antes de "voz primero" (música primero, PTT, voz a 16 kHz): se vuelve a lo nuevo
+        if (prefs.getInt(AUDIO_VERSION, 0) < 3) {
             prefs.edit {
                 remove("audioMode")
                 remove("bitrate")
                 remove("talkMode")
-                putInt(AUDIO_VERSION, 2)
+                putInt(AUDIO_VERSION, 3)
             }
         }
         return d.copy(

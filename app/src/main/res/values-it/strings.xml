@@ -26,11 +26,11 @@
     <string name="problem_scan">Ricerca non riuscita (codice %1$d)</string>
 
     <string name="section_audio">Audio</string>
-    <string name="mode_helmet">Vivavoce (HFP)</string>
+    <string name="mode_helmet">Prima la voce (HFP)</string>
     <string name="mode_mix">Prima la musica (A2DP)</string>
-    <string name="mode_helmet_hint">Compatibilità: microfono e voci nel casco come una chiamata in vivavoce. Si può parlare con qualsiasi casco, ma tutto, musica compresa, scende a qualità chiamata.</string>
+    <string name="mode_helmet_hint">La voce suona sempre al meglio: microfono e voci nel casco come una chiamata in vivavoce, sempre aperti e senza premere nulla. Va con qualsiasi casco. La musica si sente, ma a qualità chiamata: è un limite del Bluetooth del casco.</string>
     <string name="mode_mix_hint">La musica non perde mai qualità: le voci arrivano al casco come multimedia, mescolate alla tua musica. Per parlare il casco deve avere LE Audio; con un casco Bluetooth classico ascolti soltanto.</string>
-    <string name="talk_auto">Voce</string>
+    <string name="talk_auto">A voce</string>
     <string name="talk_open">Aperto</string>
     <string name="talk_mute">Solo ascolto</string>
     <string name="mic_sending">Invio</string>
@@ -181,10 +181,10 @@
     <string name="test_result_ok">Funziona</string>
     <string name="test_result_bad">Non funziona</string>
     <string name="test_recommendation">Consiglio</string>
-    <string name="test_recommend_helmet">Consigliato: Vivavoce (HFP).</string>
+    <string name="test_recommend_helmet">Consigliato: Prima la voce (HFP).</string>
     <string name="test_recommend_mix">Consigliato: Prima la musica (A2DP).</string>
     <string name="test_recommend_none">Nessuna modalità ha funzionato: controlla che il casco sia abbinato e collegato.</string>
-    <string name="test_both_hint">Funzionano entrambe. Prima la musica lascia la musica intatta; Vivavoce permette di parlare con un casco classico a scapito della musica.</string>
+    <string name="test_both_hint">Funzionano entrambe. Prima la voce permette di parlare sempre, con la musica a qualità chiamata; Prima la musica lascia la musica intatta, ma solo un casco con LE Audio può parlare.</string>
     <string name="test_use_mode">Usa questa modalità</string>
 
     <!-- Bloque 3 -->

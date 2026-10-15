@@ -22,7 +22,7 @@ import kotlin.math.sqrt
 
 /**
  * Prueba de un modo de audio con el casco de verdad: graba 3 s por el micro del casco (HFP), los reproduce por la salida
- * del modo (HFP en Manos libres, A2DP en Música primero) y pregunta si se ha oído bien. Mide cuánto tarda el micro del casco en estar
+ * del modo (HFP en Voz primero, A2DP en Música primero) y pregunta si se ha oído bien. Mide cuánto tarda el micro del casco en estar
  * listo y su nivel.
  * Los resultados se guardan por casco en [HelmetCompat].
  */
@@ -188,14 +188,14 @@ class HelmetCompat(context: Context) {
     data class Recommendation(val mode: AudioMode, val source: Source)
 
     /**
-     * Modo recomendado para un casco conectado: lo que diga la prueba hecha aquí (Música primero si funcionó; si no,
-     * Manos libres si funcionó) y, si no se ha probado, la lista incluida en la app ([listed]).
+     * Modo recomendado para un casco conectado: lo que diga la prueba hecha aquí (Voz primero si funcionó; si no,
+     * Música primero si funcionó) y, si no se ha probado, la lista incluida en la app ([listed]).
      */
     fun recommend(headset: String, listed: List<ListedHelmet>): Recommendation? {
         all().firstOrNull { it.name == headset }?.let { r ->
             when {
-                r.mix == true -> return Recommendation(AudioMode.MIX, Source.TESTED)
                 r.helmet == true -> return Recommendation(AudioMode.HELMET, Source.TESTED)
+                r.mix == true -> return Recommendation(AudioMode.MIX, Source.TESTED)
             }
         }
         val key = normalize(headset)
