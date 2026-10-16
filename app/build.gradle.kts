@@ -11,7 +11,7 @@ android {
         applicationId = "com.sanabria.motointercom"
         // 29: canales L2CAP de BLE (listenUsingInsecureL2capChannel / createInsecureL2capChannel)
         minSdk = 29
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "0.1.0"
 
