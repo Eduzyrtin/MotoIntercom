@@ -1,0 +1,1 @@
+Primeira versão. Intercomunicador de grupo por Bluetooth LE com rede de retransmissão, cifra ponto a ponto, modos Voz primeiro e Música primeiro, teste do capacete e nove idiomas.

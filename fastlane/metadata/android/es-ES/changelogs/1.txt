@@ -1,0 +1,1 @@
+Primera versión. Intercomunicador de grupo por Bluetooth LE con red de relevos, cifrado de extremo a extremo, modos Voz primero y Música primero, prueba de casco y nueve idiomas.

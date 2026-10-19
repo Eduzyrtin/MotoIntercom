@@ -1,0 +1,1 @@
+Première version. Intercom de groupe en Bluetooth LE avec réseau relais, chiffrement de bout en bout, modes Voix d'abord et Musique d'abord, test du casque et neuf langues.

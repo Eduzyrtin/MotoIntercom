@@ -1,0 +1,42 @@
+Un intercomunicador de moto hecho con vuestros móviles. Sin cobertura, sin servidores, con cualquier casco.
+
+Habla con tu pareja de ruta o con todo el grupo por Bluetooth Low Energy, con tu propio casco y tu propia música. Cada motero mantiene el casco emparejado con su móvil como siempre, y los móviles hablan entre ellos: una red de relevos, cifrada de extremo a extremo, que se rehace sola cuando alguien se pierde y vuelve.
+
+POR QUÉ MOTOINTERCOM
+Los intercomunicadores dedicados son caros y normalmente solo hablan con los de su marca. Las apps de chat de grupo necesitan cobertura, y en una carretera de montaña muchas veces no la hay. Aquí el intercomunicador es tu móvil: funciona con cualquier casco que puedas emparejar con el móvil, mezcla marcas sin problema y no necesita cobertura, ni cuenta, ni servidor.
+
+PENSADA PARA IR EN MOTO
+• Grupos de cualquier tamaño con nombre y clave aleatoria. Compártelos por código QR, por enlace o como texto.
+• Red de relevos: los del medio pasan la voz (hasta 8 saltos) cuando el primero y el último están fuera de alcance.
+• Micro siempre abierto o por voz, o solo escuchar. Sin pulsar para hablar: las manos siguen en el manillar.
+• Conexión automática al encender el casco, y cuelga dos minutos después de que se aleje.
+• Grupos guardados, con uno predeterminado.
+• Avisos sonoros al abrirse o cerrarse el micro y cuando alguien entra o sale.
+• Sigue funcionando con la pantalla apagada, con una notificación para silenciar o desconectar.
+
+TU CASCO, TU MÚSICA
+• Voz primero: micro y voces por el casco como una llamada de manos libres. Funciona con cualquier casco.
+• Música primero: tu música conserva la calidad y las voces llegan mezcladas. El micro del casco necesita LE Audio; con un casco clásico, escuchas.
+• Prueba de casco: graba 3 segundos con el micro del casco, los reproduce y te recomienda un modo.
+• Volumen general, de voz y de multimedia, controles de música y un botón opcional del casco para silenciar el micro.
+• Nunca se usa el micro del móvil, solo el del casco.
+
+RADIO SÓLIDA
+• Enlaces Bluetooth LE L2CAP, con Coded PHY de largo alcance si el móvil lo admite.
+• Voz Opus de 8 a 48 kbps que se adapta a los enlaces.
+• Los enlaces caídos se detectan en 6 segundos y se reconectan solos.
+• Pantalla de diagnóstico con señal, latencia y pérdidas de cada enlace.
+
+PRIVADA POR DISEÑO
+• Cifrado AES-256-GCM en cada enlace. Sin la clave del grupo nadie puede escuchar ni colar nada.
+• Sin permiso de internet: el propio Android impide que la app envíe nada a ningún sitio. Sin analíticas, sin anuncios, sin cuentas.
+• No se graba nada: la voz se reproduce y se descarta.
+
+El alcance realista de un enlace es de 30 a 100 m; la red encadena saltos para grupos que se estiran en fila. No intenta sustituir a una radio mesh dedicada.
+
+REQUISITOS
+Android 10 o superior con Bluetooth LE, un casco o auriculares Bluetooth emparejados con el móvil, y la app en el móvil de cada motero.
+
+Disponible en español, inglés, francés, alemán, italiano, portugués, catalán, euskera y gallego.
+
+Software libre bajo GPLv3: github.com/Eduzyrtin/MotoIntercom

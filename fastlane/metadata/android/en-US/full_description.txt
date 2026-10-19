@@ -1,0 +1,42 @@
+A motorbike intercom made of your phones. No signal, no servers, any helmet.
+
+Talk to your riding partner or your whole group over Bluetooth Low Energy, with your own helmet and your own music. Each rider keeps the helmet paired to their phone as usual, and the phones talk to each other: a relay mesh, encrypted end to end, that rebuilds itself whenever someone drops out and comes back.
+
+WHY MOTOINTERCOM
+Dedicated intercoms are expensive and usually only talk to their own brand. Group chat apps need mobile coverage, and on a mountain road you often have none. Here your phone is the intercom: it works with any helmet you can pair to your phone, mixes brands freely and needs no cell coverage, no account and no server.
+
+MADE FOR RIDING
+• Groups of any size with a name and a random key. Share them by QR code, by link or as text.
+• Relay mesh: riders in the middle pass the voice along (up to 8 hops) when the first and the last are out of range.
+• Always open or voice activated, or listen only. No push-to-talk: your hands stay on the handlebar.
+• Auto-connect when your helmet turns on, and hang up two minutes after it goes away.
+• Saved groups, with a default one.
+• Sound cues when the mic opens or closes and when someone joins or leaves.
+• Keeps running with the screen off, with a notification to mute or disconnect.
+
+YOUR HELMET, YOUR MUSIC
+• Voice first: mic and voices through the helmet as a hands-free call. Works with any helmet.
+• Music first: your music keeps its quality and the voices are mixed in. The helmet mic needs LE Audio; with a classic helmet you listen.
+• Helmet test: records 3 seconds through your helmet mic, plays them back and recommends a mode.
+• Master, voice and media volumes, music controls and an optional helmet button to mute the mic.
+• The phone's own microphone is never used, only the helmet's.
+
+SOLID RADIO
+• Bluetooth LE L2CAP links, with long-range Coded PHY when the phone supports it.
+• Opus voice from 8 to 48 kbps that adapts to the links.
+• Dead links are detected in 6 seconds and reconnected by themselves.
+• A diagnostics screen with signal, latency and drops for every link.
+
+PRIVATE BY DESIGN
+• AES-256-GCM encryption on every link. Without the group key nobody can listen or inject anything.
+• No internet permission: Android itself prevents the app from sending anything anywhere. No analytics, no ads, no accounts.
+• Nothing is recorded: voice is played and discarded.
+
+The realistic range of one link is 30 to 100 m; the mesh chains hops for groups that stretch out in a line. It does not try to replace a dedicated mesh radio.
+
+REQUIREMENTS
+Android 10 or newer with Bluetooth LE, a Bluetooth helmet or headset paired to your phone, and the app on every rider's phone.
+
+Available in English, Spanish, French, German, Italian, Portuguese, Catalan, Basque and Galician.
+
+Free software under the GPLv3: github.com/Eduzyrtin/MotoIntercom

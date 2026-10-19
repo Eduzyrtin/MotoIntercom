@@ -1,0 +1,42 @@
+Zuen mugikorrekin egindako moto-intercom bat. Estaldurarik gabe, zerbitzaririk gabe, edozein kaskorekin.
+
+Hitz egin zure bidaia-lagunarekin edo talde osoarekin Bluetooth Low Energy bidez, zure kaskoarekin eta zure musikarekin. Motorzale bakoitzak kaskoa bere mugikorrarekin parekatuta mantentzen du beti bezala, eta mugikorrek elkarren artean hitz egiten dute: errele-sare bat, muturretik muturrera zifratua, norbait galdu eta itzultzen denean bere kabuz berreraikitzen dena.
+
+ZERGATIK MOTOINTERCOM
+Intercom dedikatuak garestiak dira eta normalean beren markakoekin bakarrik hitz egiten dute. Talde-txateko aplikazioek estaldura behar dute, eta mendiko errepide batean askotan ez dago. Hemen intercoma zure mugikorra da: mugikorrarekin parekatu dezakezun edozein kaskorekin dabil, markak arazorik gabe nahasten ditu eta ez du estaldurarik, konturik ezta zerbitzaririk behar.
+
+MOTOAN IBILTZEKO PENTSATUA
+• Edozein tamainatako taldeak izen eta ausazko gako batekin. Partekatu QR kode, esteka edo testu bidez.
+• Errele-sarea: erdian doazenek ahotsa pasatzen dute (8 jauzi arte) lehena eta azkena irismenetik kanpo daudenean.
+• Mikrofonoa beti irekita edo ahotsez aktibatua, edo entzun bakarrik. Sakatu-eta-hitz-egin gabe: eskuak gidarian geratzen dira.
+• Konexio automatikoa kaskoa piztean, eta urruntzen denetik bi minutura eskegitzen du.
+• Gordetako taldeak, lehenetsi batekin.
+• Soinu-abisuak mikrofonoa ireki edo ixtean eta norbait sartu edo irtetean.
+• Pantaila itzalita ere dabil, isilarazteko edo deskonektatzeko jakinarazpen batekin.
+
+ZURE KASKOA, ZURE MUSIKA
+• Ahotsa lehenik: mikrofonoa eta ahotsak kaskotik, esku libreko dei bat bezala. Edozein kaskorekin dabil.
+• Musika lehenik: zure musikak kalitatea mantentzen du eta ahotsak nahastuta iristen dira. Kaskoaren mikrofonoak LE Audio behar du; kasko klasiko batekin entzun egiten duzu.
+• Kasko-proba: 3 segundo grabatzen ditu kaskoaren mikrofonoarekin, erreproduzitzen ditu eta modu bat gomendatzen dizu.
+• Bolumen orokorra, ahotsarena eta multimediarena, musika-kontrolak eta mikrofonoa isilarazteko aukerako kasko-botoi bat.
+• Ez da inoiz mugikorraren mikrofonoa erabiltzen, kaskoarena bakarrik.
+
+IRRATI SENDOA
+• Bluetooth LE L2CAP loturak, irismen luzeko Coded PHYrekin mugikorrak onartzen badu.
+• 8 eta 48 kbps arteko Opus ahotsa, loturetara egokitzen dena.
+• Erorritako loturak 6 segundotan detektatzen dira eta bere kabuz berriro konektatzen dira.
+• Diagnostiko-pantaila bat lotura bakoitzaren seinale, latentzia eta galerekin.
+
+PRIBATUA DISEINUZ
+• AES-256-GCM zifratzea lotura guztietan. Taldearen gakorik gabe inork ezin du entzun ezta ezer sartu ere.
+• Interneteko baimenik ez: Androidek berak eragozten dio aplikazioari ezer bidaltzea. Analitikarik, iragarkirik eta konturik gabe.
+• Ez da ezer grabatzen: ahotsa erreproduzitu eta baztertu egiten da.
+
+Lotura baten irismen errealista 30 eta 100 m artekoa da; sareak jauziak kateatzen ditu ilaran luzatzen diren taldeentzat. Ez du mesh irrati dedikatu bat ordezkatu nahi.
+
+BETEKIZUNAK
+Android 10 edo berriagoa Bluetooth LErekin, mugikorrarekin parekatutako Bluetooth kasko edo entzungailu bat, eta aplikazioa motorzale bakoitzaren mugikorrean.
+
+Ingelesez, gaztelaniaz, frantsesez, alemanez, italieraz, portugesez, katalanez, euskaraz eta galegoz.
+
+Software librea GPLv3 lizentziapean: github.com/Eduzyrtin/MotoIntercom

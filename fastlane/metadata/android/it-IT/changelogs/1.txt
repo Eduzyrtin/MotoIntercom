@@ -1,0 +1,1 @@
+Prima versione. Interfono di gruppo via Bluetooth LE con rete a ponte, cifratura end-to-end, modalità Prima la voce e Prima la musica, test del casco e nove lingue.

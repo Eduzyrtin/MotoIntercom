@@ -1,0 +1,42 @@
+Un intercom moto fait avec vos téléphones. Sans réseau, sans serveur, avec n'importe quel casque.
+
+Parlez à votre partenaire de route ou à tout le groupe en Bluetooth Low Energy, avec votre propre casque et votre propre musique. Chaque motard garde son casque appairé à son téléphone comme d'habitude, et les téléphones se parlent entre eux : un réseau relais, chiffré de bout en bout, qui se reforme tout seul quand quelqu'un décroche puis revient.
+
+POURQUOI MOTOINTERCOM
+Les intercoms dédiés coûtent cher et ne parlent en général qu'avec ceux de leur marque. Les apps de discussion de groupe ont besoin du réseau mobile, et sur une route de montagne il n'y en a souvent pas. Ici, l'intercom, c'est votre téléphone : il fonctionne avec tout casque que vous pouvez appairer à votre téléphone, mélange les marques sans souci et n'a besoin ni de réseau, ni de compte, ni de serveur.
+
+FAIT POUR ROULER
+• Groupes de toute taille avec un nom et une clé aléatoire. Partagez-les par QR code, par lien ou en texte.
+• Réseau relais : les motards du milieu transmettent la voix (jusqu'à 8 sauts) quand le premier et le dernier sont hors de portée.
+• Micro toujours ouvert ou à déclenchement vocal, ou écoute seule. Pas d'alternat : vos mains restent sur le guidon.
+• Connexion automatique à l'allumage du casque, et raccroche deux minutes après qu'il s'éloigne.
+• Groupes enregistrés, avec un groupe par défaut.
+• Signaux sonores à l'ouverture ou la fermeture du micro et quand quelqu'un arrive ou part.
+• Continue de fonctionner écran éteint, avec une notification pour couper le micro ou se déconnecter.
+
+VOTRE CASQUE, VOTRE MUSIQUE
+• Voix d'abord : micro et voix dans le casque comme un appel mains libres. Fonctionne avec tout casque.
+• Musique d'abord : votre musique garde sa qualité et les voix s'y mélangent. Le micro du casque nécessite LE Audio ; avec un casque classique, vous écoutez.
+• Test du casque : enregistre 3 secondes avec le micro du casque, les rejoue et recommande un mode.
+• Volumes général, voix et média, commandes de musique et un bouton du casque optionnel pour couper le micro.
+• Le micro du téléphone n'est jamais utilisé, seulement celui du casque.
+
+RADIO SOLIDE
+• Liaisons Bluetooth LE L2CAP, avec Coded PHY longue portée si le téléphone le prend en charge.
+• Voix Opus de 8 à 48 kbit/s qui s'adapte aux liaisons.
+• Les liaisons coupées sont détectées en 6 secondes et se reconnectent toutes seules.
+• Un écran de diagnostic avec signal, latence et pertes de chaque liaison.
+
+PRIVÉE PAR CONCEPTION
+• Chiffrement AES-256-GCM sur chaque liaison. Sans la clé du groupe, personne ne peut écouter ni injecter quoi que ce soit.
+• Aucune autorisation internet : Android lui-même empêche l'app d'envoyer quoi que ce soit. Pas d'analyses, pas de publicité, pas de compte.
+• Rien n'est enregistré : la voix est jouée puis effacée.
+
+La portée réaliste d'une liaison est de 30 à 100 m ; le réseau enchaîne les sauts pour les groupes qui s'étirent en file. Il ne cherche pas à remplacer une radio mesh dédiée.
+
+CONFIGURATION REQUISE
+Android 10 ou plus récent avec Bluetooth LE, un casque ou une oreillette Bluetooth appairé à votre téléphone, et l'app sur le téléphone de chaque motard.
+
+Disponible en anglais, espagnol, français, allemand, italien, portugais, catalan, basque et galicien.
+
+Logiciel libre sous GPLv3 : github.com/Eduzyrtin/MotoIntercom

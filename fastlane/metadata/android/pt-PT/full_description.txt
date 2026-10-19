@@ -1,0 +1,42 @@
+Um intercomunicador de mota feito com os vossos telemóveis. Sem rede, sem servidores, com qualquer capacete.
+
+Fala com o teu parceiro de estrada ou com o grupo todo por Bluetooth Low Energy, com o teu próprio capacete e a tua própria música. Cada motociclista mantém o capacete emparelhado com o telemóvel como sempre, e os telemóveis falam entre si: uma rede de retransmissão, cifrada ponto a ponto, que se refaz sozinha quando alguém se perde e volta.
+
+PORQUÊ O MOTOINTERCOM
+Os intercomunicadores dedicados são caros e normalmente só falam com os da mesma marca. As apps de chat de grupo precisam de rede móvel, e numa estrada de montanha muitas vezes não há. Aqui o intercomunicador é o teu telemóvel: funciona com qualquer capacete que possas emparelhar com o telemóvel, mistura marcas sem problema e não precisa de rede, conta nem servidor.
+
+FEITA PARA ANDAR DE MOTA
+• Grupos de qualquer tamanho com nome e chave aleatória. Partilha-os por código QR, por ligação ou como texto.
+• Rede de retransmissão: quem vai no meio passa a voz (até 8 saltos) quando o primeiro e o último estão fora de alcance.
+• Microfone sempre aberto ou ativado por voz, ou só ouvir. Sem carregar para falar: as mãos ficam no guiador.
+• Ligação automática ao ligar o capacete, e desliga dois minutos depois de ele se afastar.
+• Grupos guardados, com um predefinido.
+• Sinais sonoros quando o microfone abre ou fecha e quando alguém entra ou sai.
+• Continua a funcionar com o ecrã desligado, com uma notificação para silenciar ou desligar.
+
+O TEU CAPACETE, A TUA MÚSICA
+• Voz primeiro: microfone e vozes pelo capacete como uma chamada mãos-livres. Funciona com qualquer capacete.
+• Música primeiro: a tua música mantém a qualidade e as vozes chegam misturadas. O microfone do capacete precisa de LE Audio; com um capacete clássico, ouves.
+• Teste do capacete: grava 3 segundos com o microfone do capacete, reprodu-los e recomenda um modo.
+• Volume geral, de voz e de multimédia, controlos de música e um botão opcional do capacete para silenciar o microfone.
+• O microfone do telemóvel nunca é usado, só o do capacete.
+
+RÁDIO SÓLIDO
+• Ligações Bluetooth LE L2CAP, com Coded PHY de longo alcance se o telemóvel o suportar.
+• Voz Opus de 8 a 48 kbps que se adapta às ligações.
+• As ligações caídas são detetadas em 6 segundos e voltam a ligar-se sozinhas.
+• Um ecrã de diagnóstico com sinal, latência e perdas de cada ligação.
+
+PRIVADA DE RAIZ
+• Cifra AES-256-GCM em cada ligação. Sem a chave do grupo ninguém consegue ouvir nem injetar nada.
+• Sem permissão de internet: o próprio Android impede a app de enviar o que quer que seja. Sem análises, sem anúncios, sem contas.
+• Nada é gravado: a voz é reproduzida e descartada.
+
+O alcance realista de uma ligação é de 30 a 100 m; a rede encadeia saltos para grupos que se esticam em fila. Não pretende substituir um rádio mesh dedicado.
+
+REQUISITOS
+Android 10 ou mais recente com Bluetooth LE, um capacete ou auricular Bluetooth emparelhado com o telemóvel, e a app no telemóvel de cada motociclista.
+
+Disponível em inglês, espanhol, francês, alemão, italiano, português, catalão, basco e galego.
+
+Software livre sob a GPLv3: github.com/Eduzyrtin/MotoIntercom

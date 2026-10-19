@@ -1,0 +1,1 @@
+Erste Version. Gruppen-Intercom über Bluetooth LE mit Relais-Netz, Ende-zu-Ende-Verschlüsselung, Modi Stimme zuerst und Musik zuerst, Helmtest und neun Sprachen.

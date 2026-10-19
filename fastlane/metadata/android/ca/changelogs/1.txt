@@ -1,0 +1,1 @@
+Primera versió. Intercomunicador de grup per Bluetooth LE amb xarxa de relleus, xifratge d'extrem a extrem, modes Veu primer i Música primer, prova de casc i nou idiomes.

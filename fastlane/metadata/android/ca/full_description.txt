@@ -1,0 +1,42 @@
+Un intercomunicador de moto fet amb els vostres mòbils. Sense cobertura, sense servidors, amb qualsevol casc.
+
+Parla amb la teva parella de ruta o amb tot el grup per Bluetooth Low Energy, amb el teu propi casc i la teva pròpia música. Cada motorista manté el casc aparellat amb el mòbil com sempre, i els mòbils parlen entre ells: una xarxa de relleus, xifrada d'extrem a extrem, que es refà tota sola quan algú es perd i torna.
+
+PER QUÈ MOTOINTERCOM
+Els intercomunicadors dedicats són cars i normalment només parlen amb els de la seva marca. Les apps de xat de grup necessiten cobertura, i en una carretera de muntanya sovint no n'hi ha. Aquí l'intercomunicador és el teu mòbil: funciona amb qualsevol casc que puguis aparellar amb el mòbil, barreja marques sense problema i no necessita cobertura, ni compte, ni servidor.
+
+PENSADA PER ANAR EN MOTO
+• Grups de qualsevol mida amb nom i clau aleatòria. Comparteix-los per codi QR, per enllaç o com a text.
+• Xarxa de relleus: els del mig passen la veu (fins a 8 salts) quan el primer i l'últim són fora d'abast.
+• Micro sempre obert o per veu, o només escoltar. Sense prémer per parlar: les mans es queden al manillar.
+• Connexió automàtica en encendre el casc, i penja dos minuts després que s'allunyi.
+• Grups desats, amb un de predeterminat.
+• Avisos sonors quan el micro s'obre o es tanca i quan algú entra o surt.
+• Continua funcionant amb la pantalla apagada, amb una notificació per silenciar o desconnectar.
+
+EL TEU CASC, LA TEVA MÚSICA
+• Veu primer: micro i veus pel casc com una trucada de mans lliures. Funciona amb qualsevol casc.
+• Música primer: la teva música conserva la qualitat i les veus hi arriben barrejades. El micro del casc necessita LE Audio; amb un casc clàssic, escoltes.
+• Prova de casc: grava 3 segons amb el micro del casc, els reprodueix i et recomana un mode.
+• Volum general, de veu i multimèdia, controls de música i un botó opcional del casc per silenciar el micro.
+• Mai no es fa servir el micro del mòbil, només el del casc.
+
+RÀDIO SÒLIDA
+• Enllaços Bluetooth LE L2CAP, amb Coded PHY de llarg abast si el mòbil ho admet.
+• Veu Opus de 8 a 48 kbps que s'adapta als enllaços.
+• Els enllaços caiguts es detecten en 6 segons i es reconnecten sols.
+• Pantalla de diagnòstic amb senyal, latència i pèrdues de cada enllaç.
+
+PRIVADA PER DISSENY
+• Xifratge AES-256-GCM a cada enllaç. Sense la clau del grup ningú no pot escoltar ni colar res.
+• Sense permís d'internet: el mateix Android impedeix que l'app enviï res enlloc. Sense analítiques, sense anuncis, sense comptes.
+• No s'enregistra res: la veu es reprodueix i es descarta.
+
+L'abast realista d'un enllaç és de 30 a 100 m; la xarxa encadena salts per a grups que s'estiren en filera. No pretén substituir una ràdio mesh dedicada.
+
+REQUISITS
+Android 10 o posterior amb Bluetooth LE, un casc o auriculars Bluetooth aparellats amb el mòbil, i l'app al mòbil de cada motorista.
+
+Disponible en català, anglès, castellà, francès, alemany, italià, portuguès, basc i gallec.
+
+Programari lliure sota GPLv3: github.com/Eduzyrtin/MotoIntercom

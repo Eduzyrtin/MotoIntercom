@@ -1,0 +1,42 @@
+Eine Motorrad-Gegensprechanlage aus euren Handys. Ohne Netz, ohne Server, mit jedem Helm.
+
+Sprich mit deiner Sozia, deinem Mitfahrer oder der ganzen Gruppe über Bluetooth Low Energy, mit deinem eigenen Helm und deiner eigenen Musik. Jeder behält seinen Helm wie gewohnt mit dem Handy gekoppelt, und die Handys sprechen miteinander: ein Ende-zu-Ende-verschlüsseltes Relais-Netz, das sich von selbst neu aufbaut, wenn jemand rausfällt und zurückkommt.
+
+WARUM MOTOINTERCOM
+Spezielle Gegensprechanlagen sind teuer und sprechen meist nur mit Geräten der eigenen Marke. Gruppen-Chat-Apps brauchen Mobilfunk, und auf einer Bergstraße gibt es oft keinen. Hier ist dein Handy die Gegensprechanlage: Es funktioniert mit jedem Helm, den du mit dem Handy koppeln kannst, mischt Marken problemlos und braucht weder Netz noch Konto noch Server.
+
+FÜRS FAHREN GEMACHT
+• Gruppen jeder Größe mit Namen und Zufallsschlüssel. Teile sie per QR-Code, Link oder als Text.
+• Relais-Netz: Die Fahrer in der Mitte geben die Stimme weiter (bis zu 8 Sprünge), wenn der Erste und der Letzte außer Reichweite sind.
+• Immer offen oder sprachgesteuert, oder nur zuhören. Kein Push-to-Talk: Die Hände bleiben am Lenker.
+• Verbindet sich automatisch, wenn du den Helm einschaltest, und legt zwei Minuten nach dem Ausschalten auf.
+• Gespeicherte Gruppen, mit einer Standardgruppe.
+• Tonsignale, wenn das Mikro auf- oder zugeht und wenn jemand dazukommt oder geht.
+• Läuft bei ausgeschaltetem Bildschirm weiter, mit einer Benachrichtigung zum Stummschalten oder Trennen.
+
+DEIN HELM, DEINE MUSIK
+• Stimme zuerst: Mikro und Stimmen über den Helm wie ein Freisprechanruf. Funktioniert mit jedem Helm.
+• Musik zuerst: Deine Musik behält ihre Qualität, die Stimmen werden dazugemischt. Das Helmmikro braucht LE Audio; mit einem klassischen Helm hörst du zu.
+• Helmtest: nimmt 3 Sekunden mit dem Helmmikro auf, spielt sie ab und empfiehlt einen Modus.
+• Gesamt-, Sprach- und Medienlautstärke, Musiksteuerung und eine optionale Helmtaste zum Stummschalten.
+• Das Mikrofon des Handys wird nie benutzt, nur das des Helms.
+
+ROBUSTER FUNK
+• Bluetooth-LE-L2CAP-Verbindungen, mit Coded PHY für große Reichweite, wenn das Handy es kann.
+• Opus-Sprache mit 8 bis 48 kbit/s, die sich den Verbindungen anpasst.
+• Abgerissene Verbindungen werden in 6 Sekunden erkannt und von selbst neu aufgebaut.
+• Ein Diagnosebildschirm mit Signal, Latenz und Aussetzern jeder Verbindung.
+
+PRIVAT VON GRUND AUF
+• AES-256-GCM-Verschlüsselung auf jeder Verbindung. Ohne den Gruppenschlüssel kann niemand mithören oder etwas einschleusen.
+• Keine Internetberechtigung: Android selbst verhindert, dass die App irgendetwas sendet. Keine Analysen, keine Werbung, keine Konten.
+• Nichts wird aufgezeichnet: Die Stimme wird abgespielt und verworfen.
+
+Die realistische Reichweite einer Verbindung liegt bei 30 bis 100 m; das Netz verkettet Sprünge für Gruppen, die sich in einer Reihe ziehen. Es will kein spezielles Mesh-Funkgerät ersetzen.
+
+VORAUSSETZUNGEN
+Android 10 oder neuer mit Bluetooth LE, ein Bluetooth-Helm oder -Headset, das mit dem Handy gekoppelt ist, und die App auf dem Handy jedes Fahrers.
+
+Verfügbar auf Englisch, Spanisch, Französisch, Deutsch, Italienisch, Portugiesisch, Katalanisch, Baskisch und Galicisch.
+
+Freie Software unter der GPLv3: github.com/Eduzyrtin/MotoIntercom
