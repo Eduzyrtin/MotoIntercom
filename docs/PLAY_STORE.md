@@ -3,6 +3,8 @@
 Paquete `com.sanabria.motointercom` · móvil · ficha en [`fastlane/metadata/android/`](../fastlane/metadata/android)
 (formato estándar, ver §8 de `HERRAMIENTAS/GUIA_PROYECTOS.md`). Idiomas: los 9 de la app; `en-US` es el predeterminado.
 
+- **Precio**: gratuita. También se descarga gratis desde GitHub (Releases).
+
 ## Qué subir y dónde (Play Console › Crecimiento › Presencia en la tienda › Ficha principal)
 
 1. **Idiomas**: Gestionar idiomas → añade `es-ES`, `fr-FR`, `de-DE`, `it-IT`, `pt-PT`, `ca`, `eu-ES`, `gl-ES`. Pega en cada uno

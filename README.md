@@ -1,7 +1,7 @@
 <!--
   TODO before going public:
   - Publish a first release so the "download" badge and the APK link work.
-  - Add the Google Play link here once the app is published.
+  - Check the Play Store link (the application id is com.sanabria.motointercom) once the app is published.
 -->
 
 <div align="center">
@@ -22,7 +22,9 @@ Each rider keeps the helmet paired to their phone as usual, and the phones talk 
 
 <img src="docs/media/hero.gif" alt="Two phones connecting by Bluetooth and a group talking over a mesh" width="300">
 
-**[Download the APK](https://github.com/Eduzyrtin/MotoIntercom/releases/latest)** · [Getting started](#getting-started) · [How it works](#how-it-works) · [Helmets and audio modes](#helmets-and-audio-modes) · [FAQ](#faq)
+**[Get it on Google Play](https://play.google.com/store/apps/details?id=com.sanabria.motointercom)** · **[Download the APK](https://github.com/Eduzyrtin/MotoIntercom/releases/latest)** · [Getting started](#getting-started) · [How it works](#how-it-works) · [Helmets and audio modes](#helmets-and-audio-modes) · [FAQ](#faq)
+
+> **Free, on Google Play and GitHub.** MotoIntercom is completely free. Install it from **[Google Play](https://play.google.com/store/apps/details?id=com.sanabria.motointercom)** for automatic updates, or download the APK from **[GitHub Releases](https://github.com/Eduzyrtin/MotoIntercom/releases/latest)**. Same app either way.
 
 </div>
 
@@ -98,8 +100,8 @@ The full design, the protocol and the roadmap are in [`docs/PROYECTO.md`](docs/P
 - A Bluetooth **helmet or headset paired to your phone**, as usual.
 - Every rider needs the app.
 
-### 1 · Install the APK
-Download the latest `MotoIntercom-*.apk` from **[Releases](https://github.com/Eduzyrtin/MotoIntercom/releases/latest)** and open it. Android will ask you to allow installs from your browser or file manager; allow it. Only install it from this repository's Releases page.
+### 1 · Install
+Get it from **[Google Play](https://play.google.com/store/apps/details?id=com.sanabria.motointercom)**, or download the latest `MotoIntercom-*.apk` from **[Releases](https://github.com/Eduzyrtin/MotoIntercom/releases/latest)** and open it. For the APK, Android will ask you to allow installs from your browser or file manager; allow it. Only install an APK from this repository's Releases page.
 
 ### 2 · Allow the permissions
 The app asks for **Bluetooth**, **microphone** and **notifications**. It needs them to find the other phones, to listen to you and to show the notification that keeps it alive with the screen off.
