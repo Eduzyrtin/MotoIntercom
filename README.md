@@ -89,7 +89,7 @@ And it has **no internet access at all**. It doesn't even request Android's inte
 3. **Voice in 20 ms frames.** The mic is encoded with **Opus** (48 kHz mono, forward error correction) and sent along the shortest path of the mesh. Each listener has a jitter buffer that grows and shrinks with the conditions.
 4. **Mix and play.** All the voices and the cues are mixed with a soft limiter and played through your helmet.
 
-The full design, the protocol and the roadmap are in [`PROYECTO.md`](PROYECTO.md) (in Spanish).
+The full design, the protocol and the roadmap are in [`docs/PROYECTO.md`](docs/PROYECTO.md) (in Spanish).
 
 ## Getting started
 
@@ -180,7 +180,7 @@ It keeps a Bluetooth link, the mic and the audio running, so it uses power, like
 <details>
 <summary><b>Will you add &lt;feature&gt;?</b></summary>
 
-Ideas are welcome: [open an issue](https://github.com/Eduzyrtin/MotoIntercom/issues) so they don't get lost. The roadmap is at the end of [`PROYECTO.md`](PROYECTO.md).
+Ideas are welcome: [open an issue](https://github.com/Eduzyrtin/MotoIntercom/issues) so they don't get lost. The roadmap is at the end of [`docs/PROYECTO.md`](docs/PROYECTO.md).
 </details>
 
 ## Found a bug? Have an idea?
