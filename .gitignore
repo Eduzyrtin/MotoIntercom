@@ -1,17 +1,36 @@
+# ── Plantilla común (HERRAMIENTAS/plantillas/gitignore). No editar este bloque en el proyecto: se cambia en la plantilla. ──
+
+# Gradle y Android Studio
 *.iml
-.gradle
-/local.properties
+.gradle/
+.kotlin/
+.idea/
+build/
+/captures/
+.externalNativeBuild/
+.cxx/
 local.properties
-/.idea/
-/.kotlin/
 .DS_Store
-/build
-/*/build
-/captures
-.externalNativeBuild
-.cxx
+Thumbs.db
 
 # Claves de firma (nunca al repositorio)
 keystore.properties
 *.jks
 *.keystore
+
+# Salidas de release (aab/apk, mapping, símbolos nativos): se generan en local y se suben a Play/GitHub a mano
+/app/release/
+*.apk
+*.aab
+*.apks
+*.idsig
+native-debug-symbols.zip
+
+# Vídeos de las declaraciones de Play Console (se suben a YouTube)
+*.mp4
+
+# Restos de agentes y herramientas
+/.artifacts/
+
+# Valores locales de prueba
+/test-defaults.properties
