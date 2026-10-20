@@ -207,7 +207,11 @@ The app is written in **Kotlin** with **Jetpack Compose**. The `:core` module (p
 
 ## Support the project
 
-If the app is useful to you, you can support its development on **[Ko-fi](https://ko-fi.com/Eduzyrtin)**. Donations are optional and nothing changes in the app either way.
+MotoIntercom is a passion project and it is **free**, on Google Play and on GitHub. If it is useful to you:
+
+- ☕ **[Buy me a coffee on Ko-fi](https://ko-fi.com/Eduzyrtin)**
+- ▶️ **[Get it on Google Play](https://play.google.com/store/apps/details?id=com.sanabria.motointercom)**: automatic updates included.
+- ⭐ Star the repo and tell your riding group about it.
 
 ## Credits
 
