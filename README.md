@@ -16,6 +16,7 @@ Each rider keeps the helmet paired to their phone as usual, and the phones talk 
 [![Android 10+](https://img.shields.io/badge/Android-10%2B-3DDC84?logo=android&logoColor=white)](#requirements)
 [![Bluetooth LE](https://img.shields.io/badge/Bluetooth-LE%20L2CAP-0082FC?logo=bluetooth&logoColor=white)](#how-it-works)
 [![License: GPLv3](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
+[![Ko-fi](https://img.shields.io/badge/Ko--fi-Support%20the%20project-FF5E5B?logo=kofi&logoColor=white)](https://ko-fi.com/Eduzyrtin)
 [![No internet permission](https://img.shields.io/badge/Internet%20permission-none-C6F28E)](#privacy)
 [![9 languages](https://img.shields.io/badge/languages-9-8E6FD8)](#features)
 [![Latest release](https://img.shields.io/github/v/release/Eduzyrtin/MotoIntercom?color=C6F28E&label=download)](https://github.com/Eduzyrtin/MotoIntercom/releases/latest)
@@ -203,6 +204,10 @@ Open the folder in **Android Studio** (it installs the NDK and CMake that it ask
 ```
 
 The app is written in **Kotlin** with **Jetpack Compose**. The `:core` module (protocol, mesh, crypto, jitter buffer, mixer) is pure Kotlin with no Android dependency, and **Opus 1.5.2** lives in `third_party/opus` and is built with the NDK. The package is `com.sanabria.motointercom`.
+
+## Support the project
+
+If the app is useful to you, you can support its development on **[Ko-fi](https://ko-fi.com/Eduzyrtin)**. Donations are optional and nothing changes in the app either way.
 
 ## Credits
 
