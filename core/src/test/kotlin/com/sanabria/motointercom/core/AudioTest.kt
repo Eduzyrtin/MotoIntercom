@@ -3,6 +3,7 @@ package com.sanabria.motointercom.core
 import com.sanabria.motointercom.core.audio.BitrateController
 import com.sanabria.motointercom.core.audio.Earcons
 import com.sanabria.motointercom.core.audio.JitterBuffer
+import com.sanabria.motointercom.core.audio.MicGain
 import com.sanabria.motointercom.core.audio.Mixer
 import com.sanabria.motointercom.core.audio.TalkSender
 import com.sanabria.motointercom.core.audio.Vad
@@ -10,7 +11,9 @@ import com.sanabria.motointercom.core.audio.VoiceFormat
 import com.sanabria.motointercom.core.protocol.Frame
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.log10
 import kotlin.math.sin
+import kotlin.math.sqrt
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
@@ -66,6 +69,32 @@ class AudioTest {
         jb.put(3, 0, p(3), 50)
         assertContentEquals(p(2), assertIs<JitterBuffer.Out.Packet>(jb.pull(60)).payload)
         assertEquals(0, jb.late)
+    }
+
+    @Test
+    fun burstIsCaughtUpAtOnceNotOneFramePerHalfSecond() {
+        val jb = JitterBuffer(minTarget = 2)
+        // El Bluetooth suelta de golpe 60 tramas (1,2 s) retenidas
+        for (i in 0 until 60) jb.put(i, if (i == 0) Frame.Audio.START else 0, p(i), 0)
+        var now = 0L
+        // Una sola trama sale y la cola ya vuelve al objetivo, sin esperar 30 s
+        assertIs<JitterBuffer.Out.Packet>(jb.pull(now))
+        assertTrue(jb.depthMs <= (jb.target + 1) * VoiceFormat.FRAME_MS, "cola de ${jb.depthMs} ms")
+        assertTrue(jb.trimmed > 50)
+        // Y sigue reproduciendo en orden desde ahí, sin pérdidas
+        now += 20
+        val next = assertIs<JitterBuffer.Out.Packet>(jb.pull(now)).payload[0].toInt()
+        assertTrue(next >= 50)
+        assertEquals(0, jb.lost)
+    }
+
+    @Test
+    fun smallExcessStillTrimsGradually() {
+        val jb = JitterBuffer(minTarget = 2)
+        for (i in 0 until 6) jb.put(i, 0, p(i), 0)
+        assertIs<JitterBuffer.Out.Packet>(jb.pull(0))
+        assertEquals(0, jb.trimmed)
+        assertEquals(5 * VoiceFormat.FRAME_MS, jb.depthMs)
     }
 
     @Test
@@ -128,6 +157,42 @@ class AudioTest {
         }
         assertTrue(openedAtStart)
         assertFalse(vad.open)
+    }
+
+    private fun rms(pcm: ShortArray) = sqrt(pcm.sumOf { it.toDouble() * it } / pcm.size)
+
+    @Test
+    fun micGainRaisesQuietVoiceTowardsTarget() {
+        val gain = MicGain()
+        var out = tone(500.0)
+        repeat(400) {
+            out = tone(500.0)
+            gain.process(out, voice = true)
+        }
+        val db = 20 * log10(rms(out) / 32768.0)
+        assertTrue(db > -24 && db < -14, "nivel $db dBFS")
+        assertTrue(gain.gainDb > 6f)
+    }
+
+    @Test
+    fun micGainStaysPutWithoutVoiceAndNeverAttenuates() {
+        val gain = MicGain()
+        val wind = noise(2000, 1)
+        repeat(100) { gain.process(wind.copyOf(), voice = false) }
+        assertEquals(0f, gain.gainDb)
+
+        // Voz ya fuerte: nada que subir
+        repeat(100) { gain.process(tone(12000.0), voice = true) }
+        assertEquals(0f, gain.gainDb)
+    }
+
+    @Test
+    fun micGainBacksOffFastOnAShout() {
+        val gain = MicGain()
+        repeat(400) { gain.process(tone(500.0), voice = true) }
+        val before = gain.gainDb
+        repeat(5) { gain.process(tone(20000.0), voice = true) }
+        assertTrue(gain.gainDb < before - 3f)
     }
 
     @Test

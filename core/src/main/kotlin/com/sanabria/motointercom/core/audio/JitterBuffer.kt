@@ -10,7 +10,8 @@ import com.sanabria.motointercom.core.protocol.Seq
  * - Falta una trama y hay posteriores: se da por perdida ([Out.Lost], con la siguiente para usar su FEC).
  * - No hay ninguna: subdesbordamiento. Se vuelve a acumular sin saltar la que falta (si llega tarde, suena) y el objetivo
  *   sube una trama. Si en [IDLE_AFTER_TICKS] no llega nada, la ráfaga se da por terminada.
- * - Si sobra cola de forma sostenida, se descarta una trama para recortar retardo; sin cortes en un rato, el objetivo baja.
+ * - Si sobra cola de forma sostenida, se descarta una trama para recortar retardo; si sobra mucha (una ráfaga), se
+ *   descarta hasta el objetivo de una vez. Sin cortes en un rato, el objetivo baja.
  * - La trama marcada [Frame.Audio.END] cierra la ráfaga en cuanto suena.
  *
  * No es seguro entre hilos.
@@ -129,7 +130,15 @@ class JitterBuffer(private val minTarget: Int = 2, private val maxTarget: Int = 
             target--
             ticksSinceUnderrun = 0
         }
-        if (count > target + 1) {
+        if (count > target + CATCHUP_FRAMES) {
+            // Ráfaga acumulada (el Bluetooth soltó de golpe lo que retenía): se recupera de una vez, no a una trama por tramo
+            while (count > target + 1) {
+                take(next)
+                next = Seq.next(next)
+                trimmed++
+            }
+            excessTicks = 0
+        } else if (count > target + 1) {
             if (++excessTicks >= TRIM_AFTER_TICKS) {
                 take(next)
                 next = Seq.next(next)
@@ -184,6 +193,9 @@ class JitterBuffer(private val minTarget: Int = 2, private val maxTarget: Int = 
         const val CONCEAL_TICKS = 3
         const val IDLE_AFTER_TICKS = 15
         const val RELAX_TICKS = 500
-        const val TRIM_AFTER_TICKS = 25
+        const val TRIM_AFTER_TICKS = 10
+
+        /** Con más de estas tramas de sobra sobre el objetivo no se espera: se descarta hasta el objetivo ya. */
+        const val CATCHUP_FRAMES = 5
     }
 }

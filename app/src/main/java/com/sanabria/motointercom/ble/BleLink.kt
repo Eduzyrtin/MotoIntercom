@@ -108,6 +108,9 @@ class BleLink(
 
     @Volatile var rttMs: Int? = null
         private set
+
+    /** Cuándo salió el ping que aún no ha vuelto (0 = ninguno). Atascado el enlace, el pong llega tarde: su edad lo delata. */
+    @Volatile private var pingSentAt = 0L
     @Volatile var txBytes = 0L
         private set
     @Volatile var rxBytes = 0L
@@ -137,13 +140,36 @@ class BleLink(
         thread(name = "l2cap-write") { writeLoop() }
     }
 
+    /**
+     * Retardo que llevan ahora los datos dentro del enlace: el mayor entre el último RTT y la edad del ping que sigue sin
+     * volver. El ping va por el mismo canal que la voz, así que mide también lo que la pila Bluetooth tiene retenido.
+     */
+    val backlogMs: Int
+        get() {
+            val sent = pingSentAt
+            val waiting = if (sent == 0L) 0 else (clock() - sent).toInt()
+            return maxOf(rttMs ?: 0, waiting)
+        }
+
     /** Contenido (tipo + cuerpo) para este enlace; se cifra al enviarlo. */
     fun send(content: ByteArray, audio: Boolean) {
         if (!ready) return
+        // Con el canal atascado, más voz solo alarga el retardo (el socket no avisa: escribe en una cola enorme). Se
+        // descarta y cuenta como descarte, para que la calidad adaptativa baje
+        if (audio && backlogMs > MAX_BACKLOG_MS) {
+            lock.withLock { dropped++ }
+            return
+        }
         enqueue(Item(content, audio, raw = false))
     }
 
-    fun ping() = send(FrameCodec.encodeBody(Frame.Ping(clock().toInt())), audio = false)
+    /** Un solo ping a la vez: si el enlace se atasca no se apilan, y la edad del pendiente mide el atasco. */
+    fun ping() {
+        if (pingSentAt != 0L) return
+        val now = clock()
+        pingSentAt = now
+        send(FrameCodec.encodeBody(Frame.Ping(now.toInt())), audio = false)
+    }
 
     fun close() {
         if (!closed.compareAndSet(false, true)) return
@@ -213,7 +239,10 @@ class BleLink(
             }
             is LinkSession.Event.Received -> when (val f = e.frame) {
                 is Frame.Ping -> send(FrameCodec.encodeBody(Frame.Pong(f.time)), audio = false)
-                is Frame.Pong -> rttMs = clock().toInt() - f.time
+                is Frame.Pong -> {
+                    rttMs = clock().toInt() - f.time
+                    pingSentAt = 0L
+                }
                 else -> events.onFrame(this, f)
             }
             is LinkSession.Event.Failed -> close()
@@ -245,5 +274,8 @@ class BleLink(
         /** 100 ms de voz por enlace; más es retardo que nadie quiere oír. */
         const val MAX_QUEUED_AUDIO = 5
         const val MAX_QUEUED = 256
+
+        /** Si ping y pong tardan más que esto, el canal va atascado y la voz nueva se descarta hasta que se vacíe. */
+        const val MAX_BACKLOG_MS = 300
     }
 }

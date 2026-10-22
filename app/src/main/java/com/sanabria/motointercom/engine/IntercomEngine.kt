@@ -14,6 +14,7 @@ import com.sanabria.motointercom.ble.BleMesh
 import com.sanabria.motointercom.core.audio.BitrateController
 import com.sanabria.motointercom.core.audio.Earcons
 import com.sanabria.motointercom.core.audio.JitterBuffer
+import com.sanabria.motointercom.core.audio.MicGain
 import com.sanabria.motointercom.core.audio.Mixer
 import com.sanabria.motointercom.core.audio.TalkSender
 import com.sanabria.motointercom.core.audio.Vad
@@ -122,6 +123,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
 
     private val audio = AudioIo(context, this)
     private val vad = Vad()
+    private val micGain = MicGain()
     private var encoder: OpusVoiceEncoder? = null
     private val encoded = ByteArray(VoiceFormat.MAX_PACKET)
     private var sender: TalkSender? = null
@@ -191,6 +193,7 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
         micMuted = false
         audio.setMicEnabled(micWanted())
         vad.reset()
+        micGain.reset()
         // Sesión nueva en cada conexión: los demás reinician su cola de reproducción y el control de duplicados
         session = Random.nextInt()
         sender = TalkSender { counter, flags, payload -> synchronized(lock) { router?.sendLocalAudio(session, counter, flags, payload) } }
@@ -399,6 +402,8 @@ class IntercomEngine(private val context: Context) : LinkTransport.Listener, Rou
             }
         }
         val voice = vad.process(pcm)
+        // El detector mira la señal tal cual llega; la ganancia va después, solo para lo que se envía
+        micGain.process(pcm, voice)
         val open = when (talkMode) {
             TalkMode.AUTO -> voice && !micMuted
             TalkMode.OPEN -> !micMuted

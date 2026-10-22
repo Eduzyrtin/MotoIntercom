@@ -512,7 +512,7 @@ class BleMesh(
         val SERVICE: ParcelUuid = ParcelUuid(UUID.fromString("6d6f746f-6963-4f6d-a001-000000000001"))
 
         const val TICK_MS = 250L
-        const val PING_MS = 1_000L
+        const val PING_MS = 500L
         const val RSSI_MS = 2_000L
         const val CONNECT_TIMEOUT_MS = 8_000L
         const val HELLO_TIMEOUT_MS = 5_000L
