@@ -29,6 +29,15 @@ android {
         }
     }
 
+    buildTypes {
+        release {
+            // R8: reduce, ofusca y optimiza el código (Play lo pide). Las reglas propias están en proguard-rules.pro
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+
     buildFeatures {
         compose = true
     }

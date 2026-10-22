@@ -72,6 +72,12 @@
             </intent-filter>
         </receiver>
 
+        <!-- La actividad invisible del escáner QR (ML Kit) fija la orientación vertical: se quita para que la app sea redimensionable -->
+        <activity
+            android:name="com.google.mlkit.vision.codescanner.internal.GmsBarcodeScanningDelegateActivity"
+            android:screenOrientation="unspecified"
+            tools:replace="android:screenOrientation" />
+
         <service
             android:name=".IntercomService"
             android:exported="false"

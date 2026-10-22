@@ -18,7 +18,6 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -81,7 +80,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         if (savedInstanceState == null) handleIntent(intent)
         // El casco se ha apagado y el servicio ha colgado: la app se cierra con él
         lifecycleScope.launch { intercom.helmetGone.collect { finishAndRemoveTask() } }

@@ -1,4 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.MotoIntercom" parent="android:Theme.Material.NoActionBar" />
+    <!-- Barras del sistema transparentes: la app dibuja de borde a borde (en Android 15 o superior lo impone el sistema) -->
+    <style name="Theme.MotoIntercom" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>
