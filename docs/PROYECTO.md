@@ -52,7 +52,7 @@ Intercomunicador de moto entre móviles por Bluetooth, sin cobertura ni servidor
 | Cifrado | AES-256-GCM por enlace (clave derivada de la del grupo y de dos nonces); el enlace solo vale si el otro demuestra tener la clave | Sin la clave no se oye ni se inyecta nada; el contador implícito solo suma la etiqueta (16 B por trama) |
 | Segundo plano | Servicio en primer plano (micrófono + dispositivo conectado) con notificación; el motor vive en la Application | Pantalla apagada y app cerrada sin cortar; la notificación silencia y desconecta |
 | Audio | **Voz primero (HFP), el modo por defecto:** micro y voces por el casco como una llamada manos libres, siempre abiertos; la voz va lo mejor que da el casco y la música se oye a calidad de llamada. Vale con cualquier casco. **Música primero (A2DP):** la música no baja nunca de calidad; las voces llegan como multimedia mezcladas con ella; el micro del casco solo con LE Audio, y con un casco clásico solo se escucha. Sin ducking. Solo el casco y el móvil: nunca el micro del móvil ni micros externos | Eduardo (14/10/2026): con un casco clásico no se puede tener música y voz buenas a la vez (A2DP y HFP no coexisten), y prefiere la voz: un canal comunitario donde la voz va bien y la música es secundaria. Cualquier modo sigue siendo Bluetooth puro, sin red |
-| Autoconexión | Se elige el casco en Ajustes; al conectarse al móvil la app se abre y conecta con el grupo por defecto, y cuelga 2 min después de que se vaya | Pedido por Eduardo (14/10/2026): encender el casco y listo |
+| Autoconexión | Se elige el casco en Ajustes; al conectarse al móvil el servicio conecta con el grupo por defecto sin abrir la app (solo notificación con Desconectar y Abrir), y cuelga y cierra la app 10 s después de que se vaya | Pedido por Eduardo (14/10/2026): encender el casco y listo |
 | Grupos guardados | Lista de grupos; uno por defecto (el de siempre, p. ej. la pareja) y otro activo para salidas en grupo | Pedido por Eduardo (14/10/2026) |
 | Volumen | Tres controles en la pantalla principal: maestro, voz y multimedia. El maestro mueve los dos a la par conservando la diferencia; los botones del móvil o del casco mueven el maestro | Pedido por Eduardo (13/10/2026): con voz 4/10 y música 6/10, subir deja 5 y 7 |
 | Pantallas | Principal (conectar, hablar, volumen + música, grupo, diagnóstico), Ajustes (identidad, grupo, audio, casco, radio, batería, información) y Probar casco | Pedido por Eduardo (13/10/2026) |
@@ -71,7 +71,7 @@ core/  (Kotlin puro, KMP-ready)
              Router.kt (entrega, reenvío, duplicados por sesión, anuncios) · LinkPolicy.kt (a quién conectar, reintentos)
              LinkQuality.kt (coste de cada enlace con histéresis) · LinkLimitLearner.kt (enlaces que aguanta el chip)
              LinkTransport.kt (interfaz de transporte)
-  audio/     Voice.kt (formato, interfaces de códec) · JitterBuffer.kt · Mixer.kt (limitador suave) · Vad.kt · TalkSender.kt
+  audio/     Voice.kt (formato, interfaces de códec) · JitterBuffer.kt · Mixer.kt (limitador suave) · Vad.kt · MicGain.kt · TalkSender.kt
              VolumeLink.kt (maestro sobre voz y multimedia) · Earcons.kt (avisos sonoros) · BitrateController.kt (calidad adaptativa)
 app/
   MotoIntercomApp.kt (dueña del motor y los ajustes) · IntercomService.kt (servicio en primer plano, notificación, MediaSession, colgar sin casco)
@@ -162,7 +162,9 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
   - Detector: el ruido es el mínimo del nivel en 1,6 s, más 3 dB. El umbral va de +6 a +20 dB según la sensibilidad, con un mínimo de −50 dBFS. Abre tras 2 tramas y mantiene 400 ms de cola.
   - Opus codifica todo, aunque no se envíe. `TalkSender` envía 2 tramas previas (pre-roll) al abrir y marca START/END.
 - **Micro desde el casco o la notificación:** lo silencia o lo devuelve. Suena un pitido agudo o grave según cómo queda. Silenciado o en Solo escuchar, en música primero se suelta el micro del casco y queda solo la música.
+- **Ganancia del micro** (`MicGain`): el micro del casco llega bajo. Mientras el detector da voz, la ganancia lleva el nivel hacia −18 dBFS (sube 6 dB/s, baja 60 dB/s, hasta +18 dB, sin atenuar nunca y con limitador suave). Sin voz no se mueve. El detector mira la señal sin ganancia.
 - **Envío:** cola por enlace de 5 tramas de voz (100 ms). Si va llena se tira la más vieja; el control no se descarta.
+  - **Contrapresión:** el socket L2CAP no avisa de que está lleno (escribe en una cola enorme de la pila Bluetooth), así que el retardo se acumulaba ahí sin límite. Ahora hay un ping cada 500 ms, uno a la vez, por el mismo canal que la voz. Si el RTT o la edad del ping pendiente pasan de 300 ms, la voz nueva se descarta (cuenta como descarte y baja la calidad adaptativa) hasta que el canal se vacía.
 - **Calidad adaptativa** (`BitrateController`, cada 2 s, con la voz enviada y descartada por todos los enlaces):
   - Con más del 5 % descartado baja un escalón (48, 40, 32, 24, 16, 12, 8 kbps), hasta 8 kbps.
   - Tras 5 periodos por debajo del 1 % sube un escalón, hasta el máximo de Ajustes.
@@ -173,7 +175,7 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 - **Recepción:** un jitter buffer por origen, que empieza en 2 tramas y llega a 12.
   - Si falta una trama y hay posteriores, se da por perdida: se reconstruye con el FEC de la siguiente o con PLC.
   - Si no llega nada, el objetivo sube una trama y vuelve a acumular sin saltar la que falta. A los 300 ms sin nada, la ráfaga se acaba.
-  - Si sobra cola durante 0,5 s, se recorta una trama. Tras 10 s sin cortes, el objetivo baja.
+  - Si sobra cola durante 0,2 s, se recorta una trama. Si sobran más de 5 tramas (una ráfaga que el Bluetooth retuvo), se descarta hasta el objetivo de una vez. Antes se recortaba una trama cada 0,5 s: 60 tramas de ráfaga tardaban 30 s en absorberse. Tras 10 s sin cortes, el objetivo baja.
 - **Mezcla:** suma de voces y avisos, ganancia de voces (la calcula `VolumeOutputs`) y limitador suave a partir de 0,7.
 - **Volumen** (niveles 0..1; 1 nivel = 40 dB). `VolumeLink` guarda maestro M = el mayor de voz V y multimedia U, y la diferencia de cada uno con él. Si uno toca fondo, la diferencia se recupera al volver a subir. Lo que se oye debe ser voz ≈ V y música ≈ U:
   - **Casco (HFP):** todo va por SCO y el casco aplica el volumen de llamada a todo. Llamada = M, multimedia = 1 + U − M, voces = ganancia(V − M).
@@ -234,7 +236,7 @@ Un Hello copiado por alguien de fuera no pasa del paso 2.
 
 ### Bloque 3B — Uso diario
 
-- [x] T50 Autoconexión: elegir el casco entre los emparejados y asociarlo como dispositivo complementario (deja abrir la app desde segundo plano); receptor de conexión y desconexión del casco; notificación de reserva para conectar con un toque; colgar 2 min después de que el casco se vaya
+- [x] T50 Autoconexión: elegir el casco entre los emparejados y asociarlo como dispositivo complementario (deja arrancar el micrófono desde segundo plano); receptor de conexión y desconexión del casco; el servicio arranca solo al conectarse el casco, sin abrir la app (solo la notificación, con Desconectar y Abrir; permisos REQUEST_COMPANION_*); notificación de reserva para conectar con un toque si no se puede; colgar y cerrar la app 10 s después de que el casco se vaya
 - [x] T51 Grupos guardados: lista con activo y por defecto (usar, hacer por defecto, borrar); selector en la pantalla principal; la autoconexión usa el grupo por defecto
 - [x] T52 Micro siempre del casco: fuera la elección de micro; aviso si no hay micro del casco. (Lo de hablar con PTT en mezcla lo sustituyen T53 y T54.)
 - [x] T53 Música primero: A2DP sin salir de él; micro del casco solo con LE Audio; manos libres (HFP) como alternativa (el modo por defecto lo cambia T56); la prueba del casco recomienda música primero; los ajustes antiguos (manos libres, PTT, 16 kbps) se pasan a lo nuevo una vez
