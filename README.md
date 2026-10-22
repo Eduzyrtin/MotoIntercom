@@ -134,7 +134,7 @@ With **LE Audio** (LC3) the helmet has mic and good music at once, and the app t
 - MotoIntercom **does not have the Internet permission**. Android itself prevents it from sending anything anywhere. No analytics, no ads, no accounts.
 - **Nothing is recorded.** Voice goes from your microphone, encrypted, straight to the phones in your group, and it is played and discarded.
 - The **microphone** is used only while you are connected. The **Bluetooth** permissions find and connect to the other phones. **Notifications** keep the connection alive and let you mute from the shade.
-- The helmet you choose is linked as a companion device only so that Android lets the app open itself when the helmet turns on.
+- The helmet you choose is linked as a companion device only so that Android lets the app start the intercom in the background when the helmet turns on, without opening the app.
 
 ## FAQ
 
