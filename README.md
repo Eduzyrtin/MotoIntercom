@@ -56,7 +56,7 @@ And it has **no internet access at all**. It doesn't even request Android's inte
 - **Group of any size** with a name and a random key. Share it by **QR code**, by a `motointercom://join` **link** or by pasting the text. Two groups with the same name never mix.
 - **Relay mesh**: if the first rider is out of range of the last one, the riders in between pass the voice along (up to 8 hops). If everybody can see everybody, nobody relays.
 - **Always open or voice activated**, or listen only. No push-to-talk: with gloves on and your hands on the handlebar you can't press anything.
-- **Auto-connect when your helmet turns on**: choose your helmet once and the app opens and joins your default group by itself. It hangs up two minutes after the helmet goes away.
+- **Auto-connect when your helmet turns on**: choose your helmet once and the app joins your default group by itself, showing just a notification to disconnect or open the app. When the helmet goes away it hangs up and closes.
 - **Saved groups**, with a default one (your partner, say) and another one for group rides.
 - **Sound cues** for the mic opening or closing and for someone joining or leaving, because on a bike you don't look at the screen.
 - Keeps running with the **screen off and the app closed**, through a foreground service whose notification lets you mute or disconnect.
