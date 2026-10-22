@@ -9,7 +9,7 @@ FEITA PARA ANDAR DE MOTA
 • Grupos de qualquer tamanho com nome e chave aleatória. Partilha-os por código QR, por ligação ou como texto.
 • Rede de retransmissão: quem vai no meio passa a voz (até 8 saltos) quando o primeiro e o último estão fora de alcance.
 • Microfone sempre aberto ou ativado por voz, ou só ouvir. Sem carregar para falar: as mãos ficam no guiador.
-• Ligação automática ao ligar o capacete, e desliga dois minutos depois de ele se afastar.
+• Ligação automática ao ligar o capacete, só com uma notificação para desligar ou abrir a app; desliga e fecha quando o capacete se afasta.
 • Grupos guardados, com um predefinido.
 • Sinais sonoros quando o microfone abre ou fecha e quando alguém entra ou sai.
 • Continua a funcionar com o ecrã desligado, com uma notificação para silenciar ou desligar.

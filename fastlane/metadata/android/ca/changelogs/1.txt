@@ -1,1 +1,1 @@
-Primera versió. Intercomunicador de grup per Bluetooth LE amb xarxa de relleus, xifratge d'extrem a extrem, modes Veu primer i Música primer, prova de casc i nou idiomes.
+Primera versió. Intercomunicador de grup per Bluetooth LE amb xarxa de relleus, xifratge d'extrem a extrem, modes Veu primer i Música primer, guany automàtic del micro, connexió automàtica en encendre el casc (només una notificació, i l'app es tanca quan el casc s'allunya), prova de casc i nou idiomes.

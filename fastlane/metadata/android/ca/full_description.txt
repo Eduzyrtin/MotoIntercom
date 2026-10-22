@@ -9,7 +9,7 @@ PENSADA PER ANAR EN MOTO
 • Grups de qualsevol mida amb nom i clau aleatòria. Comparteix-los per codi QR, per enllaç o com a text.
 • Xarxa de relleus: els del mig passen la veu (fins a 8 salts) quan el primer i l'últim són fora d'abast.
 • Micro sempre obert o per veu, o només escoltar. Sense prémer per parlar: les mans es queden al manillar.
-• Connexió automàtica en encendre el casc, i penja dos minuts després que s'allunyi.
+• Connexió automàtica en encendre el casc, només amb una notificació per desconnectar o obrir l'app; penja i es tanca quan el casc s'allunya.
 • Grups desats, amb un de predeterminat.
 • Avisos sonors quan el micro s'obre o es tanca i quan algú entra o surt.
 • Continua funcionant amb la pantalla apagada, amb una notificació per silenciar o desconnectar.

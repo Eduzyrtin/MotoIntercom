@@ -9,7 +9,7 @@ MOTOAN IBILTZEKO PENTSATUA
 • Edozein tamainatako taldeak izen eta ausazko gako batekin. Partekatu QR kode, esteka edo testu bidez.
 • Errele-sarea: erdian doazenek ahotsa pasatzen dute (8 jauzi arte) lehena eta azkena irismenetik kanpo daudenean.
 • Mikrofonoa beti irekita edo ahotsez aktibatua, edo entzun bakarrik. Sakatu-eta-hitz-egin gabe: eskuak gidarian geratzen dira.
-• Konexio automatikoa kaskoa piztean, eta urruntzen denetik bi minutura eskegitzen du.
+• Konexio automatikoa kaskoa piztean, jakinarazpen batekin soilik deskonektatzeko edo aplikazioa irekitzeko; kaskoa urruntzen denean eskegi eta ixten da.
 • Gordetako taldeak, lehenetsi batekin.
 • Soinu-abisuak mikrofonoa ireki edo ixtean eta norbait sartu edo irtetean.
 • Pantaila itzalita ere dabil, isilarazteko edo deskonektatzeko jakinarazpen batekin.

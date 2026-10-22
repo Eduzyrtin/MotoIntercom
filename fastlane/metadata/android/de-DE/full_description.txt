@@ -9,7 +9,7 @@ FÜRS FAHREN GEMACHT
 • Gruppen jeder Größe mit Namen und Zufallsschlüssel. Teile sie per QR-Code, Link oder als Text.
 • Relais-Netz: Die Fahrer in der Mitte geben die Stimme weiter (bis zu 8 Sprünge), wenn der Erste und der Letzte außer Reichweite sind.
 • Immer offen oder sprachgesteuert, oder nur zuhören. Kein Push-to-Talk: Die Hände bleiben am Lenker.
-• Verbindet sich automatisch, wenn du den Helm einschaltest, und legt zwei Minuten nach dem Ausschalten auf.
+• Verbindet sich automatisch, wenn du den Helm einschaltest, mit einer Benachrichtigung zum Trennen oder Öffnen der App; legt auf und schließt sich, wenn der Helm ausgeht.
 • Gespeicherte Gruppen, mit einer Standardgruppe.
 • Tonsignale, wenn das Mikro auf- oder zugeht und wenn jemand dazukommt oder geht.
 • Läuft bei ausgeschaltetem Bildschirm weiter, mit einer Benachrichtigung zum Stummschalten oder Trennen.

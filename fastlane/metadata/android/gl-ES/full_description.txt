@@ -9,7 +9,7 @@ PENSADA PARA IR EN MOTO
 • Grupos de calquera tamaño con nome e clave aleatoria. Compárteos por código QR, por ligazón ou como texto.
 • Rede de relevos: os do medio pasan a voz (ata 8 saltos) cando o primeiro e o último están fóra de alcance.
 • Micro sempre aberto ou por voz, ou só escoitar. Sen premer para falar: as mans seguen no guiador.
-• Conexión automática ao acender o casco, e colga dous minutos despois de que se afaste.
+• Conexión automática ao acender o casco, só cunha notificación para desconectar ou abrir a app; colga e péchase cando o casco se afasta.
 • Grupos gardados, cun predeterminado.
 • Avisos sonoros cando o micro se abre ou se pecha e cando alguén entra ou sae.
 • Segue funcionando coa pantalla apagada, cunha notificación para silenciar ou desconectar.

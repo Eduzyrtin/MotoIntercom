@@ -9,7 +9,7 @@ FATTA PER ANDARE IN MOTO
 • Gruppi di qualsiasi dimensione con un nome e una chiave casuale. Condividili con un codice QR, un link o come testo.
 • Rete a ponte: chi sta in mezzo passa la voce (fino a 8 salti) quando il primo e l'ultimo sono fuori portata.
 • Microfono sempre aperto o ad attivazione vocale, oppure solo ascolto. Niente push-to-talk: le mani restano sul manubrio.
-• Connessione automatica quando accendi il casco, e riaggancia due minuti dopo che si allontana.
+• Connessione automatica quando accendi il casco, con una semplice notifica per disconnettere o aprire la app; riaggancia e si chiude quando il casco si allontana.
 • Gruppi salvati, con uno predefinito.
 • Segnali acustici quando il microfono si apre o si chiude e quando qualcuno entra o esce.
 • Continua a funzionare a schermo spento, con una notifica per silenziare o disconnettere.

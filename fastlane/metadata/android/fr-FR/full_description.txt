@@ -9,7 +9,7 @@ FAIT POUR ROULER
 • Groupes de toute taille avec un nom et une clé aléatoire. Partagez-les par QR code, par lien ou en texte.
 • Réseau relais : les motards du milieu transmettent la voix (jusqu'à 8 sauts) quand le premier et le dernier sont hors de portée.
 • Micro toujours ouvert ou à déclenchement vocal, ou écoute seule. Pas d'alternat : vos mains restent sur le guidon.
-• Connexion automatique à l'allumage du casque, et raccroche deux minutes après qu'il s'éloigne.
+• Connexion automatique à l'allumage du casque, avec une simple notification pour se déconnecter ou ouvrir l'appli ; elle raccroche et se ferme quand le casque s'éloigne.
 • Groupes enregistrés, avec un groupe par défaut.
 • Signaux sonores à l'ouverture ou la fermeture du micro et quand quelqu'un arrive ou part.
 • Continue de fonctionner écran éteint, avec une notification pour couper le micro ou se déconnecter.

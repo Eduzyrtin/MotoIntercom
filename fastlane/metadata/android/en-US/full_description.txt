@@ -9,7 +9,7 @@ MADE FOR RIDING
 • Groups of any size with a name and a random key. Share them by QR code, by link or as text.
 • Relay mesh: riders in the middle pass the voice along (up to 8 hops) when the first and the last are out of range.
 • Always open or voice activated, or listen only. No push-to-talk: your hands stay on the handlebar.
-• Auto-connect when your helmet turns on, and hang up two minutes after it goes away.
+• Auto-connect when your helmet turns on, with just a notification to disconnect or open the app; it hangs up and closes when the helmet goes away.
 • Saved groups, with a default one.
 • Sound cues when the mic opens or closes and when someone joins or leaves.
 • Keeps running with the screen off, with a notification to mute or disconnect.

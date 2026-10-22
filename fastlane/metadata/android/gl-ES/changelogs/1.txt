@@ -1,1 +1,1 @@
-Primeira versión. Intercomunicador de grupo por Bluetooth LE con rede de relevos, cifrado de extremo a extremo, modos Voz primeiro e Música primeiro, proba de casco e nove idiomas.
+Primeira versión. Intercomunicador de grupo por Bluetooth LE con rede de relevos, cifrado de extremo a extremo, modos Voz primeiro e Música primeiro, ganancia automática do micro, conexión automática ao acender o casco (só unha notificación, e a app péchase cando o casco se afasta), proba de casco e nove idiomas.
