@@ -1,0 +1,1 @@
+Das automatische Verbinden öffnet die App nicht mehr: Beim Einschalten des Helms erscheint nur eine Benachrichtigung mit Trennen und Öffnen, und die App schließt sich, wenn der Helm ausgeht. Das Mikrofon passt seine Lautstärke selbst an, damit man dich besser hört, und die Stimme hinkt bei überlasteter Bluetooth-Verbindung weniger hinterher.

@@ -1,0 +1,1 @@
+La connexió automàtica ja no obre l'app: en encendre el casc només surt una notificació amb Desconnecta i Obre, i l'app es tanca quan el casc s'allunya. El micro ajusta el volum sol perquè t'escoltin millor, i la veu es retarda menys quan l'enllaç Bluetooth està congestionat.

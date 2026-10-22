@@ -1,0 +1,1 @@
+Konexio automatikoak ez du aplikazioa irekitzen: kaskoa pizten duzunean jakinarazpen bat soilik agertzen da, Deskonektatu eta Ireki aukerekin, eta kaskoa urruntzen denean aplikazioa ixten da. Mikrofonoak berak doitzen du bolumena, hobeto entzun zaitzaten, eta ahotsak atzerapen txikiagoa du Bluetooth esteka pilatuta dagoenean.

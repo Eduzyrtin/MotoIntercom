@@ -1,0 +1,1 @@
+A ligação automática já não abre a app: ao ligar o capacete só aparece uma notificação com Desligar e Abrir, e a app fecha quando o capacete se afasta. O microfone ajusta sozinho o volume para o ouvirem melhor, e a voz atrasa-se menos quando a ligação Bluetooth está congestionada.

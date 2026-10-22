@@ -1,0 +1,1 @@
+Auto-connect no longer opens the app: when your helmet turns on, you only get a notification with Disconnect and Open, and the app closes when the helmet goes away. The mic now adjusts its volume automatically so others hear you better, and voice lags less when the Bluetooth link is congested.

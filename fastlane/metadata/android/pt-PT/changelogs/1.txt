@@ -1,1 +1,1 @@
-Primeira versão. Intercomunicador de grupo por Bluetooth LE com rede de retransmissão, cifra ponto a ponto, modos Voz primeiro e Música primeiro, ganho automático do microfone, ligação automática ao ligar o capacete (só uma notificação, e a app fecha quando o capacete se afasta), teste do capacete e nove idiomas.
+Primeira versão. Intercomunicador de grupo por Bluetooth LE com rede de retransmissão, cifra ponto a ponto, modos Voz primeiro e Música primeiro, teste do capacete e nove idiomas.

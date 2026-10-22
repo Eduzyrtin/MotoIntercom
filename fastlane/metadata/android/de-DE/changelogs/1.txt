@@ -1,1 +1,1 @@
-Erste Version. Gruppen-Intercom über Bluetooth LE mit Relais-Netz, Ende-zu-Ende-Verschlüsselung, Modi Stimme zuerst und Musik zuerst, automatische Mikrofonverstärkung, automatisches Verbinden beim Einschalten des Helms (nur eine Benachrichtigung; die App schließt sich, wenn der Helm ausgeht), Helmtest und neun Sprachen.
+Erste Version. Gruppen-Intercom über Bluetooth LE mit Relais-Netz, Ende-zu-Ende-Verschlüsselung, Modi Stimme zuerst und Musik zuerst, Helmtest und neun Sprachen.

@@ -1,1 +1,1 @@
-Lehen bertsioa. Talde-intercoma Bluetooth LE bidez errele-sarearekin, muturretik muturrerako zifratzearekin, Ahotsa lehenik eta Musika lehenik moduekin, mikrofonoaren irabazi automatikoarekin, kaskoa piztean konexio automatikoarekin (jakinarazpen bat soilik, eta kaskoa urruntzean aplikazioa ixten da), kasko-probarekin eta bederatzi hizkuntzarekin.
+Lehen bertsioa. Talde-intercoma Bluetooth LE bidez errele-sarearekin, muturretik muturrerako zifratzearekin, Ahotsa lehenik eta Musika lehenik moduekin, kasko-probarekin eta bederatzi hizkuntzarekin.

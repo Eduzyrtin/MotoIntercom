@@ -1,1 +1,1 @@
-Première version. Intercom de groupe en Bluetooth LE avec réseau relais, chiffrement de bout en bout, modes Voix d'abord et Musique d'abord, gain automatique du micro, connexion automatique à l'allumage du casque (une simple notification, et l'appli se ferme quand il s'éloigne), test du casque et neuf langues.
+Première version. Intercom de groupe en Bluetooth LE avec réseau relais, chiffrement de bout en bout, modes Voix d'abord et Musique d'abord, test du casque et neuf langues.

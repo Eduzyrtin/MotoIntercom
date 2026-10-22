@@ -1,0 +1,1 @@
+La connessione automatica non apre più la app: quando accendi il casco ricevi solo una notifica con Disconnetti e Apri, e la app si chiude quando il casco si allontana. Il microfono regola da solo il volume per farti sentire meglio, e la voce ritarda meno quando il collegamento Bluetooth è congestionato.

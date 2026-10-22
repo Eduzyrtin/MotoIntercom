@@ -1,1 +1,1 @@
-First release. Group intercom over Bluetooth LE with a relay mesh, end-to-end encryption, Voice first and Music first modes, automatic mic gain, auto-connect when your helmet turns on (just a notification, and it closes when the helmet goes away), helmet test and nine languages.
+First release. Group intercom over Bluetooth LE with a relay mesh, end-to-end encryption, Voice first and Music first modes, helmet test and nine languages.

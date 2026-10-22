@@ -1,0 +1,1 @@
+A conexión automática xa non abre a app: ao acender o casco só sae unha notificación con Desconectar e Abrir, e a app péchase cando o casco se afasta. O micro axusta o seu volume só para que te oian mellor, e a voz atrásase menos cando a ligazón Bluetooth está conxestionada.
