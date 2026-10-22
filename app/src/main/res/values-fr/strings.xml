@@ -112,6 +112,7 @@
     <string name="mic_muted">Micro coupé (casque ou notification)</string>
     <string name="action_unmute">Activer le micro</string>
     <string name="action_mute">Couper</string>
+    <string name="action_open">Ouvrir</string>
 
     <string name="notif_channel">Intercom</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -215,7 +216,7 @@
     <string name="helmet_selected">Casque : %1$s</string>
     <string name="helmet_choose">Choisir le casque</string>
     <string name="auto_connect">Se connecter quand le casque s\'allume</string>
-    <string name="auto_connect_hint">Quand ce casque se connecte au téléphone, l\'appli s\'ouvre et se connecte au groupe par défaut. Si le casque s\'éteint, elle se déconnecte au bout de 2 minutes.</string>
+    <string name="auto_connect_hint">Quand ce casque se connecte au téléphone, l\'appli se connecte seule au groupe par défaut et affiche une notification pour se déconnecter ou ouvrir l\'appli. Si le casque s\'éteint, elle se déconnecte et se ferme.</string>
     <string name="helmet_pick_title">Choisissez votre casque</string>
     <string name="no_bonded">Aucun appareil Bluetooth associé</string>
     <string name="cdm_failed">Android n\'a pas permis d\'associer le casque : à sa connexion, une notification permettra de se connecter.</string>

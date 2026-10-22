@@ -16,10 +16,11 @@ import androidx.core.app.NotificationManagerCompat
 /**
  * Autoconexión: el casco elegido se conecta (o se desconecta) del móvil por Bluetooth.
  *
- * Al conectarse, si el intercomunicador no está en marcha, se abre la app para que conecte con el grupo por defecto.
- * Android solo deja abrir una actividad desde segundo plano si el casco está asociado como dispositivo complementario
- * (se hace al elegirlo en Ajustes); por si aun así no se abre, queda una notificación para conectar con un toque.
- * Al desconectarse, el servicio cuelga si el casco no vuelve en un rato.
+ * Al conectarse, si el intercomunicador no está en marcha, el servicio conecta con el grupo por defecto sin abrir la
+ * app: solo sale su notificación, con las opciones de desconectar o abrir la app. Android solo deja arrancar el micrófono
+ * desde segundo plano si el casco está asociado como dispositivo complementario (se hace al elegirlo en Ajustes); por si
+ * no se puede (sin permisos o sin asociación), queda una notificación para conectar con un toque.
+ * Al desconectarse, el servicio cuelga y la app se cierra si el casco no vuelve en unos segundos.
  */
 class HelmetReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -36,7 +37,7 @@ class HelmetReceiver : BroadcastReceiver() {
         when (intent.action) {
             BluetoothDevice.ACTION_ACL_CONNECTED -> {
                 app.helmetConnected.value = true
-                if (!app.engine.state.value.running) launch(context, s.helmetName)
+                if (!app.engine.state.value.running) connect(context, s.helmetName)
             }
             BluetoothDevice.ACTION_ACL_DISCONNECTED -> app.helmetConnected.value = false
         }
@@ -51,9 +52,29 @@ class HelmetReceiver : BroadcastReceiver() {
             .setAction(ACTION_AUTOCONNECT)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
-        private fun launch(context: Context, helmet: String) {
-            runCatching { context.startActivity(autoConnectIntent(context)) }
-            // Si Android no deja abrir la app, la notificación conecta con un toque (se borra al conectar)
+        private fun connect(context: Context, helmet: String) {
+            val app = context.intercom
+            app.settings.activate(app.settings.current.defaultGroup)
+            val started = hasPermissions(context) && runCatching { IntercomService.start(context) }.isSuccess
+            if (!started) promptToConnect(context, helmet)
+        }
+
+        private fun hasPermissions(context: Context): Boolean {
+            val needed = buildList {
+                add(Manifest.permission.RECORD_AUDIO)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    add(Manifest.permission.BLUETOOTH_SCAN)
+                    add(Manifest.permission.BLUETOOTH_CONNECT)
+                    add(Manifest.permission.BLUETOOTH_ADVERTISE)
+                } else {
+                    add(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
+            }
+            return needed.all { context.checkSelfPermission(it) == PackageManager.PERMISSION_GRANTED }
+        }
+
+        /** Aviso de reserva: conecta con un toque (abre la app, que pide lo que falte). Se borra al conectar. */
+        fun promptToConnect(context: Context, helmet: String) {
             val nm = NotificationManagerCompat.from(context)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 context.checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED

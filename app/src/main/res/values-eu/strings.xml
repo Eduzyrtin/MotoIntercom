@@ -109,6 +109,7 @@
     <string name="mic_muted">Mikrofonoa mutututa (kaskoa edo jakinarazpena)</string>
     <string name="action_unmute">Desmututu</string>
     <string name="action_mute">Mututu</string>
+    <string name="action_open">Ireki</string>
 
     <string name="notif_channel">Interkomunikadorea</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -209,7 +210,7 @@
     <string name="helmet_selected">Kaskoa: %1$s</string>
     <string name="helmet_choose">Aukeratu kaskoa</string>
     <string name="auto_connect">Konektatu kaskoa pizten denean</string>
-    <string name="auto_connect_hint">Kasko hau telefonora konektatzen denean, aplikazioa ireki eta talde lehenetsira konektatzen da. Kaskoa itzaltzen bada, 2 minutura deskonektatzen da.</string>
+    <string name="auto_connect_hint">Kasko hau telefonora konektatzen denean, aplikazioa bera talde lehenetsira konektatzen da eta jakinarazpen bat erakusten du deskonektatzeko edo aplikazioa irekitzeko. Kaskoa itzaltzen bada, deskonektatu eta ixten da.</string>
     <string name="helmet_pick_title">Aukeratu zure kaskoa</string>
     <string name="no_bonded">Ez dago parekatutako Bluetooth gailurik</string>
     <string name="cdm_failed">Androidek ez du kaskoa lotzen utzi: konektatzean jakinarazpen bat jasoko duzu konektatzeko.</string>

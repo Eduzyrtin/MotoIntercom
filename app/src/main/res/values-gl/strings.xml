@@ -109,6 +109,7 @@
     <string name="mic_muted">Micrófono silenciado (casco ou notificación)</string>
     <string name="action_unmute">Activar o son</string>
     <string name="action_mute">Silenciar</string>
+    <string name="action_open">Abrir</string>
 
     <string name="notif_channel">Intercomunicador</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -209,7 +210,7 @@
     <string name="helmet_selected">Casco: %1$s</string>
     <string name="helmet_choose">Escoller casco</string>
     <string name="auto_connect">Conectar cando se acenda o casco</string>
-    <string name="auto_connect_hint">Cando este casco se conecta ao móbil, a app ábrese e conéctase ao grupo por defecto. Se o casco se apaga, desconéctase aos 2 minutos.</string>
+    <string name="auto_connect_hint">Cando este casco se conecta ao móbil, a app conéctase soa ao grupo por defecto e amosa unha notificación para desconectar ou abrir a app. Se o casco se apaga, desconéctase e péchase.</string>
     <string name="helmet_pick_title">Escolle o teu casco</string>
     <string name="no_bonded">Ningún dispositivo Bluetooth emparellado</string>
     <string name="cdm_failed">Android non permitiu vincular o casco: cando se conecte recibirás unha notificación para conectar.</string>

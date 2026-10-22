@@ -112,6 +112,7 @@
     <string name="mic_muted">Microfone silenciado (capacete ou notificação)</string>
     <string name="action_unmute">Ativar microfone</string>
     <string name="action_mute">Silenciar</string>
+    <string name="action_open">Abrir</string>
 
     <string name="notif_channel">Intercomunicador</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -215,7 +216,7 @@
     <string name="helmet_selected">Capacete: %1$s</string>
     <string name="helmet_choose">Escolher capacete</string>
     <string name="auto_connect">Ligar ao acender o capacete</string>
-    <string name="auto_connect_hint">Quando este capacete se liga ao telemóvel, a app abre e liga ao grupo predefinido. Se o capacete se desligar, desliga ao fim de 2 minutos.</string>
+    <string name="auto_connect_hint">Quando este capacete se liga ao telemóvel, a app liga-se sozinha ao grupo predefinido e mostra uma notificação para desligar ou abrir a app. Se o capacete se desligar, desliga-se e fecha.</string>
     <string name="helmet_pick_title">Escolhe o teu capacete</string>
     <string name="no_bonded">Não há dispositivos Bluetooth emparelhados</string>
     <string name="cdm_failed">O Android não deixou associar o capacete: quando se ligar vais receber uma notificação para ligar.</string>

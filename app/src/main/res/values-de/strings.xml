@@ -110,6 +110,7 @@
     <string name="mic_muted">Mikro stumm (Helm oder Benachrichtigung)</string>
     <string name="action_unmute">Mikro an</string>
     <string name="action_mute">Stumm</string>
+    <string name="action_open">Öffnen</string>
 
     <string name="notif_channel">Gegensprechanlage</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -212,7 +213,7 @@
     <string name="helmet_selected">Helm: %1$s</string>
     <string name="helmet_choose">Helm wählen</string>
     <string name="auto_connect">Verbinden, wenn der Helm angeht</string>
-    <string name="auto_connect_hint">Wenn sich dieser Helm mit dem Handy verbindet, öffnet sich die App und verbindet sich mit der Standardgruppe. Geht der Helm aus, trennt sie nach 2 Minuten.</string>
+    <string name="auto_connect_hint">Wenn sich dieser Helm mit dem Handy verbindet, verbindet sich die App selbst mit der Standardgruppe und zeigt eine Benachrichtigung zum Trennen oder Öffnen der App. Geht der Helm aus, trennt sie sich und schließt sich.</string>
     <string name="helmet_pick_title">Wähle deinen Helm</string>
     <string name="no_bonded">Keine gekoppelten Bluetooth-Geräte</string>
     <string name="cdm_failed">Android hat die Verknüpfung mit dem Helm nicht erlaubt: Wenn er sich verbindet, bekommst du eine Benachrichtigung zum Verbinden.</string>

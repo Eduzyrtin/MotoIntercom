@@ -112,6 +112,7 @@
     <string name="mic_muted">Microfono silenziato (casco o notifica)</string>
     <string name="action_unmute">Attiva microfono</string>
     <string name="action_mute">Silenzia</string>
+    <string name="action_open">Apri</string>
 
     <string name="notif_channel">Interfono</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -215,7 +216,7 @@
     <string name="helmet_selected">Casco: %1$s</string>
     <string name="helmet_choose">Scegli casco</string>
     <string name="auto_connect">Connetti quando si accende il casco</string>
-    <string name="auto_connect_hint">Quando questo casco si collega al telefono, la app si apre e si connette al gruppo predefinito. Se il casco si spegne, si disconnette dopo 2 minuti.</string>
+    <string name="auto_connect_hint">Quando questo casco si collega al telefono, la app si connette da sola al gruppo predefinito e mostra una notifica per disconnettere o aprire la app. Se il casco si spegne, si disconnette e si chiude.</string>
     <string name="helmet_pick_title">Scegli il tuo casco</string>
     <string name="no_bonded">Nessun dispositivo Bluetooth abbinato</string>
     <string name="cdm_failed">Android non ha permesso di associare il casco: quando si collega arriverà una notifica per connettersi.</string>

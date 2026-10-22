@@ -31,7 +31,7 @@ import kotlinx.coroutines.launch
 /**
  * Servicio en primer plano (micrófono + dispositivo conectado) que mantiene el intercomunicador con la pantalla apagada
  * o la app en segundo plano. La notificación dice cuántos hay en el grupo y cómo está el micro, y deja silenciarlo o
- * desconectar. Si está activado, también recoge el botón de reproducir/pausa del casco con una MediaSession.
+ * desconectar o abrir la app. Si está activado, también recoge el botón de reproducir/pausa del casco con una MediaSession.
  */
 class IntercomService : Service() {
 
@@ -73,7 +73,14 @@ class IntercomService : Service() {
         } else {
             ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
         }
-        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(null), types)
+        try {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(null), types)
+        } catch (e: RuntimeException) {
+            // Android no deja abrir el micrófono desde segundo plano (casco sin asociar): se avisa para conectar con un toque
+            HelmetReceiver.promptToConnect(this, app.settings.current.helmetName)
+            stopSelf()
+            return
+        }
         started = true
         app.engine.start(app.settings.current)
         if (!app.engine.state.value.running) {
@@ -95,6 +102,7 @@ class IntercomService : Service() {
                 if (connected == false && app.settings.current.autoConnect) {
                     hangUp = launch {
                         delay(HELMET_GONE_MS)
+                        app.helmetGone.tryEmit(Unit)
                         shutdown()
                     }
                 }
@@ -217,6 +225,7 @@ class IntercomService : Service() {
             b.addAction(0, getString(label), servicePending(ACTION_TOGGLE_MIC, 1))
         }
         b.addAction(0, getString(R.string.action_stop), servicePending(ACTION_STOP, 2))
+        b.addAction(0, getString(R.string.action_open), open)
         return b.build()
     }
 
@@ -231,8 +240,8 @@ class IntercomService : Service() {
         private const val CHANNEL_ID = "intercom"
         private const val NOTIFICATION_ID = 1
 
-        /** Casco apagado este tiempo con la autoconexión activa: se cuelga. */
-        private const val HELMET_GONE_MS = 2 * 60 * 1000L
+        /** Casco apagado este tiempo con la autoconexión activa: se cuelga y se cierra la app (aguanta un corte breve). */
+        private const val HELMET_GONE_MS = 10 * 1000L
 
         /** Un día de ruta como mucho; se suelta al desconectar. */
         private const val WAKE_LOCK_MS = 12 * 60 * 60 * 1000L

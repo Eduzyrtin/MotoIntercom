@@ -112,6 +112,7 @@
     <string name="mic_muted">Mic muted (helmet or notification)</string>
     <string name="action_unmute">Unmute</string>
     <string name="action_mute">Mute</string>
+    <string name="action_open">Open</string>
 
     <string name="notif_channel">Intercom</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -214,7 +215,7 @@
     <string name="helmet_selected">Helmet: %1$s</string>
     <string name="helmet_choose">Choose helmet</string>
     <string name="auto_connect">Connect when the helmet turns on</string>
-    <string name="auto_connect_hint">When this helmet connects to the phone, the app opens and connects to the default group. If the helmet turns off, it disconnects after 2 minutes.</string>
+    <string name="auto_connect_hint">When this helmet connects to the phone, the app joins the default group by itself and shows a notification to disconnect or open the app. When the helmet turns off, it disconnects and closes.</string>
     <string name="helmet_pick_title">Choose your helmet</string>
     <string name="no_bonded">No paired Bluetooth devices</string>
     <string name="cdm_failed">Android did not allow linking the helmet: when it connects you will get a notification to connect.</string>

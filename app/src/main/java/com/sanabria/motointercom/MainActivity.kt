@@ -27,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.codescanner.GmsBarcodeScannerOptions
 import com.google.mlkit.vision.codescanner.GmsBarcodeScanning
@@ -40,6 +41,7 @@ import com.sanabria.motointercom.ui.MainScreen
 import com.sanabria.motointercom.ui.MotoTheme
 import com.sanabria.motointercom.ui.ScreenActions
 import com.sanabria.motointercom.ui.SettingsScreen
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     private enum class Screen { MAIN, SETTINGS, HELMET_TEST }
@@ -81,6 +83,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (savedInstanceState == null) handleIntent(intent)
+        // El casco se ha apagado y el servicio ha colgado: la app se cierra con él
+        lifecycleScope.launch { intercom.helmetGone.collect { finishAndRemoveTask() } }
         setContent {
             MotoTheme {
                 val state by vm.state.collectAsStateWithLifecycle()

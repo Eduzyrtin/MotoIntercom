@@ -111,6 +111,7 @@
     <string name="mic_muted">Micròfon silenciat (casc o notificació)</string>
     <string name="action_unmute">Activa el so</string>
     <string name="action_mute">Silencia</string>
+    <string name="action_open">Obre</string>
 
     <string name="notif_channel">Intercomunicador</string>
     <string name="notif_title">MotoIntercom · %1$s</string>
@@ -212,7 +213,7 @@
     <string name="helmet_selected">Casc: %1$s</string>
     <string name="helmet_choose">Tria el casc</string>
     <string name="auto_connect">Connecta quan s\'encén el casc</string>
-    <string name="auto_connect_hint">Quan aquest casc es connecta al mòbil, l\'app s\'obre i es connecta al grup per defecte. Si el casc s\'apaga, es desconnecta al cap de 2 minuts.</string>
+    <string name="auto_connect_hint">Quan aquest casc es connecta al mòbil, l\'app es connecta sola al grup per defecte i mostra una notificació per desconnectar o obrir l\'app. Si el casc s\'apaga, es desconnecta i es tanca.</string>
     <string name="helmet_pick_title">Tria el teu casc</string>
     <string name="no_bonded">Cap dispositiu Bluetooth aparellat</string>
     <string name="cdm_failed">Android no ha permès vincular el casc: quan es connecti rebràs una notificació per connectar.</string>
